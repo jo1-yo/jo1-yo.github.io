@@ -13,12 +13,50 @@
       z-index: 2;
       transition: background 0.3s;
     }
+    .project-title a {
+      text-decoration: none;
+      color: inherit;
+    }
+    .projects-grid {
+      display: flex;
+      gap: 32px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+    .project-card {
+      display: block;
+      width: 350px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-decoration: none;
+      color: #222;
+      transition: box-shadow 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+    .project-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+      transform: translateY(-4px) scale(1.02);
+    }
+    .project-card h3 {
+      margin: 0 0 12px 0;
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #222;
+      text-decoration: none;
+    }
+    .project-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 16px 16px 0 0;
+    }
   </style>
 </head>
 <body>
 <div class="parallax-hero">
   <div class="parallax-bg">
-    <video id="heroVideo" src="gensync-hero.mp4" autoplay loop muted playsinline></video>
+    <img src="test.jpg" style="width:100%;height:100%;object-fit:cover;">
   </div>
   <div class="fade-bg" id="fadeBg"></div>
   <div class="monitor-mockup" id="monitorMockup">
