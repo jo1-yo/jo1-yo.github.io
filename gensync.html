@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GenSync Project</title>
+  <link rel="stylesheet" href="gensync.css">
+  <style>
+    body { margin: 0; background: #000; }
+    .parallax-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .parallax-bg img {
+      width: 100vw; height: 100vh; object-fit: cover; display: block;
+    }
+    .parallax-mask {
+      position: absolute;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+      z-index: 2;
+    }
+    .monitor-mockup {
+      position: absolute;
+      top: 100vh; left: 50%; transform: translateX(-50%) scale(1.5);
+      width: 820px; height: 500px;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 0.5s, transform 0.5s, top 0.5s;
+      pointer-events: none;
+    }
+    .monitor-screen {
+      width: 100%; height: 400px;
+      background: #111; border-radius: 18px 18px 10px 10px;
+      border: 8px solid #eaeaea;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+    }
+    .monitor-screen img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .monitor-stand {
+      width: 120px; height: 60px;
+      background: #ccc;
+      margin: 0 auto;
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    }
+    .hero-text {
+      position: absolute;
+      top: 120vh; left: 50%; transform: translateX(-50%);
+      width: 700px; max-width: 90vw;
+      color: #fff;
+      z-index: 4;
+      text-align: left;
+      background: rgba(0,0,0,0.5);
+      padding: 32px 32px 24px 32px;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .hero-text h2 {
+      font-size: 2em;
+      margin-bottom: 16px;
+      font-weight: bold;
+    }
+    .hero-text p {
+      font-size: 1.1em;
+      line-height: 1.7;
+      color: #fff;
+    }
+    .studio-mockup-container {
+      position: relative;
+      width: 900px; /* mockup图片实际宽度 */
+      margin: 0 auto;
+    }
+    .studio-mockup-img {
+      width: 100%;
+      display: block;
+    }
+    .studio-mockup-screen {
+      position: absolute;
+      left: 60px;  /* 屏幕内容在mockup图片中的左上角坐标 */
+      top: 40px;
+      width: 780px; /* 屏幕内容的宽高，需根据mockup图片实际像素调整 */
+      height: 440px;
+      overflow: hidden;
+      border-radius: 18px;
+      /* 可加box-shadow等 */
+    }
+  </style>
+</head>
+<body>
+  <div class="parallax-bg">
+    <img id="mainVisual" src="test.jpg" alt="背景图">
+    <div class="parallax-mask" id="parallaxMask"></div>
+  </div>
+  <div class="studio-mockup-container">
+    <img class="studio-mockup-img" src="studio-mockup.png" alt="Studio Display Mockup">
+    <div class="studio-mockup-screen">
+      <img src="test.jpg" alt="屏幕内容" style="width:100%;height:100%;object-fit:cover;">
+      <!-- 或者用 <video> 替换 -->
+    </div>
+  </div>
+  <div class="hero-text" id="heroText">
+    <h2>Discovering Problems</h2>
+    <p>
+      Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.<br><br>
+      This shows that many elderly people lack companionship and opportunities to be heard. At the same time, we observe that modern youth often use trendy internet slang, which older people struggle to understand. On the other hand, the elderly tend to speak in a detailed manner that younger people find hard to follow.<br><br>
+      And so, our product GenSync was born.
+    </p>
+  </div>
+<script>
+window.addEventListener('scroll', function() {
+  const scrollY = window.scrollY;
+  const monitor = document.getElementById('monitorMockup');
+  const heroText = document.getElementById('heroText');
+  const mask = document.getElementById('parallaxMask');
+  if (scrollY < 200) {
+    monitor.style.opacity = '0';
+    monitor.style.transform = 'translateX(-50%) scale(1.5)';
+    monitor.style.top = '100vh';
+    heroText.style.opacity = '0';
+    mask.style.opacity = '0';
+  } else if (scrollY >= 200 && scrollY < 700) {
+    const percent = (scrollY - 200) / 500;
+    monitor.style.opacity = `${percent}`;
+    const scale = 1.5 - percent * 0.5;
+    const top = 100 - percent * 60;
+    monitor.style.transform = `translateX(-50%) scale(${scale})`;
+    monitor.style.top = `${top}vh`;
+    heroText.style.opacity = '0';
+    mask.style.opacity = `${percent * 0.8}`;
+  } else {
+    monitor.style.opacity = '1';
+    monitor.style.transform = 'translateX(-50%) scale(1)';
+    monitor.style.top = '40vh';
+    heroText.style.opacity = '1';
+    mask.style.opacity = '0.8';
+  }
+});
+</script>
+</body>
+</html>
