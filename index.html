@@ -155,10 +155,11 @@
         }
         
         .projects-title {
-            font-size: 4vw; /* 缩小字体大小 */
-            margin-bottom: 50px;
+            font-size: 4vw;
+            margin-top: 0;
+            margin-bottom: 54px; /* 增大标题与卡片间距 */
             opacity: 0;
-            transform: translateY(50px);
+            transform: translateY(0);
             transition: all 1s;
             position: relative;
             display: inline-block;
@@ -180,26 +181,35 @@
         }
         
         .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            display: flex;
             gap: 40px;
             position: relative;
+            justify-content: center;
         }
         
         .project {
+            width: 620px;
+            aspect-ratio: 1.5/1;
+            min-height: 380px;
             position: relative;
-            background: white;
-            border-radius: 0;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            background: linear-gradient(135deg, #f8fafc 0%, #e9e9f3 100%);
+            border-radius: 32px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
             overflow: hidden;
-            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.6s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.18s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.18s, background 0.18s;
             opacity: 0;
-            transform: translateY(100px);
+            transform: translateY(50px);
+            border: none;
+            will-change: transform, opacity;
         }
         
         .project:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.16);
+            transform: translateY(-12px) scale(1.025);
+            background: linear-gradient(135deg, #f4f7fb 0%, #e0e0f0 100%);
         }
         
         .project-image {
@@ -216,17 +226,27 @@
         }
         
         .project-content {
-            padding: 30px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .project h3 {
-            margin-top: 0;
-            font-size: 22px;
-            transition: transform 0.3s;
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: #222;
+            letter-spacing: 0.02em;
+            text-align: center;
+            font-family: 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            transition: color 0.18s;
         }
         
         .project:hover h3 {
-            transform: translateX(5px);
+            color: #111;
         }
         
         .project p {
@@ -540,6 +560,11 @@
             background: rgba(0, 0, 0, 0.1);
             color: #333;
         }
+
+        .project-link {
+            text-decoration: none;
+            color: inherit;
+        }
     </style>
 </head>
 <body>
@@ -571,32 +596,21 @@
         <h2 class="projects-title">Featured Projects</h2>
         
         <div class="projects-grid">
-            <a href="gensync.html" class="project-link">
-                <div class="project">
-                    <div class="project-image" style="background-image: url('gensync.jpg');"></div>
-                    <div class="project-content">
-                        <h3>Gensync</h3>
-                        <p>Gensync is an AI-powered platform that brings seniors and young learners together for real conversation and shared learning. Born at a hackathon, I built the frontend to help make it real.</p>
-                        <div class="project-links">
-                            <a href="https://github.com/ms48-gensync/demo-repository" target="_blank">View Code</a>
-                        </div>
-                    </div>
-                </div>
-            </a>
-            
             <div class="project">
-                <div class="project-image" style="background-image: url('suab.jpg');"></div>
                 <div class="project-content">
-                    <h3>SUAB Anti-Bullying Initiative</h3>
-                    <p>As President of Students Union Against Bullying (SUAB), a nonprofit with 2000+ members in four countries, I built a digital anti-bullying pamphlet. The pamphlet includes a video guide featuring my avatar, helping students learn and access support in a interactive space.</p>
+                    <h3>Gensync</h3>
                 </div>
             </div>
             
             <div class="project">
-                <div class="project-image" style="background-image: url('more.jpg');"></div>
+                <div class="project-content">
+                    <h3>SUAB</h3>
+                </div>
+            </div>
+            
+            <div class="project">
                 <div class="project-content">
                     <h3>More...</h3>
-                    <p>More projects coming soon...</p>
                 </div>
             </div>
         </div>
@@ -660,7 +674,7 @@
             
             // 视差效果
             document.querySelectorAll('.project-image').forEach((image) => {
-                const speed = 0.05;
+                const speed = 0.03;
                 const rect = image.getBoundingClientRect();
                 if (rect.top < windowHeight && rect.bottom > 0) {
                     const yPos = (rect.top - windowHeight) * speed;
@@ -693,7 +707,7 @@
                     particle.style.setProperty('--ty', `${ty}px`);
                     const duration = 1.0 + Math.random() * 0.3; // 保持较慢的速度
                     particle.style.animation = `particleAnimation ${duration}s ease-out forwards`;
-                    letter.appendChild(particle);
+                    letter.appendChild(particle); 
                     setTimeout(() => {
                         particle.remove();
                     }, duration * 1000);
