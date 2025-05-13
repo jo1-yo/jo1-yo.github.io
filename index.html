@@ -188,11 +188,12 @@
         }
         
         .project {
+            position: relative;
             width: 620px;
             aspect-ratio: 1.5/1;
             min-height: 380px;
-            position: relative;
-            background: linear-gradient(135deg, #f8fafc 0%, #e9e9f3 100%);
+            background-size: cover;
+            background-position: center;
             border-radius: 32px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.10);
             overflow: hidden;
@@ -232,17 +233,29 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .project::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.22); /* 黑色半透明蒙版 */
+            z-index: 1;
+            border-radius: inherit;
         }
         
         .project h3 {
             margin: 0;
             font-size: 2.5rem;
             font-weight: 400;
-            color: #222;
+            color: #fff;
             letter-spacing: 0.02em;
             text-align: center;
             font-family: 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            transition: color 0.18s;
+            z-index: 2;
+            position: relative;
         }
         
         .project:hover h3 {
@@ -596,19 +609,19 @@
         <h2 class="projects-title">Featured Projects</h2>
         
         <div class="projects-grid">
-            <div class="project">
+            <div class="project" style="background-image: url('gensync.jpg'); background-size: cover; background-position: center;">
                 <div class="project-content">
                     <h3>Gensync</h3>
                 </div>
             </div>
             
-            <div class="project">
+            <div class="project" style="background-image: url('suab.jpg'); background-size: cover; background-position: center;">
                 <div class="project-content">
                     <h3>SUAB</h3>
                 </div>
             </div>
             
-            <div class="project">
+            <div class="project" style="background-image: url('more.jpg'); background-size: cover; background-position: center;">
                 <div class="project-content">
                     <h3>More...</h3>
                 </div>
