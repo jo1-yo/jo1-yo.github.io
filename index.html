@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jane Zhang - 个人网站</title>
+    <title>Jane Zhang - Personal Website</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -224,7 +224,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.18s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.18s, background 0.18s;
+            transition: transform 0.18s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.18s;
             opacity: 0;
             transform: translateY(50px);
             border: none;
@@ -234,7 +234,6 @@
         .project:hover {
             box-shadow: 0 16px 48px rgba(0,0,0,0.16);
             transform: translateY(-12px);
-            background: linear-gradient(135deg, #f4f7fb 0%, #e0e0f0 100%);
         }
         
         .project-image {
@@ -276,10 +275,6 @@
             font-family: 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
             z-index: 2;
             position: relative;
-        }
-        
-        .project:not([style*="more.jpg"]):hover h3 {
-            color: #111;
         }
         
         .project p {
@@ -611,12 +606,13 @@
 <body>
     <!-- 移动端提示 -->
     <div class="mobile-notice">
-        <p>请在电脑端上打开，手机端即将上线。</p>
+        <p>当前仅支持电脑端访问，手机版即将上线，敬请期待。
+        Please access via desktop. Mobile version coming soon.</p>
     </div>
     
     <!-- 左上角 logo，仅图片，无文字 -->
     <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
-    <img src="../images/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
+    <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
     </div>
     <nav style="padding-left: 220px;"> <!-- 给nav加左内边距，避免和logo重叠 -->
         <ul style="margin-left: auto;">
