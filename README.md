@@ -1,8 +1,9 @@
-<h1 align="center">
-  <span style="background: linear-gradient(90deg, #ff7e5f, #feb47b); -webkit-background-clip: text; color: transparent;">
-    Hello! I'm Jane Zhang 👋
-  </span>
-</h1>
+<p align="center">
+  <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="150" alt="Waving hand" />
+</p>
+
+<h2 align="center">Hello! I'm Jane Zhang</h2>
+
 
 
 
