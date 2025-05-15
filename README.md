@@ -1,18 +1,3 @@
-<p align="center">
-  <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="150" alt="Waving hand" />
-</p>
-
-<h2 align="center">Hello! I'm Jane Zhang, an active learner.</h2>
-
-
-
-
-
-
-
-
-
-
 🪐 Jane's Personal Website
 
 Welcome to the source code of my personal website, hosted via GitHub Pages.
