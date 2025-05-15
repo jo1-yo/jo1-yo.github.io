@@ -8,7 +8,7 @@ This website serves as my digital space to share who I am — my interests, proj
 
 
 
-📁 Project Structure
+📁 Project Structure:
 
 📦 jo1-yo.github.io/
 ├── index.html # Home page
@@ -22,22 +22,22 @@ This website serves as my digital space to share who I am — my interests, proj
 │ └── images/ # Images and icons
 └── README.md # You're here!
 
-🛠️ Tech Stack
-HTML5
-CSS3
-GitHub Pages for hosting
+🛠️ Tech Stack：
+1. HTML5
+2. CSS3
+3. GitHub Pages for hosting
 
 
-📌 To-Do
- Fill my blog section
- Finish each project's description
- Improve accessibility
- Add more interactive elements
+📌 To-Do：
+ 1. Fill my blog section
+ 2. Finish each project's description
+ 3. Improve accessibility
+ 4. Add more interactive elements
 
- 📄 License
+ 📄 License:
  This project is open source under the MIT License.
 
- 🚀 How to Run Locally
+ 🚀 How to Run Locally:
 ```bash
 git clone https://github.com/jo1-yo/jo1-yo.github.io.git
 cd jo1-yo.github.io
