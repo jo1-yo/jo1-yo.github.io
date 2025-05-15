@@ -1,6 +1,14 @@
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=30&pause=1000&center=true&vCenter=true&width=435&lines=Hello!+I'm+Jane+Zhang.+" alt="Typing SVG" />
-</p>
+<h1 align="center">
+  <span style="background: linear-gradient(90deg, #ff7e5f, #feb47b); -webkit-background-clip: text; color: transparent;">
+    Hello! I'm Jane Zhang 👋
+  </span>
+</h1>
+
+
+
+
+
+
 
 
 
