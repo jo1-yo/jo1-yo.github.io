@@ -1,3 +1,9 @@
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=30&pause=1000&center=true&vCenter=true&width=435&lines=Hello!+I'm+Jane+Zhang.+" alt="Typing SVG" />
+</p>
+
+
+
 🪐 Jane's Personal Website
 
 Welcome to the source code of my personal website, hosted via GitHub Pages.
