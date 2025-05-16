@@ -154,7 +154,7 @@
         
         /* 项目部分 */
         .projects {
-            padding: 120px 5% 100px;
+            padding: 80px 5% 100px;  /* 减少顶部padding */
             position: relative;
             overflow: hidden;
         }
@@ -181,7 +181,7 @@
         .projects-title {
             font-size: 4vw;
             margin-top: 0;
-            margin-bottom: 54px; /* 增大标题与卡片间距 */
+            margin-bottom: 80px; /* 增加标题与卡片的间距 */
             opacity: 0;
             transform: translateY(0);
             transition: all 1s;
@@ -207,79 +207,82 @@
         .projects-grid {
             display: flex;
             gap: 40px;
-            position: relative;
-            justify-content: center;
+            justify-content: center; /* 居中显示 */
+            flex-wrap: wrap;
+            max-width: 1400px; /* 限制最大宽度 */
+            margin: 0 auto;
         }
         
-        .project {
-            width: 620px;
-            aspect-ratio: 1.5/1;
-            min-height: 380px;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-            border-radius: 32px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+        .project-card {
+            display: block;
+            width: 400px;
+            height: 500px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: #222;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            padding: 0;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.18s cubic-bezier(0.33, 1, 0.68, 1), box-shadow 0.18s;
-            opacity: 0;
-            transform: translateY(50px);
-            border: none;
-            will-change: transform, opacity;
+            position: relative;
         }
         
-        .project:hover {
-            box-shadow: 0 16px 48px rgba(0,0,0,0.16);
-            transform: translateY(-12px);
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         
-        .project-image {
-            width: 100%;
-            height: 250px;
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            border-radius: 10px;
-        }
-        
-        .project::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.22);
-            z-index: 1;
-            border-radius: inherit;
-        }
-        
-        .project-content {
+        .project-card img {
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
+            object-fit: cover;
+            border-radius: 16px;
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         
-        .project h3 {
+        .project-card:hover img {
+            transform: scale(1.1);
+        }
+        
+        .project-card h3 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
             margin: 0;
-            font-size: 2.5rem;
-            font-weight: 400;
+            font-size: 1.8em;
+            font-weight: 700;
             color: #fff;
-            letter-spacing: 0.02em;
+            text-decoration: none;
+            padding: 30px;
             text-align: center;
-            font-family: 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            z-index: 2;
-            position: relative;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            z-index: 1;
+            transition: all 0.4s ease;
         }
         
-        .project p {
-            color: #555;
-            line-height: 1.6;
+        .project-card:hover h3 {
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding-bottom: 40px;
+        }
+        
+        .project-card p {
+            margin: 0 0 16px 0;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .project-card .view-code {
+            margin-top: 12px;
+            display: inline-block;
+            padding: 8px 18px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            color: #444;
+            text-decoration: none;
+            font-weight: 500;
         }
         
         /* 动画效果 */
@@ -610,7 +613,7 @@
         Please access via desktop. Mobile version coming soon.</p>
     </div>
     
-    <!-- 左上角 logo，仅图片，无文字 -->
+    
     <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
     <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
     </div>
@@ -637,26 +640,20 @@
         </div>
     </section>
     
-    <section id="projects" class="projects">
-        <h2 class="projects-title">Featured Projects</h2>
-        
+    <section class="projects">
+        <h2 class="projects-title">Projects</h2>
         <div class="projects-grid">
-            <div class="project" style="background-image: url('gensync.jpg');">
-                <div class="project-content">
-                    <h3>Gensync</h3>
-                </div>
+            <div class="project-card" onclick="window.location.href='gensync.html'">
+                <img src="gensync.jpg" alt="Gensync">
+                <h3>Gensync</h3>
             </div>
-            
-            <div class="project" style="background-image: url('suab.jpg');">
-                <div class="project-content">
-                    <h3>SUAB</h3>
-                </div>
+            <div class="project-card">
+                <img src="suab.jpg" alt="SUAB">
+                <h3>SUAB</h3>
             </div>
-            
-            <div class="project" style="background-image: url('more.jpg');">
-                <div class="project-content">
-                    <h3>More...</h3>
-                </div>
+            <div class="project-card">
+                <img src="more.jpg" alt="More">
+                <h3>More...</h3>
             </div>
         </div>
     </section>
