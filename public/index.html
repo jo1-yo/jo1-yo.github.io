@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yueqi (Jane) Zhang - 个人网站</title>
+    <title>Jane Zhang - Personal Website</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -14,7 +14,31 @@
             background-color: #f8f8f8;
             color: #121212;
             overflow-x: hidden;
-            cursor: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAMUSURBVFiFvZdNaBNBFMf/b3ezSVNtxB5aDx5FD4IXP8CTBz14UOtFRFGwgh/gQW1EsR5bjzlUwUrpxYP0JKKCVk9+fBwUREW8+FUVaxRFiy2pabOZ8ZBks8lOsrtJGx927u7Mnfd+82bmzRsCQAghKpKpMUQ4jojGAOpXV5pAwANm9IrIVOkzREFUVq9B3AGRywBWcCadJoTTWu1+C+ImoACqq1JDiP03gdD9qQghNyTJ5JWmZPK6EEKybwUMuD/kywoBdQCu+Jmr1WoDkUjkfXt7e7HgUQDxeHzK87zNAGYAZDJn0rLTtKouv0YgblvWkK7rT9Lp9GQoABG54HneQDQaRalUWjTgfFQqFUSj0elMJnMWwNnZHwFYBnA/M+/RNG1kZGTkx2KBN0Kj0egUEW0DgPkAYqnVDofGHNEz76IJIY7rut6Tz+d/RiIR+L7/xnGcjcFg0AOA4Hf6N8TzvLrqGIZRSCaTewHAmH9YTKVS3ysrngHwCkArM480OhOMGZAAhJm5vQZASrmGiAaYeb8Q4qbrunvKuQ2tAgEcE0I8dBxnNwDMBWCmF7ZtzxiG0VmeSdd149gDA4A3jmNtBdDLzAMAoAGAaZpPiWg7gB1ENKBp2n0AWwCMx+PxqVKpNMTMewG8bWlpOVQoFKrDC4BYLNZnWdavYrHYm0gkTtQb8X8hiqIcTaVSH0OvgqrIWmYeByAADIYGICLznj0FcJaZx+LxeM4wjCkhxKYgCAYXA6zAlSVWJWUYxlPTNM8EQXBICDFJRFcbjc51Abi3fmGzCdmyLD8Igv2WZT0Kw+8G4DsAnLBsplAojFmWdVhRlI9h+OvaE/l8/hcRXWSG76vQvd5sPwTM2Jm/h9b1n0iyuhoZp4jojK+Cb3u/4pWlKjfm/QL4EQn8g0R03vdV0FMqNrwq2wUg4lF8QQWzdsaLRb+A3kFgV6lYXQVLVq7uIiQgUHHLOEVEF3xfOlcQNYOtpfJSbByYc+3eoVu+b/uugp6NxWaMOjcdTBgF8ArEfAXAFfz5NHsAbhdETYeZTYdZUeaPNwToM5GzvV/x+i9TXDl0XxpWQgAAAABJRU5ErkJggg=='), auto;
+            cursor: auto;
+        }
+        
+        /* 移动端提示 */
+        .mobile-notice {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            color: white;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .mobile-notice p {
+            font-size: 24px;
+            line-height: 1.5;
+            max-width: 80%;
         }
         
         /* 让所有可点击元素使用指针光标 */
@@ -130,7 +154,7 @@
         
         /* 项目部分 */
         .projects {
-            padding: 120px 5% 100px;
+            padding: 80px 5% 100px;  /* 减少顶部padding */
             position: relative;
             overflow: hidden;
         }
@@ -155,10 +179,11 @@
         }
         
         .projects-title {
-            font-size: 4vw; /* 缩小字体大小 */
-            margin-bottom: 50px;
+            font-size: 4vw;
+            margin-top: 0;
+            margin-bottom: 80px; /* 增加标题与卡片的间距 */
             opacity: 0;
-            transform: translateY(50px);
+            transform: translateY(0);
             transition: all 1s;
             position: relative;
             display: inline-block;
@@ -180,58 +205,84 @@
         }
         
         .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            display: flex;
             gap: 40px;
-            position: relative;
+            justify-content: center; /* 居中显示 */
+            flex-wrap: wrap;
+            max-width: 1400px; /* 限制最大宽度 */
+            margin: 0 auto;
         }
         
-        .project {
-            position: relative;
-            background: white;
-            border-radius: 0;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        .project-card {
+            display: block;
+            width: 400px;
+            height: 500px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            text-decoration: none;
+            color: #222;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+            padding: 0;
             overflow: hidden;
-            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.6s;
-            opacity: 0;
-            transform: translateY(100px);
+            position: relative;
         }
         
-        .project:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
         
-        .project-image {
+        .project-card img {
             width: 100%;
-            height: 250px;
-            background-color: #ddd;
-            background-size: cover;
-            background-position: center;
-            transition: transform 0.6s;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         
-        .project:hover .project-image {
-            transform: scale(1.05);
+        .project-card:hover img {
+            transform: scale(1.1);
         }
         
-        .project-content {
+        .project-card h3 {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            margin: 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
             padding: 30px;
+            text-align: center;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            z-index: 1;
+            transition: all 0.4s ease;
         }
         
-        .project h3 {
-            margin-top: 0;
-            font-size: 22px;
-            transition: transform 0.3s;
+        .project-card:hover h3 {
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding-bottom: 40px;
         }
         
-        .project:hover h3 {
-            transform: translateX(5px);
+        .project-card p {
+            margin: 0 0 16px 0;
+            color: #666;
+            line-height: 1.5;
         }
         
-        .project p {
-            color: #555;
-            line-height: 1.6;
+        .project-card .view-code {
+            margin-top: 12px;
+            display: inline-block;
+            padding: 8px 18px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            color: #444;
+            text-decoration: none;
+            font-weight: 500;
         }
         
         /* 动画效果 */
@@ -293,6 +344,14 @@
         
         /* 响应式设计 */
         @media (max-width: 768px) {
+            .mobile-notice {
+                display: flex;
+            }
+            
+            body > *:not(.mobile-notice) {
+                display: none;
+            }
+            
             .hero h1 {
                 font-size: 10vw;
             }
@@ -540,12 +599,26 @@
             background: rgba(0, 0, 0, 0.1);
             color: #333;
         }
+
+        .project-link {
+            text-decoration: none;
+            color: inherit;
+        }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="#" style="color: white; font-weight: 700; font-size: 24px;">Yueqi (Jane) Zhang</a>
-        <ul>
+    <!-- 移动端提示 -->
+    <div class="mobile-notice">
+        <p>当前仅支持电脑端访问，手机版即将上线，敬请期待。
+        Please access via desktop. Mobile version coming soon.</p>
+    </div>
+    
+    
+    <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
+    <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
+    </div>
+    <nav style="padding-left: 220px;"> <!-- 给nav加左内边距，避免和logo重叠 -->
+        <ul style="margin-left: auto;">
             <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Home</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="#blog">Blog</a></li>
@@ -555,9 +628,9 @@
     
     <section class="hero">
         <div class="hero-text">
-            <h1>Yueqi (Jane) Zhang</h1>
+            <h1>Jane Zhang</h1>
             <div class="subtitle">Entrepreneur | Designer | Rock Climber</div>
-            <p>Curious mind, creative doer, and natural connector. I love bringing people and ideas together to spark real-world impact</p>
+            <p>Curious mind, creative doer, and natural connector. I love bringing people and ideas together to spark real-world impact.</p>
             <a href="#projects" class="cta-button">Explore My Work</a>
         </div>
         <div class="scroll-indicator">
@@ -567,35 +640,20 @@
         </div>
     </section>
     
-    <section id="projects" class="projects">
-        <h2 class="projects-title">Featured Projects</h2>
-        
+    <section class="projects">
+        <h2 class="projects-title">Projects</h2>
         <div class="projects-grid">
-            <div class="project">
-                <div class="project-image" style="background-image: url('https://via.placeholder.com/350x250');"></div>
-                <div class="project-content">
-                    <h3>Gensync</h3>
-                    <p>Gensync is an AI-powered platform that brings seniors and young learners together for real conversation and shared learning. Born at a hackathon, I built the frontend to help make it real.</p>
-                    <div class="project-links">
-                        <a href="https://github.com/ms48-gensync/demo-repository" target="_blank">View Code</a>
-                    </div>
-                </div>
+            <div class="project-card" onclick="window.location.href='gensync.html'">
+                <img src="gensync.jpg" alt="Gensync">
+                <h3>Gensync</h3>
             </div>
-            
-            <div class="project">
-                <div class="project-image" style="background-image: url('./images/suab.jpg');"></div>
-                <div class="project-content">
-                    <h3>SUAB Anti-Bullying Initiative</h3>
-                    <p>As President of Students Union Against Bullying (SUAB), a nonprofit with 2000+ members in four countries, I built a digital anti-bullying pamphlet. The pamphlet includes a video guide featuring my avatar, helping students learn and access support in a interactive space.</p>
-                </div>
+            <div class="project-card">
+                <img src="suab.jpg" alt="SUAB">
+                <h3>SUAB</h3>
             </div>
-            
-            <div class="project">
-                <div class="project-image" style="background-image: url('https://via.placeholder.com/350x250');"></div>
-                <div class="project-content">
-                    <h3>More...</h3>
-                    <p>More projects coming soon...</p>
-                </div>
+            <div class="project-card">
+                <img src="more.jpg" alt="More">
+                <h3>More...</h3>
             </div>
         </div>
     </section>
@@ -635,10 +693,15 @@
             const projectsTitle = document.querySelector('.projects-title');
             const projects = document.querySelectorAll('.project');
             const footer = document.querySelector('footer');
+            const logo = document.getElementById('logo');
             
+            // 检查是否滚动到projects部分
             if (projectsSection.getBoundingClientRect().top < windowHeight * 0.7) {
                 projectsSection.classList.add('visible');
                 projectsTitle.classList.add('visible');
+                logo.style.opacity = '0';
+            } else {
+                logo.style.opacity = '1';
             }
             
             // 检测每个项目是否在视口中
@@ -658,7 +721,7 @@
             
             // 视差效果
             document.querySelectorAll('.project-image').forEach((image) => {
-                const speed = 0.05;
+                const speed = 0.03;
                 const rect = image.getBoundingClientRect();
                 if (rect.top < windowHeight && rect.bottom > 0) {
                     const yPos = (rect.top - windowHeight) * speed;
@@ -691,7 +754,7 @@
                     particle.style.setProperty('--ty', `${ty}px`);
                     const duration = 1.0 + Math.random() * 0.3; // 保持较慢的速度
                     particle.style.animation = `particleAnimation ${duration}s ease-out forwards`;
-                    letter.appendChild(particle);
+                    letter.appendChild(particle); 
                     setTimeout(() => {
                         particle.remove();
                     }, duration * 1000);
