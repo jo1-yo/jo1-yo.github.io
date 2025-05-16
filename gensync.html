@@ -1,81 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>GenSync Project</title>
-  <link rel="stylesheet" href="gensync.css">
-  <style>
-    .fade-bg {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0);
-      pointer-events: none;
-      z-index: 2;
-      transition: background 0.3s;
-    }
-    .project-title a {
-      text-decoration: none;
-      color: inherit;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gensync Project</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .navwrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 20px 40px;
+            mix-blend-mode: difference;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 300;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .pagewrapper {
+            position: relative;
+        }
+
+        .story {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5%;
+        }
+
+        .story__block {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .summary {
+            text-align: center;
+        }
+
+        .xdrtitle {
+            font-size: 4vw;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease-out;
+        }
+
+        .xdrtitle.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .xdrtitle__sub {
+            font-size: 1.1vw;
+            font-weight: 300;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s ease-out 0.3s;
+        }
+
+        .xdrtitle__sub.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .xdrmood {
+            position: relative;
+            margin-top: 60px;
+            width: 100%;
+            height: 80vh;
+            overflow: hidden;
+        }
+
+        .xdrmood__screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .xdrmood__screen video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .monitor-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1.5);
+            width: 90%;
+            height: 90%;
+            opacity: 0;
+            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+            z-index: 2;
+        }
+
+        .monitor-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .monitor-frame.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .monitor-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 85%;
+            height: 85%;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .monitor-screen video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .fade-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0);
+            transition: background 1s;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .fade-bg.visible {
+            background: rgba(0,0,0,0.5);
+        }
+
+        .xdrsegment {
+            padding: 120px 40px;
+        }
+
+        .row {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .col-xs-12 {
+            width: 100%;
+        }
+
+        .col-sm-8 {
+            width: 66.66667%;
+        }
+
+        h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+        }
+
+        .xdrgrid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 60px 0;
+        }
+
+        .xdrgrid__item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .colors__segments {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .colors__segments__item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .colors__segments__item__title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .colors__segments__item__values {
+            list-style: none;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .experiment__apple-hello {
+            width: 100%;
+            height: 100vh;
+            object-fit: cover;
+        }
+
+        .xdrhand {
+            position: relative;
+            padding: 120px 40px;
+        }
+
+        .xdrhand__videoWrapper {
+            position: relative;
+            width: 100%;
+            height: 80vh;
+            overflow: hidden;
+            margin-top: 60px;
+        }
+
+        .xdrhand__video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .repeat {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .repeat:hover {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-<div class="parallax-hero">
-  <div class="parallax-bg">
-    <img src="test.jpg" style="width:100%;height:100%;object-fit:cover;">
-  </div>
-  <div class="fade-bg" id="fadeBg"></div>
-  <div class="monitor-mockup" id="monitorMockup">
-    <div class="monitor-screen">
-      <video src="gensync-hero.mp4" autoplay loop muted playsinline></video>
+    <div class="navwrapper">
+        <section class="nav">
+            <a href="/">Jane Zhang</a>
+            <ul>
+                <li><a href="/"><span>home →</span></a></li>
+            </ul>
+        </section>
     </div>
-    <div class="monitor-stand"></div>
-  </div>
-  <div class="hero-text" id="heroText">
-    <h2>Discovering Problems</h2>
-    <p>
-      Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.<br><br>
-      This shows that many elderly people lack companionship and opportunities to be heard. At the same time, we observe that modern youth often use trendy internet slang, which older people struggle to understand. On the other hand, the elderly tend to speak in a detailed manner that younger people find hard to follow.<br><br>
-      And so, our product GenSync was born.
-    </p>
-  </div>
-</div>
 
-<script>
-window.addEventListener('scroll', function() {
-  const scrollY = window.scrollY;
-  const monitor = document.getElementById('monitorMockup');
-  const fadeBg = document.getElementById('fadeBg');
-  const heroText = document.getElementById('heroText');
-  // 分阶段动画
-  // 0-200px: 视频全屏，monitor消失
-  // 200-700px: monitor出现并缩放，视频变暗
-  // >700px: monitor定型，文字渐显
-  if (scrollY < 200) {
-    monitor.style.opacity = '0';
-    monitor.style.transform = 'translateX(-50%) scale(1.5)';
-    monitor.style.top = '100vh';
-    fadeBg.style.background = 'rgba(0,0,0,0)';
-    heroText.style.opacity = '0';
-  } else if (scrollY >= 200 && scrollY < 700) {
-    const percent = (scrollY - 200) / 500; // 0~1
-    monitor.style.opacity = `${percent}`;
-    const scale = 1.5 - percent * 0.5;
-    const top = 100 - percent * 60; // 100vh到40vh
-    monitor.style.transform = `translateX(-50%) scale(${scale})`;
-    monitor.style.top = `${top}vh`;
-    fadeBg.style.background = `rgba(0,0,0,${percent*0.5})`;
-    heroText.style.opacity = '0';
-  } else {
-    monitor.style.opacity = '1';
-    monitor.style.transform = 'translateX(-50%) scale(1)';
-    monitor.style.top = '40vh';
-    fadeBg.style.background = 'rgba(0,0,0,0.5)';
-    heroText.style.opacity = '1';
-  }
-});
-document.getElementById('heroText').style.opacity = '0';
-</script>
+    <div class="pagewrapper">
+        <div class="story">
+            <div class="fade-bg"></div>
+            <div class="story__block">
+                <section class="summary">
+                    <h1 class="xdrtitle">
+                        Gensync<br>
+                    </h1>
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-8">
+                            <p class="xdrtitle__sub">An AI-powered platform that brings seniors and young learners together for real conversation and shared learning.</p>
+                        </div>
+                    </div>
+                    <div class="xdrmood">
+                        <div class="xdrmood__screen">
+                            <video autoplay loop muted playsinline>
+                                <source src="gensync-hero.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <div class="monitor-frame">
+                            <img src="compKuang.png" alt="Monitor Frame">
+                            <div class="monitor-screen">
+                                <video autoplay loop muted playsinline>
+                                    <source src="gensync-hero.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <section class="xdrsegment">
+            <div class="row">
+                <div class="col-xs-12 col-sm-8">
+                    <h3>Project Overview</h3>
+                    <p>Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.</p>
+                    <p>This shows that many elderly people lack companionship and opportunities to be heard. At the same time, we observe that modern youth often use trendy internet slang, which older people struggle to understand. On the other hand, the elderly tend to speak in a detailed manner that younger people find hard to follow.</p>
+                </div>
+            </div>
+
+            <div class="xdrgrid">
+                <div class="xdrgrid__item"><img src="gensync-1.jpg" alt="Gensync Interface"></div>
+                <div class="xdrgrid__item"><img src="gensync-2.jpg" alt="Gensync Features"></div>
+                <div class="xdrgrid__item"><img src="gensync-3.jpg" alt="Gensync Design"></div>
+                <div class="xdrgrid__item"><img src="gensync-4.jpg" alt="Gensync Process"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-sm-8">
+                    <h3>Key Features</h3>
+                    <p>Built with modern web technologies and AI integration, Gensync provides a seamless experience for both seniors and young learners.</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12 col-sm-8">
+                    <ul class="colors__segments">
+                        <li class="colors__segments__item">
+                            <h6 class="colors__segments__item__title">Real-time Translation</h6>
+                            <ul class="colors__segments__item__values">
+                                <li>AI-powered language processing</li>
+                                <li>Context-aware translation</li>
+                                <li>Natural conversation flow</li>
+                            </ul>
+                        </li>
+                        <li class="colors__segments__item">
+                            <h6 class="colors__segments__item__title">User Interface</h6>
+                            <ul class="colors__segments__item__values">
+                                <li>Clean, accessible design</li>
+                                <li>Responsive layout</li>
+                                <li>Intuitive navigation</li>
+                            </ul>
+                        </li>
+                        <li class="colors__segments__item">
+                            <h6 class="colors__segments__item__title">Learning Tools</h6>
+                            <ul class="colors__segments__item__values">
+                                <li>Interactive exercises</li>
+                                <li>Progress tracking</li>
+                                <li>Personalized feedback</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <video class="experiment__apple-hello" muted playsinline autoplay loop>
+            <source src="gensync-demo.mp4" type="video/mp4">
+        </video>
+
+        <div class="xdrhand">
+            <section class="xdrhand__description">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-8">
+                        <h1 class="xdrtitle">
+                            Live Demo
+                        </h1>
+                        <p>Experience Gensync in action. Watch how it bridges the generation gap through AI-powered conversation.</p>
+                        <a href="https://github.com/ms48-gensync" class="btn" target="_blank">→ View Code</a>
+                    </div>
+                </div>
+            </section>
+            <div class="xdrhand__videoWrapper">
+                <video class="xdrhand__video" muted playsinline>
+                    <source src="gensync-live.mp4" type="video/mp4">
+                </video>
+                <a class="repeat"><img width="16" src="reload.png" alt="reload"> play again</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 滚动动画
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const monitorFrame = document.querySelector('.monitor-frame');
+            const fadeBg = document.querySelector('.fade-bg');
+            const title = document.querySelector('.xdrtitle');
+            const subtitle = document.querySelector('.xdrtitle__sub');
+            const fullScreenVideo = document.querySelector('.xdrmood__screen video');
+            const monitorVideo = document.querySelector('.monitor-screen video');
+            
+            // 分阶段动画
+            // 0-200px: 视频全屏，monitor消失
+            // 200-700px: monitor出现并缩放，视频变暗
+            // >700px: monitor定型，文字渐显
+            if (scrollY < 200) {
+                monitorFrame.style.opacity = '0';
+                monitorFrame.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                fadeBg.style.background = 'rgba(0,0,0,0)';
+                title.classList.remove('visible');
+                subtitle.classList.remove('visible');
+                fullScreenVideo.style.opacity = '1';
+                monitorVideo.style.opacity = '0';
+            } else if (scrollY >= 200 && scrollY < 700) {
+                const percent = (scrollY - 200) / 500; // 0~1
+                monitorFrame.style.opacity = `${percent}`;
+                const scale = 1.5 - percent * 0.5;
+                monitorFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                fadeBg.style.background = `rgba(0,0,0,${percent*0.5})`;
+                title.classList.remove('visible');
+                subtitle.classList.remove('visible');
+                fullScreenVideo.style.opacity = `${1 - percent}`;
+                monitorVideo.style.opacity = `${percent}`;
+            } else {
+                monitorFrame.style.opacity = '1';
+                monitorFrame.style.transform = 'translate(-50%, -50%) scale(1)';
+                fadeBg.style.background = 'rgba(0,0,0,0.5)';
+                title.classList.add('visible');
+                subtitle.classList.add('visible');
+                fullScreenVideo.style.opacity = '0';
+                monitorVideo.style.opacity = '1';
+            }
+
+            // 视频播放控制
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                const rect = video.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            });
+        });
+
+        // 视频重播功能
+        document.querySelectorAll('.repeat').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                const video = button.parentElement.querySelector('video');
+                video.currentTime = 0;
+                video.play();
+            });
+        });
+    </script>
 </body>
 </html>
-
