@@ -210,7 +210,7 @@
             position: relative;
             z-index: 3;
             background: #000;
-            padding: 130px 5% 100px 12%;
+            padding: 130px 5% 100px 5%; /* 减少左侧padding */
             max-width: 1200px;
             margin: 0 auto;
             text-align: left;
@@ -220,6 +220,7 @@
             margin-bottom: 60px;
             max-width: 800px;
             position: relative;
+            margin-left: 0; /* 移除左边距 */
         }
 
         .main-title {
@@ -228,7 +229,7 @@
             margin-bottom: 60px;
             margin-top: -40px;
             color: #f5cb5c; /* Yellow from the logo */
-            margin-left: -12%;
+            margin-left: 0; /* 移除左边距 */
             letter-spacing: 1px;
             text-shadow: 
                 2px 2px 0 #242423,
@@ -247,21 +248,6 @@
             text-transform: capitalize;
         }
 
-        .main-title:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Remove the underline by commenting out or deleting the ::after pseudo-element */
-        /* .main-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(90deg, #2979ff, rgba(255, 255, 255, 0.3));
-        } */
-
         .typewriter-text {
             font-size: 1.3rem;
             font-style: italic;
@@ -274,37 +260,66 @@
         }
 
         .body-text {
-            font-size: 1.1rem;
+            font-size: 1.2rem; /* 增大字体 */
             line-height: 1.8;
             color: rgba(255, 255, 255, 0.9);
-            max-width: 800px;
+            max-width: 1000px;
             margin-bottom: 50px;
+            margin-left: 0; /* 移除左边距 */
         }
 
         .feature-block {
             margin-bottom: 150px;
-            max-width: 1000px; /* 增加最大宽度 */
+            max-width: 1200px; /* 增加最大宽度 */
+            margin-left: 0; /* 向左对齐 */
+            margin-right: auto;
         }
 
+        .feature-text {
+            font-size: 1.2rem; /* 增大字体 */
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 50px;
+            max-width: 1000px;
+            margin-left: 0; /* 向左对齐 */
+            margin-right: auto;
+            text-align: left; /* 确保文本左对齐 */
+        }
+
+        /* 特性展示视频容器 */
         .feature-video {
             width: 100%;
-            height: 75vh; /* 增加高度 */
+            height: 70vh;
             margin-bottom: 40px;
-            border-radius: 8px;
+            border-radius: 0;
             overflow: hidden;
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 向左对齐 */
+            background: #000;
+            padding: 0;
+            margin-left: 0; /* 向左对齐 */
+            margin-right: auto;
         }
 
-        .feature-video video {
+        /* 第一个视频（AI视频）使用cover填充 */
+        .feature-video.ai-video video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .feature-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 50px;
+        /* 其他视频（match和chat）使用contain确保完整显示 */
+        .feature-video.match-video video,
+        .feature-video.chat-video video {
+            max-width: 100%; /* 使用100%宽度 */
+            max-height: 100%; /* 使用100%高度 */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0; /* 移除圆角 */
+            margin: 0 auto; /* 确保视频在容器中居中 */
         }
 
         .github-link {
@@ -370,9 +385,9 @@
         <a href="https://github.com/ms48-gensync" class="github-link" target="_blank">→ View Code</a>
         
         <div class="feature-block">
-            <div class="feature-video">
+            <div class="feature-video ai-video">
                 <video autoplay loop muted playsinline>
-                    <source src="chatw:ai.mp4" type="video/mp4">
+                    <source src="chatwai.mp4" type="video/mp4">
                 </video>
             </div>
             <p class="feature-text">
@@ -385,7 +400,7 @@
         </div>
 
         <div class="feature-block">
-            <div class="feature-video">
+            <div class="feature-video match-video">
                 <video autoplay loop muted playsinline>
                     <source src="match.mp4" type="video/mp4">
                 </video>
@@ -396,7 +411,7 @@
         </div>
 
         <div class="feature-block">
-            <div class="feature-video">
+            <div class="feature-video chat-video">
                 <video autoplay loop muted playsinline>
                     <source src="chat.mp4" type="video/mp4">
                 </video>
