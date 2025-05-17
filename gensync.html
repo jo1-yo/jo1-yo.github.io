@@ -59,6 +59,24 @@
             height: 300vh; /* Extra tall to allow for scrolling */
         }
 
+        /* Full-screen video container */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Computer container with scroll-based visibility */
         .computer-container {
             position: sticky;
             top: 0;
@@ -68,6 +86,8 @@
             align-items: center;
             justify-content: center;
             z-index: 2;
+            opacity: 0; /* Start invisible */
+            transition: opacity 0.5s ease;
         }
 
         /* CSS Computer Frame */
@@ -78,6 +98,7 @@
             height: 70vh;
             margin: 0 auto;
             transition: all 0.8s ease-out;
+            transform: scale(1.5); /* Start larger than final size */
         }
 
         /* Computer Body */
@@ -90,8 +111,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.95);
             z-index: 1;
-            opacity: 0;
-            transform: scale(1.1);
             transition: all 0.8s ease-out;
         }
 
@@ -113,7 +132,7 @@
         .computer-screen video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* Changed from cover to contain to prevent cropping */
         }
 
         /* Computer Stand */
@@ -277,11 +296,19 @@
 
     <!-- Combined hero and computer section -->
     <section class="hero-section">
-        <div class="computer-container">
+        <!-- Full-screen video that's always visible -->
+        <div class="video-container">
+            <video autoplay loop muted playsinline id="hero-video">
+                <source src="gensync-hero.mp4" type="video/mp4">
+            </video>
+        </div>
+        
+        <!-- Computer frame that appears on scroll -->
+        <div class="computer-container" id="computer-container">
             <div class="computer-frame">
                 <div class="computer-body"></div>
                 <div class="computer-screen">
-                    <video autoplay loop muted playsinline>
+                    <video autoplay loop muted playsinline id="computer-video">
                         <source src="gensync-hero.mp4" type="video/mp4">
                     </video>
                 </div>
@@ -391,49 +418,59 @@
             // Initial check for visibility
             checkTypewriterVisibility();
             
-            // Play videos when they come into view
-            function handleVideoVisibility() {
-                const videos = document.querySelectorAll('video');
-                videos.forEach(video => {
-                    const rect = video.getBoundingClientRect();
-                    const isVisible = (
-                        rect.top >= 0 &&
-                        rect.bottom <= window.innerHeight
-                    );
-                    
-                    if (isVisible) {
-                        if (video.paused) video.play();
-                    } else {
-                        if (!video.paused) video.pause();
-                    }
-                });
-            }
-
-            // Initial check
-            handleVideoVisibility();
-            
-            // Check on scroll
-            window.addEventListener('scroll', handleVideoVisibility);
-            
-            // Computer frame reveal animation
+            // Handle scroll-based animations
             window.addEventListener('scroll', function() {
                 const scrollY = window.scrollY;
-                const computerBody = document.querySelector('.computer-body');
-                const computerStand = document.querySelector('.computer-stand');
-                const computerBase = document.querySelector('.computer-base');
+                const computerContainer = document.getElementById('computer-container');
+                const computerFrame = document.querySelector('.computer-frame');
+                const heroVideo = document.getElementById('hero-video');
+                const computerVideo = document.getElementById('computer-video');
+                
+                // Synchronize video playback
+                if (heroVideo.currentTime !== computerVideo.currentTime) {
+                    computerVideo.currentTime = heroVideo.currentTime;
+                }
                 
                 // Calculate opacity based on scroll position
-                // Start fading in at 100px scroll, fully visible by 400px
-                const scrollProgress = Math.min(Math.max((scrollY - 100) / 300, 0), 1);
+                // Start showing computer around 20% of viewport height scrolled
+                const scrollThreshold = window.innerHeight * 0.2;
+                const fadeDistance = window.innerHeight * 0.4; // Complete fade over 40% of viewport
                 
-                // Apply opacity and transform
-                computerBody.style.opacity = scrollProgress;
-                computerStand.style.opacity = scrollProgress;
-                computerBase.style.opacity = scrollProgress;
+                if (scrollY > scrollThreshold) {
+                    const progress = Math.min((scrollY - scrollThreshold) / fadeDistance, 1);
+                    computerContainer.style.opacity = progress;
+                    
+                    // Scale effect - from large (1.5) to normal (1.0)
+                    const scale = 1.5 - (progress * 0.5);
+                    computerFrame.style.transform = `scale(${scale})`;
+                    
+                    // Fade out the full-screen video as computer becomes visible
+                    heroVideo.style.opacity = 1 - progress;
+                } else {
+                    computerContainer.style.opacity = 0;
+                    computerFrame.style.transform = 'scale(1.5)';
+                    heroVideo.style.opacity = 1;
+                }
                 
-                // Scale effect
-                const scale = 1.1 - (scrollProgress * 0.1);
-                computerBody.style.transform = `scale(${scale})`;
+                // Play videos when they come into view
+                function handleVideoVisibility() {
+                    const videos = document.querySelectorAll('video');
+                    videos.forEach(video => {
+                        const rect = video.getBoundingClientRect();
+                        const isVisible = (
+                            rect.top >= 0 &&
+                            rect.bottom <= window.innerHeight
+                        );
+                        
+                        if (isVisible) {
+                            if (video.paused) video.play();
+                        } else {
+                            if (!video.paused && video.id !== 'hero-video' && video.id !== 'computer-video') video.pause();
+                        }
+                    });
+                }
+                
+                handleVideoVisibility();
             });
         });
     </script>
