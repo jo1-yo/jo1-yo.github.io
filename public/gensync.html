@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gensync Project</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
+  <style>
         * {
             margin: 0;
             padding: 0;
@@ -51,166 +51,45 @@
             gap: 30px;
         }
 
-        .pagewrapper {
-            position: relative;
-        }
-
-        .story {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5%;
-        }
-
-        .story__block {
+        /* Hero Section */
+        .hero {
+            height: 100vh;
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .summary {
-            text-align: center;
-        }
-
-        .xdrtitle {
-            font-size: 4.5vw;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out;
-        }
-
-        .xdrtitle.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .xdrtitle__sub {
-            font-size: 1.3vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out 0.3s;
-            padding: 0 5%;
-        }
-
-        .xdrtitle__sub.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .project-overview {
-            font-size: 1.2vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 40px auto;
-            line-height: 1.8;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out 0.6s;
-            padding: 0 5%;
-        }
-
-        .project-overview.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .project-overview p {
-            margin-bottom: 20px;
-        }
-
-        .project-overview p:last-child {
-            margin-bottom: 0;
-        }
-
-        .demo-section {
-            margin: 100px 0;
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 1s ease-out;
-        }
-
-        .demo-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .demo-video {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            height: 70vh;
+            position: relative;
             overflow: hidden;
         }
 
-        .demo-video video {
+        .hero video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .demo-text {
-            font-size: 1.2vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 40px auto;
-            line-height: 1.8;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            padding: 0 5%;
-        }
-
-        .xdrmood {
+        /* Sticky Computer Section */
+        .sticky-section {
             position: relative;
-            margin-top: 60px;
-            width: 100%;
-            height: 80vh;
-            overflow: hidden;
+            height: 200vh; /* Taller than viewport to allow scrolling */
         }
 
         .sticky-container {
             position: sticky;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 80vh;
-            z-index: 1;
-            margin: 0 auto;
+            top: 0;
+            height: 100vh;
             width: 100%;
-            max-width: 1200px;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
         }
 
-        .monitor-container {
+        .computer-frame {
             position: relative;
             width: 80%;
-            height: 80%;
-            margin: 0 auto;
-            opacity: 0;
-            transform: scale(1.2);
-            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
+            max-width: 1200px;
+            height: 70vh;
         }
 
-        .monitor-container.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .monitor-frame {
+        .computer-image {
             position: absolute;
             top: 0;
             left: 0;
@@ -220,182 +99,78 @@
             pointer-events: none;
         }
 
-        .monitor-frame img {
+        .computer-image img {
             width: 100%;
             height: 100%;
             object-fit: contain;
         }
 
-        .video-container {
+        .computer-screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             z-index: 1;
+            /* Adjust these values to perfectly align with the computer frame */
+            padding: 3% 12% 18% 12%;
         }
 
-        .video-container video {
+        .computer-screen video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 2px; /* Slight rounding to match computer screen */
         }
 
+        /* Content Sections */
         .content-section {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             background: #000;
             padding: 100px 5%;
-            margin-top: 100vh;
             max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .fade-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0);
-            transition: background 1s;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .fade-bg.visible {
-            background: rgba(0,0,0,0.5);
-        }
-
-        .xdrsegment {
-            padding: 120px 40px;
-        }
-
-        .row {
-            max-width: 1400px;
             margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
         }
 
-        .col-xs-12 {
+        .feature-block {
+            margin-bottom: 150px;
+        }
+
+        .feature-video {
             width: 100%;
-        }
-
-        .col-sm-8 {
-            width: 66.66667%;
-        }
-
-        h3 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        p {
-            font-size: 18px;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.8);
+            height: 60vh;
             margin-bottom: 40px;
         }
 
-        .xdrgrid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 60px 0;
-        }
-
-        .xdrgrid__item img {
+        .feature-video video {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 8px;
         }
 
-        .colors__segments {
-            list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+        .feature-text {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 18px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
         }
 
-        .colors__segments__item {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .colors__segments__item__title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .colors__segments__item__values {
-            list-style: none;
-            font-size: 14px;
-            color: rgba(255,255,255,0.6);
-        }
-
-        .experiment__apple-hello {
-            width: 100%;
-            height: 100vh;
-            object-fit: cover;
-        }
-
-        .xdrhand {
-            position: relative;
-            padding: 120px 40px;
-        }
-
-        .xdrhand__videoWrapper {
-            position: relative;
-            width: 100%;
-            height: 80vh;
-            overflow: hidden;
-            margin-top: 60px;
-        }
-
-        .xdrhand__video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .btn {
+        .github-link {
             display: inline-block;
+            margin: 50px 0;
             padding: 12px 24px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
             text-decoration: none;
             border-radius: 4px;
             transition: background 0.3s;
         }
 
-        .btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .repeat {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-
-        .repeat:hover {
-            opacity: 1;
+        .github-link:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
@@ -409,144 +184,96 @@
         </section>
     </div>
 
-    <div class="pagewrapper">
-        <div class="story">
-            <div class="fade-bg"></div>
-            <div class="story__block">
-                <section class="summary">
-                    <div class="sticky-container">
-                        <div class="monitor-container">
-                            <div class="monitor-frame">
-                                <img src="compKuang.jpg" alt="Monitor Frame">
-                            </div>
-                            <div class="video-container">
-                                <video autoplay loop muted playsinline>
-                                    <source src="gensync-hero.mp4" type="video/mp4">
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                    <h1 class="xdrtitle">
-                        Gensync<br>
-                    </h1>
-                    <p class="xdrtitle__sub">An AI-powered platform that brings seniors and young learners together for real conversation and shared learning.</p>
-                    <div class="project-overview">
-                        <p>Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.</p>
-                        <p>This shows that many elderly people lack companionship and opportunities to be heard. At the same time, we observe that modern youth often use trendy internet slang, which older people struggle to understand. On the other hand, the elderly tend to speak in a detailed manner that younger people find hard to follow.</p>
-                    </div>
-                </section>
+    <!-- Full-screen video hero section -->
+    <section class="hero">
+        <video autoplay loop muted playsinline>
+            <source src="gensync-hero.mp4" type="video/mp4">
+        </video>
+    </section>
+
+    <!-- Sticky computer section -->
+    <section class="sticky-section">
+        <div class="sticky-container">
+            <div class="computer-frame">
+                <div class="computer-image">
+                    <img src="compKuang.jpg" alt="Computer Frame">
+                </div>
+                <div class="computer-screen">
+                    <video autoplay loop muted playsinline>
+                        <source src="gensync-hero.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Content sections -->
+    <div class="content-section">
+        <h1 style="margin-bottom: 30px;">Gensync</h1>
+        <p class="feature-text" style="margin-bottom: 50px;">
+            An AI-powered platform that brings seniors and young learners together for real conversation and shared learning. Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.
+        </p>
+        
+        <a href="https://github.com/ms48-gensync" class="github-link" target="_blank">→ View Code</a>
+        
+        <div class="feature-block">
+            <div class="feature-video">
+                <video autoplay loop muted playsinline>
+                    <source src="match.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="feature-text">
+                <p>Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.</p>
             </div>
         </div>
 
-        <div class="content-section">
-            <div class="xdrhand">
-                <section class="xdrhand__description">
-                    <div class="row">
-                        <div class="col-xs-12 col-sm-8">
-                            <a href="https://github.com/ms48-gensync" class="btn" target="_blank">→ View Code</a>
-                        </div>
-                    </div>
-                </section>
+        <div class="feature-block">
+            <div class="feature-video">
+                <video autoplay loop muted playsinline>
+                    <source src="chat.mp4" type="video/mp4">
+                </video>
             </div>
-
-            <div class="demo-section">
-                <div class="demo-video">
-                    <video autoplay loop muted playsinline>
-                        <source src="match.mp4" type="video/mp4">
-                    </video>
-                </div>
-                <div class="demo-text">
-                    <p>Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.</p>
-                </div>
-            </div>
-
-            <div class="demo-section">
-                <div class="demo-video">
-                    <video autoplay loop muted playsinline>
-                        <source src="chat.mp4" type="video/mp4">
-                    </video>
-                </div>
-                <div class="demo-text">
-                    <p>Our platform features a powerful chat function that integrates GPT-4o as a real-time "translator." Designed to bridge the communication gap between generations, this tool enables seamless conversation between young people and seniors. When users type in their native or preferred language, GPT-4o translates the messages in real time, helping both sides understand each other's tone, slang, and context more clearly. It's not just a translator—it's a bridge for empathy, connection, and meaningful dialogue.</p>
-                </div>
+            <div class="feature-text">
+                <p>Our platform features a powerful chat function powered by GPT-4, designed to bridge the communication gap between generations. Acting as a real-time "interpreter," our AI ensures that conversations between young people and older adults are smooth, natural, and mutually understandable. Whether it's explaining modern slang or clarifying traditional expressions, our chat feature translates language in a way that fosters empathy, connection, and meaningful exchange across generations.</p>
             </div>
         </div>
     </div>
 
     <script>
-        // 滚动动画
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const contentSection = document.querySelector('.content-section');
-            const fadeBg = document.querySelector('.fade-bg');
-            const title = document.querySelector('.xdrtitle');
-            const subtitle = document.querySelector('.xdrtitle__sub');
-            const overview = document.querySelector('.project-overview');
-            const monitorContainer = document.querySelector('.monitor-container');
-            const demoSections = document.querySelectorAll('.demo-section');
-            
-            // 分阶段动画
-            // 0-200px: 视频全屏，monitor消失
-            // 200-700px: monitor出现并缩放，视频变暗
-            // >700px: monitor定型，文字渐显
-            if (scrollY < 200) {
-                monitorContainer.style.opacity = '0';
-                monitorContainer.style.transform = 'scale(1.2)';
-                fadeBg.style.background = 'rgba(0,0,0,0)';
-                title.classList.remove('visible');
-                subtitle.classList.remove('visible');
-                overview.classList.remove('visible');
-                contentSection.style.opacity = '0';
-                contentSection.style.transform = 'translateY(50px)';
-            } else if (scrollY >= 200 && scrollY < 700) {
-                const percent = (scrollY - 200) / 500; // 0~1
-                monitorContainer.style.opacity = `${percent}`;
-                const scale = 1.2 - percent * 0.2;
-                monitorContainer.style.transform = `scale(${scale})`;
-                fadeBg.style.background = `rgba(0,0,0,${percent*0.5})`;
-                title.classList.remove('visible');
-                subtitle.classList.remove('visible');
-                overview.classList.remove('visible');
-                contentSection.style.opacity = '0';
-                contentSection.style.transform = 'translateY(50px)';
-            } else {
-                monitorContainer.style.opacity = '1';
-                monitorContainer.style.transform = 'scale(1)';
-                fadeBg.style.background = 'rgba(0,0,0,0.5)';
-                title.classList.add('visible');
-                subtitle.classList.add('visible');
-                overview.classList.add('visible');
-                contentSection.style.opacity = '1';
-                contentSection.style.transform = 'translateY(0)';
-                
-                // 根据滚动位置显示demo部分
-                demoSections.forEach((section, index) => {
-                    const sectionTop = section.getBoundingClientRect().top;
-                    if (sectionTop < window.innerHeight * 0.8) {
-                        section.classList.add('visible');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Play videos when they come into view
+            function handleVideoVisibility() {
+                const videos = document.querySelectorAll('video');
+                videos.forEach(video => {
+                    const rect = video.getBoundingClientRect();
+                    const isVisible = (
+                        rect.top >= 0 &&
+                        rect.bottom <= window.innerHeight
+                    );
+                    
+                    if (isVisible) {
+                        if (video.paused) video.play();
+                    } else {
+                        if (!video.paused) video.pause();
                     }
                 });
             }
 
-            // 视频播放控制
-            const videos = document.querySelectorAll('video');
-            videos.forEach(video => {
-                const rect = video.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    video.play();
-                } else {
-                    video.pause();
+            // Initial check
+            handleVideoVisibility();
+            
+            // Check on scroll
+            window.addEventListener('scroll', handleVideoVisibility);
+            
+            // Parallax effect for hero section
+            window.addEventListener('scroll', function() {
+                const scrollY = window.scrollY;
+                const heroVideo = document.querySelector('.hero video');
+                
+                if (scrollY <= window.innerHeight) {
+                    heroVideo.style.transform = `translateY(${scrollY * 0.5}px)`;
+                    heroVideo.style.opacity = 1 - (scrollY / window.innerHeight);
                 }
-            });
-        });
-
-        // 视频重播功能
-        document.querySelectorAll('.repeat').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const video = button.parentElement.querySelector('video');
-                video.currentTime = 0;
-                video.play();
             });
         });
     </script>
