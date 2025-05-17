@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gensync Project</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <style>
         * {
             margin: 0;
@@ -21,7 +22,7 @@
 
         .navwrapper {
             position: fixed;
-            top: 0;
+            top: 40px;
             left: 0;
             width: 100%;
             z-index: 100;
@@ -49,29 +50,16 @@
             list-style: none;
             display: flex;
             gap: 30px;
+            margin-right: 50px;
         }
 
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            width: 100%;
+        /* Combined Hero & Computer Section */
+        .hero-section {
             position: relative;
-            overflow: hidden;
+            height: 300vh; /* Extra tall to allow for scrolling */
         }
 
-        .hero video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Sticky Computer Section */
-        .sticky-section {
-            position: relative;
-            height: 200vh; /* Taller than viewport to allow scrolling */
-        }
-
-        .sticky-container {
+        .computer-container {
             position: sticky;
             top: 0;
             height: 100vh;
@@ -85,10 +73,11 @@
         /* CSS Computer Frame */
         .computer-frame {
             position: relative;
-            width: 80%;
-            max-width: 1000px;
-            height: 60vh;
+            width: 90%;
+            max-width: 1200px;
+            height: 70vh;
             margin: 0 auto;
+            transition: all 0.8s ease-out;
         }
 
         /* Computer Body */
@@ -96,22 +85,29 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: #1a1a1a;
-            border-radius: 15px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            z-index: 1;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: all 0.8s ease-out;
         }
 
         /* Computer Screen */
         .computer-screen {
             position: absolute;
-            top: 3%;
-            left: 3%;
-            width: 94%;
-            height: 65%;
+            top: 2%;
+            left: 2%;
+            width: 96%;
+            height: 80%;
             background: #000;
-            border-radius: 5px;
+            border-radius: 3px;
             overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            z-index: 2;
         }
 
         .computer-screen video {
@@ -126,22 +122,29 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 30%;
-            height: 10%;
-            background: #1a1a1a;
-            border-radius: 0 0 10px 10px;
+            width: 20%;
+            height: 6%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 0 0 5px 5px;
+            border-top: 1px solid rgba(255, 255, 255, 0.95);
+            z-index: 1;
+            opacity: 0;
+            transition: all 0.8s ease-out;
         }
 
         .computer-base {
             position: absolute;
-            bottom: -5%;
+            bottom: -3%;
             left: 50%;
             transform: translateX(-50%);
-            width: 40%;
-            height: 2%;
-            background: #1a1a1a;
+            width: 30%;
+            height: 1%;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 50%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            opacity: 0;
+            transition: all 0.8s ease-out;
         }
 
         /* Content Sections */
@@ -149,49 +152,116 @@
             position: relative;
             z-index: 3;
             background: #000;
-            padding: 100px 5%;
+            padding: 130px 5% 100px 12%;
             max-width: 1200px;
             margin: 0 auto;
+            text-align: left;
+        }
+
+        .title-section {
+            margin-bottom: 60px;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .main-title {
+            font-size: 6.5rem;
+            font-weight: 800;
+            margin-bottom: 60px;
+            margin-top: -40px;
+            color: #f5cb5c; /* Yellow from the logo */
+            margin-left: -12%;
+            letter-spacing: 1px;
+            text-shadow: 
+                2px 2px 0 #242423,
+                4px 4px 0 #242423,
+                6px 6px 0 #242423,
+                8px 8px 0 #242423,
+                10px 10px 0 #242423,
+                12px 12px 0 #242423,
+                14px 14px 0 #242423,
+                16px 16px 0 #242423,
+                18px 18px 20px rgba(36, 36, 35, 0.7);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: capitalize;
+        }
+
+        .main-title:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Remove the underline by commenting out or deleting the ::after pseudo-element */
+        /* .main-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #2979ff, rgba(255, 255, 255, 0.3));
+        } */
+
+        .typewriter-text {
+            font-size: 1.3rem;
+            font-style: italic;
+            font-weight: 300;
+            color: rgba(245, 203, 92, 0.95); /* Darker yellow for typewriter text */
+            margin-bottom: 40px;
+            min-height: 2em;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .body-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 800px;
+            margin-bottom: 50px;
         }
 
         .feature-block {
             margin-bottom: 150px;
+            max-width: 800px;
         }
 
         .feature-video {
             width: 100%;
             height: 60vh;
             margin-bottom: 40px;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .feature-video video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 8px;
         }
 
         .feature-text {
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 18px;
+            font-size: 1.1rem;
             line-height: 1.8;
             color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 50px;
         }
 
         .github-link {
             display: inline-block;
             margin: 50px 0;
             padding: 12px 24px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            background: rgba(245, 203, 92, 0.2); /* Yellow with transparency */
+            color: #f5cb5c; /* Yellow text */
             text-decoration: none;
             border-radius: 4px;
             transition: background 0.3s;
         }
 
         .github-link:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(245, 203, 92, 0.3);
         }
     </style>
 </head>
@@ -205,16 +275,9 @@
         </section>
     </div>
 
-    <!-- Full-screen video hero section -->
-    <section class="hero">
-        <video autoplay loop muted playsinline>
-            <source src="gensync-hero.mp4" type="video/mp4">
-        </video>
-    </section>
-
-    <!-- Sticky computer section -->
-    <section class="sticky-section">
-        <div class="sticky-container">
+    <!-- Combined hero and computer section -->
+    <section class="hero-section">
+        <div class="computer-container">
             <div class="computer-frame">
                 <div class="computer-body"></div>
                 <div class="computer-screen">
@@ -230,10 +293,16 @@
 
     <!-- Content sections -->
     <div class="content-section">
-        <h1 style="margin-bottom: 30px;">Gensync</h1>
-        <p class="feature-text" style="margin-bottom: 50px;">
-            An AI-powered platform that brings seniors and young learners together for real conversation and shared learning. Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.
-        </p>
+        <div class="title-section">
+            <h1 class="main-title">Gensync</h1>
+            <p class="typewriter-text" id="typewriter"></p>
+            <p class="body-text">
+                Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.<br><br>
+                We noticed a communication gap: young people often use internet slang that's hard for seniors to follow, while older adults sometimes speak in a way that feels too lengthy or outdated for younger listeners.
+                <br><br>
+                To bridge this gap, we created Gensync-- born at a hackathon (my very first one). I designed the product prototype, led the UI/UX, and contributed to the frontend development.
+              </p>
+        </div>
         
         <a href="https://github.com/ms48-gensync" class="github-link" target="_blank">→ View Code</a>
         
@@ -243,9 +312,9 @@
                     <source src="match.mp4" type="video/mp4">
                 </video>
             </div>
-            <div class="feature-text">
-                <p>Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.</p>
-            </div>
+            <p class="feature-text">
+                Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.
+            </p>
         </div>
 
         <div class="feature-block">
@@ -254,14 +323,74 @@
                     <source src="chat.mp4" type="video/mp4">
                 </video>
             </div>
-            <div class="feature-text">
-                <p>Our platform features a powerful chat function powered by GPT-4, designed to bridge the communication gap between generations. Acting as a real-time "interpreter," our AI ensures that conversations between young people and older adults are smooth, natural, and mutually understandable. Whether it's explaining modern slang or clarifying traditional expressions, our chat feature translates language in a way that fosters empathy, connection, and meaningful exchange across generations.</p>
-            </div>
+            <p class="feature-text">
+                Our platform features a powerful chat function powered by GPT-4, designed to bridge the communication gap between generations. Acting as a real-time "interpreter," our AI ensures that conversations between young people and older adults are smooth, natural, and mutually understandable. Whether it's explaining modern slang or clarifying traditional expressions, our chat feature translates language in a way that fosters empathy, connection, and meaningful exchange across generations.
+            </p>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Typewriter effect
+            const typewriterElement = document.getElementById('typewriter');
+            const textToType = 'An AI-powered platform that brings seniors and young learners together for real conversation and shared learning.';
+            let charIndex = 0;
+            let typewriterStarted = false;
+            let isTyping = false;
+            
+            function resetTypewriter() {
+                typewriterElement.innerHTML = '';
+                charIndex = 0;
+            }
+            
+            function typeWriter() {
+                if (charIndex < textToType.length) {
+                    isTyping = true;
+                    // Add line breaks at appropriate points for better rhythm
+                    if (charIndex === 74) { // After "together for"
+                        typewriterElement.innerHTML += '<br>';
+                    }
+                    
+                    typewriterElement.innerHTML += textToType.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeWriter, 30); // Faster typing speed
+                } else {
+                    isTyping = false;
+                }
+            }
+            
+            // Start typewriter effect when scrolled into view
+            function checkTypewriterVisibility() {
+                if (!typewriterStarted) {
+                    const rect = typewriterElement.getBoundingClientRect();
+                    const isVisible = (
+                        rect.top >= 0 &&
+                        rect.bottom <= window.innerHeight
+                    );
+                    
+                    if (isVisible) {
+                        typewriterStarted = true;
+                        // Start typing immediately without delay
+                        typeWriter();
+                    }
+                }
+            }
+            
+            // Add hover effect to title
+            const mainTitle = document.querySelector('.main-title');
+            mainTitle.addEventListener('mouseenter', function() {
+                if (!isTyping) {
+                    resetTypewriter();
+                    typeWriter();
+                }
+            });
+            
+            // Check visibility on scroll
+            window.addEventListener('scroll', checkTypewriterVisibility);
+            
+            // Initial check for visibility
+            checkTypewriterVisibility();
+            
             // Play videos when they come into view
             function handleVideoVisibility() {
                 const videos = document.querySelectorAll('video');
@@ -286,15 +415,25 @@
             // Check on scroll
             window.addEventListener('scroll', handleVideoVisibility);
             
-            // Parallax effect for hero section
+            // Computer frame reveal animation
             window.addEventListener('scroll', function() {
                 const scrollY = window.scrollY;
-                const heroVideo = document.querySelector('.hero video');
+                const computerBody = document.querySelector('.computer-body');
+                const computerStand = document.querySelector('.computer-stand');
+                const computerBase = document.querySelector('.computer-base');
                 
-                if (scrollY <= window.innerHeight) {
-                    heroVideo.style.transform = `translateY(${scrollY * 0.5}px)`;
-                    heroVideo.style.opacity = 1 - (scrollY / window.innerHeight);
-                }
+                // Calculate opacity based on scroll position
+                // Start fading in at 100px scroll, fully visible by 400px
+                const scrollProgress = Math.min(Math.max((scrollY - 100) / 300, 0), 1);
+                
+                // Apply opacity and transform
+                computerBody.style.opacity = scrollProgress;
+                computerStand.style.opacity = scrollProgress;
+                computerBase.style.opacity = scrollProgress;
+                
+                // Scale effect
+                const scale = 1.1 - (scrollProgress * 0.1);
+                computerBody.style.transform = `scale(${scale})`;
             });
         });
     </script>
