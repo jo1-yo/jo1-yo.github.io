@@ -1,9 +1,21 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// 提供静态文件
-app.use(express.static('public'));
+// 提供public目录下的静态文件
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 提供media目录下的视频和图片
+app.use('/media', express.static(path.join(__dirname, 'media')));
+
+// 提供images目录下的图片
+app.use('/images', express.static(path.join(__dirname, 'images')));
+
+// 添加路由重定向，访问/gensync时重定向到gensync.html
+app.get('/gensync', (req, res) => {
+    res.redirect('/gensync.html');
+});
 
 // API 路由
 app.get('/api/data', (req, res) => {
@@ -15,4 +27,3 @@ app.get('/api/data', (req, res) => {
 app.listen(PORT, () => {
     console.log(`服务器正在运行在 http://localhost:${PORT}`);
 });
-

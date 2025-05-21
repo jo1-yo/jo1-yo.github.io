@@ -1,0 +1,106 @@
+/* Parallax effects for Gensync page */
+body { margin: 0; background: #000; }
+
+.parallax-bg {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.parallax-bg img {
+  width: 100vw; height: 100vh; object-fit: cover; display: block;
+}
+
+.parallax-mask {
+  position: absolute;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  z-index: 2;
+}
+
+/* Monitor display with double-layered border as per Enk's preferences */
+.monitor-mockup {
+  position: absolute;
+  top: 100vh; left: 50%; transform: translateX(-50%) scale(1.5);
+  width: 820px; height: 500px;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.5s, transform 0.5s, top 0.5s;
+  pointer-events: none;
+}
+
+.monitor-screen {
+  width: 100%; height: 400px;
+  background: #111; border-radius: 18px 18px 10px 10px;
+  border: 2px solid rgba(255, 255, 255, 0.9);  /* Outer border: bright white */
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 15px;  /* Space between border and video content */
+}
+
+.monitor-screen::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  right: 2px; bottom: 2px;
+  border: 2px solid rgba(255, 255, 255, 0.25);  /* Inner border: light white */
+  border-radius: 14px 14px 8px 8px;
+  pointer-events: none;
+}
+
+.monitor-screen img, .monitor-screen video {
+  width: 100%; height: 100%; 
+  object-fit: contain; /* Ensure video is fully visible without cropping */
+  display: block;
+  background: #000;  /* Black background inside borders */
+}
+
+.monitor-stand {
+  width: 6%;  /* Vertical stand width increased to 6% */
+  height: 60px;
+  background: #fff;
+  margin: 0 auto;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.monitor-base {
+  width: 22%;  /* Horizontal base width */
+  height: 10px;
+  background: #fff;
+  margin: 0 auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.hero-text {
+  position: absolute;
+  top: 120vh; left: 50%; transform: translateX(-50%);
+  width: 700px; max-width: 90vw;
+  color: #fff;
+  z-index: 4;
+  text-align: left;
+  background: rgba(0,0,0,0.5);
+  padding: 32px 32px 24px 32px;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.hero-text h2 {
+  font-size: 2em;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.hero-text p {
+  font-size: 1.2rem;  /* Increased font size */
+  line-height: 1.7;
+  color: #fff;
+  max-width: 1000px;
+  margin: 0 auto;
+}

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUAB - Jane Zhang</title>
+    <style>
+        :root {
+            --primary: #ff69b4;
+            --secondary: #ffb6c1;
+            --accent: #ff1493;
+            --light: #fff0f5;
+            --dark: #4a4a4a;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: var(--dark);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4rem 0 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .tagline {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        .section {
+            padding: 5rem 0;
+        }
+        
+        .section.about-section {
+            padding-top: 3rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .section-title::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 3px;
+            background-color: var(--accent);
+            margin: 0.8rem auto 0;
+            transition: width 1s ease 0.3s;
+        }
+        
+        .section-title.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section-title.animate::after {
+            width: 80px;
+        }
+        
+        .story-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4rem;
+            gap: 40px;
+        }
+        
+        .story-text {
+            flex: 1;
+            min-width: 300px;
+            padding: 0 20px;
+        }
+        
+        .story-text p {
+            margin-bottom: 1.5rem;
+            font-size: 1.15rem;
+            line-height: 1.8;
+        }
+        
+        /* Updated story image container - removed background, border, padding */
+        .story-image {
+            flex: 1;
+            min-width: 300px;
+            height: auto; /* Changed from fixed height to auto */
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+        }
+        
+        .story-image img {
+            width: 100%;
+            height: auto; /* Changed from 100% to auto to preserve aspect ratio */
+            object-fit: contain; /* Changed from cover to contain to preserve aspect ratio */
+            transition: var(--transition);
+            display: block; /* Added to remove any default spacing */
+        }
+        
+        .story-image:hover img {
+            transform: scale(1.05);
+        }
+        
+        .quote {
+            font-style: italic;
+            font-size: 1.5rem; /* Increased from 1.3rem */
+            color: var(--primary);
+            margin: 3rem 0; /* Increased from 2.5rem */
+            padding-left: 25px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        /* Make achievement cards taller but keep 2 columns layout */
+        .achievements {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Back to 2 columns layout */
+            gap: 30px; /* Slightly reduced from original 40px */
+            margin-top: 3rem;
+            max-width: 1100px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .achievement-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            max-width: 100%; /* Allow cards to fill the column width */
+            margin: 0 auto; /* Center the cards */
+        }
+        
+        .achievement-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.2);
+        }
+        
+        /* Updated achievement image container */
+        .achievement-image {
+            height: 350px; /* Keep the increased height for taller cards */
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .achievement-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 使用 cover 而不是 contain，确保填充整个区域 */
+            transition: var(--transition);
+            display: block; /* Added to remove any default spacing */
+        }
+        
+        .achievement-card:hover .achievement-image img {
+            transform: scale(1.1);
+        }
+        
+        .achievement-content {
+            padding: 25px;
+        }
+        
+        .achievement-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            text-align: center;
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cta-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
+            background-size: cover;
+        }
+        
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .cta-content h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1.2rem;
+        }
+        
+        .cta-content p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 3rem 0;
+            font-size: 1rem;
+        }
+        
+        footer p {
+            margin-bottom: 0.8rem;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 1.2rem;
+        }
+        
+        .back-to-top:hover {
+            opacity: 1;
+            transform: translateY(-8px);
+        }
+        
+        .logo-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 60px;
+            margin: 3rem 0;
+        }
+        
+        .logo-box {
+            text-align: center;
+            max-width: 320px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* 确保两个盒子高度一致 */
+        }
+        
+        .logo-box.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Updated logo image container - removed hover animation */
+        .logo-image {
+            width: 220px;
+            height: auto; /* Changed from fixed height to auto */
+            margin: 0 auto 1.5rem;
+            transition: var(--transition);
+            box-shadow: none; /* Removed shadow */
+        }
+        
+        /* Remove logo hover animation */
+        .logo-box:hover .logo-image {
+            transform: translateY(-8px); /* 恢复悬停时的移动效果 */
+        }
+        
+        .logo-image img {
+            width: 100%;
+            height: auto; /* Changed from 100% to auto to preserve aspect ratio */
+            object-fit: contain; /* Changed from contain to contain (no change) */
+            display: block; /* Added to remove any default spacing */
+        }
+        
+        .logo-title {
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            min-height: 2.2rem; /* 确保标题区域高度一致 */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* 垂直居中对齐 */
+        }
+        
+        .logo-box p {
+            margin-bottom: 1rem;
+            flex-grow: 1; /* 让描述文本占用可用空间，帮助对齐底部内容 */
+        }
+        
+        /* Updated WeChat box styling with oval shape */
+        .wechat-box {
+            display: inline-block;
+            background-color: white; /* 恢复为白色背景 */
+            padding: 10px 20px; /* 增加水平内边距使其更椭圆 */
+            border-radius: 50px; /* 使用大圆角创建椭圆形 */
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 轻微阴影 */
+            transition: var(--transition);
+            font-size: 1rem; /* 恢复正常字体大小 */
+            color: var(--dark); /* 恢复正常文字颜色 */
+            border: 1px solid rgba(0, 0, 0, 0.05); /* 非常淡的边框 */
+            text-align: center; /* 文字居中 */
+        }
+        
+        .wechat-box p {
+            margin: 0; /* 移除段落边距 */
+            line-height: 1.3; /* 减少行高 */
+        }
+        
+        .wechat-box p:first-child {
+            margin-bottom: 3px; /* 两行之间只保留小间距 */
+        }
+        
+        .wechat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        
+        /* Animation for page load */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 1s ease forwards;
+        }
+        
+        .website-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+        
+        .website-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        
+        /* Added aspect ratio utility classes */
+        .aspect-square {
+            aspect-ratio: 1/1;
+        }
+        
+        .aspect-video {
+            aspect-ratio: 16/9;
+        }
+        
+        .aspect-auto {
+            aspect-ratio: auto;
+        }
+        
+        /* Added home link styles */
+        .home-link {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            z-index: 100;
+        }
+        
+        .home-link a {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .home-link a:hover {
+            color: var(--accent);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 25px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .story-container {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .story-image {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .section {
+                padding: 3rem 0;
+            }
+            
+            .logo-container {
+                gap: 40px;
+            }
+            
+            .achievement-card {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .logo-box {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .section-title {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .section-title::after {
+                width: 60px;
+            }
+            
+            /* Adjust achievement grid for mobile */
+            .achievements {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 30px;
+            }
+            
+            .achievement-card {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Added home link -->
+    <div class="home-link">
+        <a href="index.html">Jane Zhang</a>
+    </div>
+    
+    <header>
+        <div class="container header-content">
+            <h1>Student Union Against Bullying</h1>
+            <p class="tagline">A nonprofit officially registered in Massachusetts</p>
+        </div>
+    </header>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Our Mission</h2>
+            <div class="story-container">
+                <div class="story-text">
+                    <p style="font-size: 1.15rem; line-height: 1.8; margin-bottom: 1.5rem;">Everyone deserves to grow up in a safe and respectful environment. However, I personally experienced the harm and loneliness caused by bullying. Though painful, that experience became the driving force behind founding the Student Union Against Bullying (SUAB).</p>
+                    <p class="quote" style="font-size: 1.5rem; margin: 3rem 0;">When we choose to stand up, it's not just for ourselves, but for those who continue to suffer in silence.</p>
+                    <p style="font-size: 1.15rem; line-height: 1.8; margin-bottom: 1.5rem;">Bullying is not just a personal issue; it's a social problem. Through SUAB, I hope to create a platform where every voice that has been hurt can be heard, and every person who needs help can receive support.</p>
+                </div>
+                <div class="story-image">
+                    <img src="images/mission-illustration.jpg" alt="Anti-bullying concept illustration">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section about-section" style="background-color: #fff0f5;">
+        <div class="container">
+            <h2 class="section-title">About SUAB</h2>
+            <p style="text-align: center; margin-bottom: 2.5rem; max-width: 800px; margin-left: auto; margin-right: auto;">SUAB operates with two branches, each with its own focus but united in our mission against bullying.</p>
+            
+            <div class="logo-container">
+                <div class="logo-box">
+                    <div class="logo-image">
+                        <img src="images/suab-main-logo.png" alt="SUAB Main Organization Logo">
+                    </div>
+                    <h3 class="logo-title">SUAB</h3>
+                    <p>The Student Union Against Bullying is a nonprofit officially registered in Massachusetts, dedicated to eliminating bullying through education, advocacy, and support.</p>
+                    <div class="wechat-box">
+                        <p>WeChat: 反霸凌社SUAB</p>
+                        <p>ID: KENTSUAB</p>
+                    </div>
+                </div>
+                
+                <div class="logo-box">
+                    <div class="logo-image">
+                        <img src="images/suab-beijing-logo.png" alt="SUAB Beijing Branch Logo">
+                    </div>
+                    <h3 class="logo-title">SUAB Beijing Branch</h3>
+                    <p>The Beijing branch consists of more than a dozen schools in Beijing, focusing on eliminating campus bullying in the Beijing area through collaborative initiatives.</p>
+                    <div class="wechat-box">
+                        <p>WeChat: SUAB胡同守望者 (Hutong Guardian)</p>
+                        <p>ID: gh_6172ea08af2c</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="story-container" style="margin-top: 4rem;">
+                <div class="story-text">
+                    <p>As the president of both the main SUAB organization and its Beijing branch, I lead teams that conduct a series of activities aimed at raising public awareness about bullying issues, providing support for victims, and fostering a culture of respect and inclusion.</p>
+                    <p>We believe that only through collective effort can we create a world without bullying.</p>
+                </div>
+                <div class="story-image">
+                    <img src="images/suab-team.jpg" alt="SUAB team working together">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Our Achievements</h2>
+            <div class="achievements">
+                <div class="achievement-card">
+                    <div class="achievement-image">
+                        <img src="images/charity-sales.jpg" alt="Charity sales at schools">
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-title">Charity Sales</h3>
+                        <p>Organized charity sales at various schools in Beijing, successfully raising over 20,000 yuan in donations to support anti-bullying initiatives and victim assistance programs.</p>
+                    </div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-image">
+                        <img src="images/workshops-drama.jpg" alt="Campus workshops and drama performances">
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-title">Workshops & Drama</h3>
+                        <p>Conducted interactive workshops and drama performances on campuses to educate students about bullying prevention and create empathy through storytelling and role-playing.</p>
+                    </div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-image">
+                        <img src="images/pink-day.jpg" alt="Pink Day events">
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-title">Pink Day Events</h3>
+                        <p>Organized Pink Day events with pink-themed decorations to raise awareness about bullying, creating a visual symbol of solidarity and promoting a culture of kindness on campus.</p>
+                    </div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-image">
+                        <img src="images/digital-avatar.jpg" alt="Anti-bullying website with digital avatar">
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-title">Digital Education Platform</h3>
+                        <p>As the president, I developed an anti-bullying website featuring my digital avatar to guide visitors through anti-bullying pamphlets and resources. Visit <a href="https://studentunionagainstbullying.github.io/janepamphlet/" target="_blank" class="website-link">our educational platform</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta-section">
+        <div class="container cta-content">
+            <h2>Join Us</h2>
+            <p>Follow our WeChat public accounts and visit our website to learn more about anti-bullying information and activities. Together, we can create a safer environment for everyone.</p>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <p> 2025 Student Union Against Bullying. All Rights Reserved.</p>
+            <p>An organization dedicated to creating a world without bullying</p>
+        </div>
+    </footer>
+    
+    <a href="#" class="back-to-top" aria-label="Back to top">↑</a>
+
+    <script>
+        // Animation for section titles and elements on page load and scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial animations when page loads
+            setTimeout(function() {
+                animateElements();
+            }, 100);
+            
+            // Animate elements as they come into view when scrolling
+            window.addEventListener('scroll', function() {
+                animateElements();
+            });
+            
+            function animateElements() {
+                // Animate section titles
+                document.querySelectorAll('.section-title').forEach(function(title) {
+                    if (isElementInViewport(title) && !title.classList.contains('animate')) {
+                        title.classList.add('animate');
+                    }
+                });
+                
+                // Animate logo boxes
+                document.querySelectorAll('.logo-box').forEach(function(box) {
+                    if (isElementInViewport(box) && !box.classList.contains('animate')) {
+                        box.classList.add('animate');
+                    }
+                });
+                
+                // Animate achievement cards with staggered delay
+                document.querySelectorAll('.achievement-card').forEach(function(card, index) {
+                    if (isElementInViewport(card) && !card.classList.contains('animate')) {
+                        setTimeout(function() {
+                            card.classList.add('animate');
+                        }, index * 150); // Staggered animation
+                    }
+                });
+            }
+            
+            // Helper function to check if element is in viewport
+            function isElementInViewport(el) {
+                var rect = el.getBoundingClientRect();
+                return (
+                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.85 &&
+                    rect.bottom >= 0
+                );
+            }
+            
+            // Smooth scroll for back to top button
+            document.querySelector('.back-to-top').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>

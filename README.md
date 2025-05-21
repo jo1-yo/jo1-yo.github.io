@@ -10,17 +10,30 @@ This website serves as my digital space to share who I am — my interests, proj
 
 📁 Project Structure:
 
-📦 jo1-yo.github.io/
-├── index.html # Home page
-├── about.html # About me
-├── activities.html # Extracurriculars & passions
-├── projects.html # Projects
-├── contact.html # Contact form
-├── assets/
-│ ├── css/ # Stylesheets
-│ ├── js/ # JavaScript (if any)
-│ └── images/ # Images and icons
-└── README.md # You're here!
+Jane_personalweb/
+├── public/               # Static web files
+│   ├── css/              # CSS stylesheets
+│   │   ├── main.css      # Main styles for all pages
+│   │   └── parallax.css  # Parallax and monitor display effects
+│   ├── js/               # JavaScript files
+│   │   └── script.js     # Main script file
+│   ├── index.html        # Homepage
+│   ├── gensync.html      # Gensync project page
+│   ├── suab.html         # SUAB project page
+│   └── favicon.ico       # Website favicon
+├── media/                # Media directory
+│   └── videos/           # Video files
+│       ├── gensync-hero.mp4
+│       ├── chatwai.mp4
+│       ├── match.mp4
+│       └── chat.mp4
+├── images/               # Image files
+│   ├── gensync.jpg
+│   ├── suab.jpg
+│   └── more.jpg
+├── server.js             # Express server for development
+├── simple_server.py      # Alternative Python server
+└── CNAME                 # GitHub Pages custom domain
 
 🛠️ Tech Stack：
 1. HTML5
@@ -38,6 +51,20 @@ This website serves as my digital space to share who I am — my interests, proj
  This project is open source under the MIT License.
 
  🚀 How to Run Locally:
-```bash
-git clone https://github.com/jo1-yo/jo1-yo.github.io.git
-cd jo1-yo.github.io
+### Using Node.js (Recommended)
+
+1. Make sure you have Node.js installed
+2. Run the server:
+   ```
+   node server.js
+   ```
+3. Visit `http://localhost:3000` in your browser
+
+### Using Python
+
+1. Make sure you have Python installed
+2. Run the server:
+   ```
+   python simple_server.py
+   ```
+3. Visit `http://localhost:8000` in your browser

@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gensync Project</title>
+    <title>Gensync - Jane Zhang</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/parallax.css">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <style>
         * {
             margin: 0;
             padding: 0;
@@ -21,7 +24,7 @@
 
         .navwrapper {
             position: fixed;
-            top: 0;
+            top: 40px;
             left: 0;
             width: 100%;
             z-index: 100;
@@ -49,353 +52,291 @@
             list-style: none;
             display: flex;
             gap: 30px;
+            margin-right: 50px;
         }
 
-        .pagewrapper {
+        /* Combined Hero & Computer Section */
+        .hero-section {
             position: relative;
+            height: 300vh; /* Extra tall to allow for scrolling */
         }
 
-        .story {
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5%;
-        }
-
-        .story__block {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .summary {
-            text-align: center;
-        }
-
-        .xdrtitle {
-            font-size: 4.5vw;
-            font-weight: 700;
-            margin-bottom: 20px;
-            line-height: 1.2;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out;
-        }
-
-        .xdrtitle.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .xdrtitle__sub {
-            font-size: 1.3vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 0 auto;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out 0.3s;
-            padding: 0 5%;
-        }
-
-        .xdrtitle__sub.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .project-overview {
-            font-size: 1.2vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 40px auto;
-            line-height: 1.8;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease-out 0.6s;
-            padding: 0 5%;
-        }
-
-        .project-overview.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .project-overview p {
-            margin-bottom: 20px;
-        }
-
-        .project-overview p:last-child {
-            margin-bottom: 0;
-        }
-
-        .demo-section {
-            margin: 100px 0;
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 1s ease-out;
-        }
-
-        .demo-section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .demo-video {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            height: 70vh;
-            overflow: hidden;
-        }
-
-        .demo-video video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .demo-text {
-            font-size: 1.2vw;
-            font-weight: 300;
-            max-width: 800px;
-            margin: 40px auto;
-            line-height: 1.8;
-            color: rgba(255,255,255,0.8);
-            text-align: center;
-            padding: 0 5%;
-        }
-
-        .xdrmood {
-            position: relative;
-            margin-top: 60px;
-            width: 100%;
-            height: 80vh;
-            overflow: hidden;
-        }
-
-        .sticky-container {
+        .computer-container {
             position: sticky;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 80vh;
-            z-index: 1;
-            margin: 0 auto;
+            top: 0;
+            height: 100vh;
             width: 100%;
-            max-width: 1200px;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2;
+            overflow: hidden; /* 确保超出部分不可见 */
         }
 
-        .monitor-container {
-            position: relative;
-            width: 80%;
-            height: 80%;
-            margin: 0 auto;
-            opacity: 0;
-            transform: scale(1.2);
-            transition: all 1s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .monitor-container.visible {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .monitor-frame {
+        /* Full-screen video background */
+        .fullscreen-video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 1;
+            transition: opacity 0.8s ease-out;
+            opacity: 1; /* 初始可见 */
+        }
+
+        .fullscreen-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* CSS Computer Frame */
+        .computer-frame {
+            position: relative;
+            width: 80%; /* 缩小整体尺寸 */
+            max-width: 1000px;
+            height: 60vh;
+            margin: 0 auto;
+            transition: all 0.8s ease-out;
+            transform: scale(1.5); /* 初始放大 */
+            opacity: 0; /* 初始隐藏 */
+            z-index: 3;
+        }
+
+        /* Computer Body */
+        .computer-body {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: transparent; /* 完全透明背景 */
+            border-radius: 8px; /* 圆角 */
+            box-shadow: none;
+            z-index: 1;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: all 0.8s ease-out;
+        }
+
+        /* Computer Screen */
+        .computer-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000; /* 黑色背景 */
+            border-radius: 8px; /* 圆角与外框匹配 */
+            overflow: hidden;
+            border: none; /* 移除原来的边框 */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* 微妙的阴影 */
             z-index: 2;
+            display: flex; /* 使用flex布局使视频居中 */
+            align-items: center;
+            justify-content: center;
+            padding: 15px; /* 内边距 */
+            box-sizing: border-box; /* 确保内边距不会增加元素总大小 */
+        }
+        
+        /* 使用伪元素创建双层边框 */
+        .computer-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid rgba(255, 255, 255, 0.9); /* 更细的外层亮白色边框 */
+            border-radius: 8px;
+            z-index: -1;
             pointer-events: none;
         }
-
-        .monitor-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .video-container {
+        
+        .computer-screen::after {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
+            top: 1px; /* 与外层边框宽度相同，紧贴内侧 */
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            border: 1px solid rgba(255, 255, 255, 0.25); /* 更细的内层浅白色边框 */
+            border-radius: 7px; /* 略小于外层 */
+            z-index: -1;
+            pointer-events: none;
+            margin: 0; /* 移除margin */
+        }
+
+        /* Computer Screen Video */
+        .computer-screen video {
+            width: auto; /* 自动宽度 */
+            height: auto; /* 自动高度 */
+            max-width: calc(100% - 30px); /* 最大宽度为容器的100%减去内边距 */
+            max-height: calc(100% - 30px); /* 最大高度为容器的100%减去内边距 */
+            object-fit: contain; /* 确保视频完全显示不被截断 */
+            border-radius: 4px; /* 视频本身也有轻微圆角 */
+        }
+
+        /* Computer Stand */
+        .computer-stand {
+            position: absolute;
+            bottom: -8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6%; /* 增加竖直支架的宽度 */
+            height: 10%;
+            background: #ffffff;
+            border-radius: 1px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             z-index: 1;
+            opacity: 0;
+            transition: all 0.8s ease-out;
         }
 
-        .video-container video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .computer-base {
+            position: absolute;
+            bottom: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22%;
+            height: 1.5%;
+            background: #ffffff;
+            border-radius: 2px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            opacity: 0;
+            transition: all 0.8s ease-out;
         }
 
+        /* Content Sections */
         .content-section {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             background: #000;
-            padding: 100px 5%;
-            margin-top: 100vh;
+            padding: 130px 5% 100px 5%; /* 减少左侧padding */
             max-width: 1200px;
-            margin-left: auto;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .title-section {
+            margin-bottom: 60px;
+            max-width: 800px;
+            position: relative;
+            margin-left: 0; /* 移除左边距 */
+        }
+
+        .main-title {
+            font-size: 6.5rem;
+            font-weight: 800;
+            margin-bottom: 60px;
+            margin-top: -40px;
+            color: #f5cb5c; /* Yellow from the logo */
+            margin-left: 0; /* 移除左边距 */
+            letter-spacing: 1px;
+            text-shadow: 
+                2px 2px 0 #242423,
+                4px 4px 0 #242423,
+                6px 6px 0 #242423,
+                8px 8px 0 #242423,
+                10px 10px 0 #242423,
+                12px 12px 0 #242423,
+                14px 14px 0 #242423,
+                16px 16px 0 #242423,
+                18px 18px 20px rgba(36, 36, 35, 0.7);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: capitalize;
+        }
+
+        .typewriter-text {
+            font-size: 1.3rem;
+            font-style: italic;
+            font-weight: 300;
+            color: rgba(245, 203, 92, 0.95); /* Darker yellow for typewriter text */
+            margin-bottom: 40px;
+            min-height: 2em;
+            max-width: 800px;
+            line-height: 1.6;
+        }
+
+        .body-text {
+            font-size: 1.2rem; /* 增大字体 */
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 1000px;
+            margin-bottom: 50px;
+            margin-left: 0; /* 移除左边距 */
+        }
+
+        .feature-block {
+            margin-bottom: 150px;
+            max-width: 1200px; /* 增加最大宽度 */
+            margin-left: 0; /* 向左对齐 */
             margin-right: auto;
         }
 
-        .fade-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .feature-text {
+            font-size: 1.2rem; /* 增大字体 */
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 50px;
+            max-width: 1000px;
+            margin-left: 0; /* 向左对齐 */
+            margin-right: auto;
+            text-align: left; /* 确保文本左对齐 */
+        }
+
+        /* 特性展示视频容器 */
+        .feature-video {
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0);
-            transition: background 1s;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .fade-bg.visible {
-            background: rgba(0,0,0,0.5);
-        }
-
-        .xdrsegment {
-            padding: 120px 40px;
-        }
-
-        .row {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .col-xs-12 {
-            width: 100%;
-        }
-
-        .col-sm-8 {
-            width: 66.66667%;
-        }
-
-        h3 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        p {
-            font-size: 18px;
-            line-height: 1.6;
-            color: rgba(255,255,255,0.8);
+            height: 70vh;
             margin-bottom: 40px;
-        }
-
-        .xdrgrid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin: 60px 0;
-        }
-
-        .xdrgrid__item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .colors__segments {
-            list-style: none;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .colors__segments__item {
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 8px;
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .colors__segments__item__title {
-            font-size: 16px;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .colors__segments__item__values {
-            list-style: none;
-            font-size: 14px;
-            color: rgba(255,255,255,0.6);
-        }
-
-        .experiment__apple-hello {
-            width: 100%;
-            height: 100vh;
-            object-fit: cover;
-        }
-
-        .xdrhand {
-            position: relative;
-            padding: 120px 40px;
-        }
-
-        .xdrhand__videoWrapper {
-            position: relative;
-            width: 100%;
-            height: 80vh;
+            border-radius: 0;
             overflow: hidden;
-            margin-top: 60px;
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* 向左对齐 */
+            background: #000;
+            padding: 0;
+            margin-left: 0; /* 向左对齐 */
+            margin-right: auto;
         }
 
-        .xdrhand__video {
+        /* 第一个视频（AI视频）使用cover填充 */
+        .feature-video.ai-video video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .btn {
+        /* 其他视频（match和chat）使用contain确保完整显示 */
+        .feature-video.match-video video,
+        .feature-video.chat-video video {
+            max-width: 100%; /* 使用100%宽度 */
+            max-height: 100%; /* 使用100%高度 */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0; /* 移除圆角 */
+            margin: 0 auto; /* 确保视频在容器中居中 */
+        }
+
+        .github-link {
             display: inline-block;
+            margin: 50px 0;
             padding: 12px 24px;
-            background: rgba(255,255,255,0.1);
-            color: #fff;
+            background: rgba(245, 203, 92, 0.2); /* Yellow with transparency */
+            color: #f5cb5c; /* Yellow text */
             text-decoration: none;
             border-radius: 4px;
             transition: background 0.3s;
         }
 
-        .btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .repeat {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0.6;
-            transition: opacity 0.3s;
-        }
-
-        .repeat:hover {
-            opacity: 1;
+        .github-link:hover {
+            background: rgba(245, 203, 92, 0.3);
         }
     </style>
 </head>
@@ -409,144 +350,199 @@
         </section>
     </div>
 
-    <div class="pagewrapper">
-        <div class="story">
-            <div class="fade-bg"></div>
-            <div class="story__block">
-                <section class="summary">
-                    <div class="sticky-container">
-                        <div class="monitor-container">
-                            <div class="monitor-frame">
-                                <img src="compKuang.jpg" alt="Monitor Frame">
-                            </div>
-                            <div class="video-container">
-                                <video autoplay loop muted playsinline>
-                                    <source src="gensync-hero.mp4" type="video/mp4">
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                    <h1 class="xdrtitle">
-                        Gensync<br>
-                    </h1>
-                    <p class="xdrtitle__sub">An AI-powered platform that brings seniors and young learners together for real conversation and shared learning.</p>
-                    <div class="project-overview">
-                        <p>Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.</p>
-                        <p>This shows that many elderly people lack companionship and opportunities to be heard. At the same time, we observe that modern youth often use trendy internet slang, which older people struggle to understand. On the other hand, the elderly tend to speak in a detailed manner that younger people find hard to follow.</p>
-                    </div>
-                </section>
+    <!-- Combined hero and computer section -->
+    <section class="hero-section">
+        <div class="computer-container">
+            <div class="fullscreen-video">
+                <video autoplay loop muted playsinline>
+                    <source src="gensync-hero.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="computer-frame">
+                <div class="computer-body"></div>
+                <div class="computer-screen">
+                    <video autoplay loop muted playsinline>
+                        <source src="gensync-hero.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="computer-stand"></div>
+                <div class="computer-base"></div>
             </div>
         </div>
+    </section>
 
-        <div class="content-section">
-            <div class="xdrhand">
-                <section class="xdrhand__description">
-                    <div class="row">
-                        <div class="col-xs-12 col-sm-8">
-                            <a href="https://github.com/ms48-gensync" class="btn" target="_blank">→ View Code</a>
-                        </div>
-                    </div>
-                </section>
+    <!-- Content sections -->
+    <div class="content-section">
+        <div class="title-section">
+            <h1 class="main-title">Gensync</h1>
+            <p class="typewriter-text" id="typewriter"></p>
+            <p class="body-text">
+                Data from the World Health Organization shows that around 25% of older adults globally face social isolation. A 2024 national survey also found that 33% of older adults often feel lonely.<br><br>
+                We noticed a communication gap: young people often use internet slang that's hard for seniors to follow, while older adults sometimes speak in a way that feels too lengthy or outdated for younger listeners.
+                <br><br>
+                To bridge this gap, we created Gensync-- born at a hackathon (my very first one). I designed the product prototype, led the UI/UX, and contributed to the frontend development.
+              </p>
+        </div>
+        
+        <a href="https://github.com/ms48-gensync" class="github-link" target="_blank">→ View Code</a>
+        
+        <div class="feature-block">
+            <div class="feature-video ai-video">
+                <video autoplay loop muted playsinline>
+                    <source src="chatwai.mp4" type="video/mp4">
+                </video>
             </div>
+            <p class="feature-text">
+                Users first interact with the AI through a conversation. We've built two front-end interfaces tailored separately for seniors and young users.
 
-            <div class="demo-section">
-                <div class="demo-video">
-                    <video autoplay loop muted playsinline>
-                        <source src="match.mp4" type="video/mp4">
-                    </video>
-                </div>
-                <div class="demo-text">
-                    <p>Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.</p>
-                </div>
-            </div>
+                This is our specially designed senior-facing interface—simple and intuitive, with voice-enabled AI interaction for ease of use.
 
-            <div class="demo-section">
-                <div class="demo-video">
-                    <video autoplay loop muted playsinline>
-                        <source src="chat.mp4" type="video/mp4">
-                    </video>
-                </div>
-                <div class="demo-text">
-                    <p>Our platform features a powerful chat function that integrates GPT-4o as a real-time "translator." Designed to bridge the communication gap between generations, this tool enables seamless conversation between young people and seniors. When users type in their native or preferred language, GPT-4o translates the messages in real time, helping both sides understand each other's tone, slang, and context more clearly. It's not just a translator—it's a bridge for empathy, connection, and meaningful dialogue.</p>
-                </div>
+                The AI collects user information such as nickname, age, professional background, skills, and interests, which is then stored in the backend database. This data is used to match seniors with compatible young users.
+            </p>
+        </div>
+
+        <div class="feature-block">
+            <div class="feature-video match-video">
+                <video autoplay loop muted playsinline>
+                    <source src="match.mp4" type="video/mp4">
+                </video>
             </div>
+            <p class="feature-text">
+                Our Match page uses a smart algorithm inspired by platforms like Tinder to help connect users across generations. When a young user signs up and indicates an interest—such as playing Go—we recommend older users who share the same passion. The same goes for seniors: if they've expressed a hobby or preference, the system will introduce them to like-minded young people. It's more than just matching—it's about sparking conversations and building friendships based on shared interests.
+            </p>
+        </div>
+
+        <div class="feature-block">
+            <div class="feature-video chat-video">
+                <video autoplay loop muted playsinline>
+                    <source src="chat.mp4" type="video/mp4">
+                </video>
+            </div>
+            <p class="feature-text">
+                Our platform includes a GPT-4-powered chat feature that bridges generational communication gaps. Acting as a real-time interpreter, it ensures conversations between young and older users are smooth and mutually understandable—translating modern slang, clarifying traditional expressions, and fostering empathy and meaningful connection.
+            </p>
         </div>
     </div>
 
     <script>
-        // 滚动动画
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            const contentSection = document.querySelector('.content-section');
-            const fadeBg = document.querySelector('.fade-bg');
-            const title = document.querySelector('.xdrtitle');
-            const subtitle = document.querySelector('.xdrtitle__sub');
-            const overview = document.querySelector('.project-overview');
-            const monitorContainer = document.querySelector('.monitor-container');
-            const demoSections = document.querySelectorAll('.demo-section');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Typewriter effect
+            const typewriterElement = document.getElementById('typewriter');
+            const textToType = 'An AI-powered platform that brings seniors and young learners together for real conversation and shared learning.';
+            let charIndex = 0;
+            let typewriterStarted = false;
+            let isTyping = false;
             
-            // 分阶段动画
-            // 0-200px: 视频全屏，monitor消失
-            // 200-700px: monitor出现并缩放，视频变暗
-            // >700px: monitor定型，文字渐显
-            if (scrollY < 200) {
-                monitorContainer.style.opacity = '0';
-                monitorContainer.style.transform = 'scale(1.2)';
-                fadeBg.style.background = 'rgba(0,0,0,0)';
-                title.classList.remove('visible');
-                subtitle.classList.remove('visible');
-                overview.classList.remove('visible');
-                contentSection.style.opacity = '0';
-                contentSection.style.transform = 'translateY(50px)';
-            } else if (scrollY >= 200 && scrollY < 700) {
-                const percent = (scrollY - 200) / 500; // 0~1
-                monitorContainer.style.opacity = `${percent}`;
-                const scale = 1.2 - percent * 0.2;
-                monitorContainer.style.transform = `scale(${scale})`;
-                fadeBg.style.background = `rgba(0,0,0,${percent*0.5})`;
-                title.classList.remove('visible');
-                subtitle.classList.remove('visible');
-                overview.classList.remove('visible');
-                contentSection.style.opacity = '0';
-                contentSection.style.transform = 'translateY(50px)';
-            } else {
-                monitorContainer.style.opacity = '1';
-                monitorContainer.style.transform = 'scale(1)';
-                fadeBg.style.background = 'rgba(0,0,0,0.5)';
-                title.classList.add('visible');
-                subtitle.classList.add('visible');
-                overview.classList.add('visible');
-                contentSection.style.opacity = '1';
-                contentSection.style.transform = 'translateY(0)';
-                
-                // 根据滚动位置显示demo部分
-                demoSections.forEach((section, index) => {
-                    const sectionTop = section.getBoundingClientRect().top;
-                    if (sectionTop < window.innerHeight * 0.8) {
-                        section.classList.add('visible');
+            function resetTypewriter() {
+                typewriterElement.innerHTML = '';
+                charIndex = 0;
+            }
+            
+            function typeWriter() {
+                if (charIndex < textToType.length) {
+                    isTyping = true;
+                    // Add line breaks at appropriate points for better rhythm
+                    if (charIndex === 74) { // After "together for"
+                        typewriterElement.innerHTML += '<br>';
+                    }
+                    
+                    typewriterElement.innerHTML += textToType.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeWriter, 30); // Faster typing speed
+                } else {
+                    isTyping = false;
+                }
+            }
+            
+            // Start typewriter effect when scrolled into view
+            function checkTypewriterVisibility() {
+                if (!typewriterStarted) {
+                    const rect = typewriterElement.getBoundingClientRect();
+                    const isVisible = (
+                        rect.top >= 0 &&
+                        rect.bottom <= window.innerHeight
+                    );
+                    
+                    if (isVisible) {
+                        typewriterStarted = true;
+                        // Start typing immediately without delay
+                        typeWriter();
+                    }
+                }
+            }
+            
+            // Add hover effect to title
+            const mainTitle = document.querySelector('.main-title');
+            mainTitle.addEventListener('mouseenter', function() {
+                if (!isTyping) {
+                    resetTypewriter();
+                    typeWriter();
+                }
+            });
+            
+            // Check visibility on scroll
+            window.addEventListener('scroll', checkTypewriterVisibility);
+            
+            // Initial check for visibility
+            checkTypewriterVisibility();
+            
+            // Play videos when they come into view
+            function handleVideoVisibility() {
+                const videos = document.querySelectorAll('video');
+                videos.forEach(video => {
+                    const rect = video.getBoundingClientRect();
+                    const isVisible = (
+                        rect.top >= 0 &&
+                        rect.bottom <= window.innerHeight
+                    );
+                    
+                    if (isVisible) {
+                        if (video.paused) video.play();
+                    } else {
+                        if (!video.paused) video.pause();
                     }
                 });
             }
 
-            // 视频播放控制
-            const videos = document.querySelectorAll('video');
-            videos.forEach(video => {
-                const rect = video.getBoundingClientRect();
-                if (rect.top < window.innerHeight && rect.bottom > 0) {
-                    video.play();
+            // Initial check
+            handleVideoVisibility();
+            
+            // Check on scroll
+            window.addEventListener('scroll', handleVideoVisibility);
+            
+            // Computer frame reveal animation
+            window.addEventListener('scroll', function() {
+                const scrollY = window.scrollY;
+                const computerFrame = document.querySelector('.computer-frame');
+                const computerBody = document.querySelector('.computer-body');
+                const computerStand = document.querySelector('.computer-stand');
+                const computerBase = document.querySelector('.computer-base');
+                const fullscreenVideo = document.querySelector('.fullscreen-video');
+                
+                // 计算滚动进度 - 从100px开始到700px结束
+                const scrollProgress = Math.min(Math.max((scrollY - 100) / 600, 0), 1);
+                
+                // 应用缩放效果 - 从1.5缩小到1
+                const scale = 1.5 - (scrollProgress * 0.5);
+                computerFrame.style.transform = `scale(${scale})`;
+                
+                // 应用透明度效果
+                computerFrame.style.opacity = scrollProgress;
+                computerBody.style.opacity = scrollProgress;
+                computerStand.style.opacity = scrollProgress;
+                computerBase.style.opacity = scrollProgress;
+                
+                // 全屏视频淡出 - 确保在电脑框架完全显示前全屏视频已经完全消失
+                // 这样可以避免两个视频重叠
+                const videoFadeProgress = Math.min(scrollProgress * 2, 1); // 加速淡出
+                fullscreenVideo.style.opacity = 1 - videoFadeProgress;
+                
+                // 当全屏视频完全淡出后，将其设置为不可见，避免重叠问题
+                if (videoFadeProgress >= 1) {
+                    fullscreenVideo.style.visibility = 'hidden';
                 } else {
-                    video.pause();
+                    fullscreenVideo.style.visibility = 'visible';
                 }
-            });
-        });
-
-        // 视频重播功能
-        document.querySelectorAll('.repeat').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const video = button.parentElement.querySelector('video');
-                video.currentTime = 0;
-                video.play();
             });
         });
     </script>
