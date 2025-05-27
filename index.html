@@ -547,16 +547,18 @@
             transition: all 0.3s ease;
         }
 
-        .spark-word:hover {
-            color: #FFD700;
-            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        .spark-word:hover .spark-letter {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
         }
 
         .particle {
             position: absolute;
             pointer-events: none;
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             background: linear-gradient(to right, #FFD700, #fff);
             border-radius: 50%;
             opacity: 0;
@@ -578,11 +580,28 @@
             display: inline-block;
             position: relative;
             cursor: pointer;
-            transition: color 0.3s, text-shadow 0.3s;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #36D1DC, #5B86E5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: textShine 3s ease-in-out infinite alternate;
         }
+        
         .spark-letter:hover {
-            color: #FFD700;
-            text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+        
+        @keyframes textShine {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
         }
 
         .project-links a {
