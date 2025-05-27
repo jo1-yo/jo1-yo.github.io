@@ -9,7 +9,7 @@ This website serves as my digital space to share who I am — my interests, proj
 
 
 📁 Project Structure:
-
+```plaintext
 Jane_personalweb/
 ├── public/               # Static web files
 │   ├── css/              # CSS stylesheets
@@ -34,6 +34,8 @@ Jane_personalweb/
 ├── server.js             # Express server for development
 ├── simple_server.py      # Alternative Python server
 └── CNAME                 # GitHub Pages custom domain
+```
+
 
 🛠️ Tech Stack：
 1. HTML5
