@@ -634,7 +634,11 @@
     
     
     <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
-    <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
+    <video autoplay loop muted playsinline style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+        <source src="logoo.mp4" type="video/mp4">
+        <!-- 备用图片，当视频无法播放时显示 -->
+        <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
+    </video>
     </div>
     <nav style="padding-left: 220px;"> <!-- 给nav加左内边距，避免和logo重叠 -->
         <ul style="margin-left: auto;">
