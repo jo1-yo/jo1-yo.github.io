@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traller - AI-Powered People Search | Jane Zhang</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #fff;
+            color: #000;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* 导航栏 - 模仿Adrian的样式 */
+        .navwrapper {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 20px 0;
+            mix-blend-mode: difference;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 3%;
+        }
+
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 300;
+        }
+
+        .nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            margin-right: 50px;
+        }
+
+        /* 主要内容容器 - 稍微增加边距 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 120px 4% 80px;
+        }
+
+        /* 项目标题 - 模仿Adrian的大标题样式 */
+        .project-title {
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+        }
+
+        /* 副标题 */
+        .project-subtitle {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 4rem;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        /* 主要项目图片 - 完整显示，无动效 */
+        .main-project-image {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            margin-bottom: 6rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* 项目介绍区域 - 全宽度，左对齐 */
+        .project-description {
+            max-width: 100%;
+            margin: 0 0 3rem;
+            text-align: left;
+        }
+
+        .project-description h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            line-height: 1.2;
+        }
+
+        .project-description p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 2rem;
+        }
+
+        /* 获奖信息 - 模仿Adrian的色彩风格 */
+        .award-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem;
+            border-radius: 20px;
+            margin: 2rem 0 6rem;
+            text-align: center;
+        }
+
+        .award-section h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .award-section p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+        }
+
+        /* 按钮组 - 居中对齐 */
+        .action-buttons {
+            display: flex;
+            gap: 4rem;
+            justify-content: center;
+            margin: 3rem 0 4rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 2rem;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 2px solid #000;
+        }
+
+        .btn:hover {
+            background: white;
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #000;
+            border: 2px solid #000;
+        }
+
+        .btn-secondary:hover {
+            background: #000;
+            color: white;
+        }
+
+        /* 团队部分 */
+        .team-section {
+            margin: 8rem 0;
+        }
+
+        .team-section h2 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+        }
+
+        .team-image {
+            width: 85%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            margin: 0 auto 3rem;
+            display: block;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .team-description {
+            max-width: 100%;
+            margin: 0;
+            text-align: left;
+        }
+
+        .team-description p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 平台信息区域 - 简约设计，左对齐 */
+        .platform-section {
+            margin: 3rem 0 4rem;
+            text-align: left;
+        }
+
+        .platform-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
+        }
+
+        .platform-section p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 1.5rem;
+            max-width: 100%;
+        }
+
+        .contact-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 100px 5% 60px;
+            }
+
+            .project-title {
+                font-size: clamp(2rem, 12vw, 4rem);
+            }
+
+            .project-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .main-project-image {
+                height: auto;
+            }
+
+            .team-image {
+                height: auto;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .project-description h2,
+            .team-section h2,
+            .platform-section h2 {
+                font-size: 2rem;
+            }
+        }
+
+        /* 滚动动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* 悬停效果 - 只给team图片 */
+        .team-image:hover {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="navwrapper">
+        <section class="nav">
+            <a href="/">Jane Zhang</a>
+            <ul>
+                <li><a href="/"><span>home →</span></a></li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="container">
+        <!-- 项目标题 -->
+        <h1 class="project-title">Traller</h1>
+        <p class="project-subtitle">AI-Powered People Search and Profiling Agent</p>
+
+        <!-- 项目描述 - Project Overview -->
+        <div class="project-description">
+            <h2>Project Overview</h2>
+            <p>
+                Traller is an AI-powered people search and profiling agent. Unlike traditional search engines, Traller transforms scattered, unreliable information into a clear, interactive knowledge graph. With just a name, a phrase, or even a vague description, it maps a person's digital footprint, highlights key events, and uncovers meaningful connections.
+            </p>
+            <p>
+                Originally built at a hackathon, Traller was awarded Second Prize in the AdventureX Tencent Cloud Track, earning a ¥5,000 prize for its innovation in combining language models with multi-source data for next-generation intelligence tools.
+            </p>
+        </div>
+
+        <!-- 平台信息 - Platform Information -->
+        <div class="platform-section">
+            <h2>Platform Information</h2>
+            <p>
+                Traller is now available on the <strong>MuleRun</strong> platform! MuleRun is the world's largest AI Agent marketplace, and you can find Traller in the platform's Explore section. Currently, Traller is in beta testing phase. To ensure the best user experience, we use an invitation-only system for access permissions. To obtain a beta invitation code, please contact: <span class="contact-number">8453093941</span>
+            </p>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="action-buttons">
+            <a href="https://www.youtube.com/watch?v=mQsZdZ9svwM" target="_blank" class="btn">
+                <i class="fab fa-youtube"></i>
+                Watch Demo
+            </a>
+            <a href="https://mulerun.com/" target="_blank" class="btn btn-secondary">
+                <i class="fas fa-external-link-alt"></i>
+                Visit MuleRun Platform
+            </a>
+        </div>
+
+        <!-- 主要项目图片 -->
+        <img src="traller.png" alt="Traller Project" class="main-project-image">
+
+        <!-- 获奖信息 -->
+        <div class="award-section">
+            <h3><i class="fas fa-trophy"></i> Our Achievement</h3>
+            <p>Won the AdventureX Hackathon Tencent Cloud Track - Second Prize with ¥5,000 Award</p>
+        </div>
+
+        <!-- 团队部分 -->
+        <div class="team-section">
+            <h2>Team</h2>
+            <img src="team.png" alt="Traller Team" class="team-image">
+            <div class="team-description">
+                <p>
+                    We are a team of four who met through hackathons and share a passion for AI, data, and creative problem-solving.
+                </p>
+                <p>
+                    <strong>•Qian Zhang</strong> is an undergraduate at Wuhan University. He has joined several AI/Web3 hackathons and built the open-source project Narratium.ai (500+ GitHub stars).
+                </p>
+                <p>
+                    <strong>•Yueqi(Jane) Zhang</strong> is a first-year student at Vassar College learning full-stack development.
+                </p>
+                <p>
+                    <strong>•Zhenshuai Wang</strong> holds degrees from Shaoxing University and East China Normal University, and previously worked as a product manager.
+                </p>
+                <p>
+                    <strong>•Jianing Hu</strong> is a design master's student at Guangzhou Academy of Fine Arts, with over 70 awards in AI and digital art.
+                </p>
+                <p>
+                    Together, we are building tools that help users explore relationships between people and organizations from minimal input.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 平滑滚动效果
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // 观察所有需要动画的元素
+        document.querySelectorAll('.project-description, .award-section, .team-section, .platform-section').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 页面加载动画
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.5s ease-in-out';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

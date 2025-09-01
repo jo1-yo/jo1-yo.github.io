@@ -206,17 +206,17 @@
         
         .projects-grid {
             display: flex;
-            gap: 40px;
+            gap: 30px;
             justify-content: center; /* 居中显示 */
-            flex-wrap: wrap;
-            max-width: 1400px; /* 限制最大宽度 */
+            flex-wrap: nowrap; /* 不换行 */
+            max-width: 1600px; /* 增加最大宽度以容纳四个卡片 */
             margin: 0 auto;
         }
         
         .project-card {
             display: block;
-            width: 400px;
-            height: 500px;
+            width: 320px; /* 减小宽度以适应四个卡片 */
+            height: 450px; /* 相应调整高度 */
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(0,0,0,0.08);
@@ -343,6 +343,18 @@
         }
         
         /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .projects-grid {
+                gap: 20px;
+                max-width: 1200px;
+            }
+            
+            .project-card {
+                width: 280px;
+                height: 400px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .mobile-notice {
                 display: flex;
@@ -666,6 +678,10 @@
     <section class="projects" id="projects">
         <h2 class="projects-title">Projects</h2>
         <div class="projects-grid">
+            <div class="project-card" onclick="window.location.href='traller.html'">
+                <img src="001.png" alt="Traller">
+                <h3>Traller</h3>
+            </div>
             <div class="project-card" onclick="window.location.href='gensync.html'">
                 <img src="../images/gensync.jpg" alt="Gensync">
                 <h3>Gensync</h3>
@@ -695,7 +711,7 @@
                 <div class="social-links">
                     <a href="https://linkedin.com/in/jane-z-439910293" target="_blank"><i class="fab fa-linkedin"></i>LinkedIn</a>
                     <a href="https://github.com/jo1-yo" target="_blank"><i class="fab fa-github"></i>GitHub</a>
-                    <a href="https://www.instagram.com/jane1234862946/" target="_blank"><i class="fab fa-instagram"></i>Instagram</a>
+                    <a href="https://www.instagram.com/janezz1_yo/" target="_blank"><i class="fab fa-instagram"></i>Instagram</a>
                 </div>
             </div>
         </div>
