@@ -3,803 +3,3737 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jane Zhang - Personal Website</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Jane's Portfolio | Four Seasons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
     <style>
-        /* 自定义光标 */
-        body {
+        * {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-            background-color: #f8f8f8;
-            color: #121212;
-            overflow-x: hidden;
-            cursor: auto;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        /* 移动端提示 */
-        .mobile-notice {
-            display: none;
+
+        body {
+            overflow: hidden;
+            font-family: 'Cormorant Garamond', serif;
+            background: #1a1a1a;
+        }
+
+        #canvas-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #121212;
-            color: white;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
+            z-index: 1;
         }
-        
-        .mobile-notice p {
-            font-size: 24px;
-            line-height: 1.5;
-            max-width: 80%;
-        }
-        
-        /* 让所有可点击元素使用指针光标 */
-        a, button, input[type="button"], input[type="submit"], .project {
-            cursor: pointer;
-        }
-        
-        /* 导航栏 */
-        nav {
+
+        .ui-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             z-index: 100;
-            mix-blend-mode: difference;
-            box-sizing: border-box;
+            pointer-events: none;
         }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-        
-        nav ul li {
-            margin-left: 30px;
-        }
-        
-        nav a {
-            color: white;
-            text-decoration: none;
-            font-weight: 300;
-            font-size: 18px;
-            transition: opacity 0.3s;
-        }
-        
-        nav a:hover {
-            opacity: 0.7;
-        }
-        
-        /* 英雄区域 */
-        .hero {
-            position: relative;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #121212;
-            color: white;
-            padding: 0 5%;
-        }
-        
-        .hero-text {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            max-width: 1000px;
-        }
-        
-        .hero h1 {
-            font-size: 5.5vw; /* 缩小字体大小 */
-            font-weight: 700;
-            margin: 0;
-            line-height: 1.1;
-            transform: translateY(50px);
-            opacity: 0;
-            animation: fadeUp 1s forwards 0.5s;
-        }
-        
-        .hero .subtitle {
-            font-size: 1.8vw; /* 缩小字体大小 */
-            font-weight: 300;
-            margin-top: 20px;
-            transform: translateY(50px);
-            opacity: 0;
-            animation: fadeUp 1s forwards 0.8s;
-            color: #f0f0f0;
-        }
-        
-        .hero p {
-            font-size: 1.1vw; /* 缩小字体大小 */
-            font-weight: 300;
-            margin-top: 30px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.6;
-            transform: translateY(50px);
-            opacity: 0;
-            animation: fadeUp 1s forwards 1.1s;
-            color: #aaa;
-        }
-        
-        .scroll-indicator {
-            position: absolute;
-            bottom: 40px;
+
+        .season-indicator {
+            position: fixed;
+            top: 40px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+        }
+
+        .season-name {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 4rem;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
             opacity: 0;
-            animation: fadeIn 1s forwards 1.5s, bounce 2s infinite 1.5s;
-        }
-        
-        .scroll-indicator svg {
-            width: 30px;
-            height: 30px;
-            fill: white;
-        }
-        
-        /* 项目部分 */
-        .projects {
-            padding: 80px 5% 100px;  /* 减少顶部padding */
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .projects::before {
-            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at 50% 50%, rgba(240,240,240,0.5) 0%, rgba(248,248,248,1) 70%);
-            pointer-events: none;
-            transform: translateY(100%);
-            opacity: 0;
-            transition: transform 1s, opacity 1s;
+            left: 50%;
+            transform: translateX(-50%);
+            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            transition: opacity 0.5s ease;
         }
-        
-        .projects.visible::before {
-            transform: translateY(0);
-            opacity: 1;
+
+        .season-name.spring { color: #f5b7c5; }
+        .season-name.summer { color: #7dd87d; }
+        .season-name.autumn { color: #e8a649; }
+        .season-name.winter { color: #c5dff5; }
+
+        .season-name.active {
+            animation: seasonFadeInOut 3s ease forwards;
         }
-        
-        .projects-title {
-            font-size: 4vw;
-            margin-top: 0;
-            margin-bottom: 80px; /* 增加标题与卡片的间距 */
-            opacity: 0;
-            transform: translateY(0);
-            transition: all 1s;
-            position: relative;
-            display: inline-block;
+
+        @keyframes seasonFadeInOut {
+            0% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+            10% { opacity: 1; transform: translateX(-50%) scale(1); }
+            70% { opacity: 1; transform: translateX(-50%) scale(1); }
+            85% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+            90% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+            100% { opacity: 0; transform: translateX(-50%) scale(1); }
         }
-        
-        .projects-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background-color: #121212;
-            transition: width 1.5s ease-out 0.5s;
+
+        .hint-text {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
         }
-        
-        .projects-title.visible::after {
-            width: 100%;
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
         }
-        
-        .projects-grid {
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
             display: flex;
-            gap: 30px;
-            justify-content: center; /* 居中显示 */
-            flex-wrap: nowrap; /* 不换行 */
-            max-width: 1600px; /* 增加最大宽度以容纳四个卡片 */
-            margin: 0 auto;
+            gap: 12px;
         }
-        
-        .project-card {
-            display: block;
-            width: 320px; /* 减小宽度以适应四个卡片 */
-            height: 450px; /* 相应调整高度 */
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-            text-decoration: none;
-            color: #222;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+        .scroll-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
             cursor: pointer;
-            padding: 0;
-            overflow: hidden;
-            position: relative;
+            border: 1px solid rgba(255,255,255,0.2);
         }
         
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        .scroll-dot:hover {
+            background: rgba(255,255,255,0.6);
+            transform: scale(1.15);
         }
-        
-        .project-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 16px;
-            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+
+        .scroll-dot.active {
+            background: rgba(255,255,255,0.9);
+            transform: scale(1.2);
+            border-color: rgba(255,255,255,0.6);
         }
-        
-        .project-card:hover img {
-            transform: scale(1.1);
-        }
-        
-        .project-card h3 {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            margin: 0;
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #fff;
-            text-decoration: none;
-            padding: 30px;
-            text-align: center;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
-            z-index: 1;
-            transition: all 0.4s ease;
-        }
-        
-        .project-card:hover h3 {
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
-            padding-bottom: 40px;
-        }
-        
-        .project-card p {
-            margin: 0 0 16px 0;
-            color: #666;
-            line-height: 1.5;
-        }
-        
-        .project-card .view-code {
-            margin-top: 12px;
-            display: inline-block;
-            padding: 8px 18px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            color: #444;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        /* 动画效果 */
-        @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateX(-50%) translateY(0);
-            }
-            40% {
-                transform: translateX(-50%) translateY(-10px);
-            }
-            60% {
-                transform: translateX(-50%) translateY(-5px);
-            }
-        }
-        
-        /* 页脚 */
-        footer {
-            padding: 50px;
-            background-color: #121212;
-            color: white;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        footer::before {
-            content: '';
-            position: absolute;
+
+        .project-modal {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transform: translateX(-100%);
-            transition: transform 1.5s;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
         }
-        
-        footer.visible::before {
-            transform: translateX(100%);
-        }
-        
-        .visible {
+
+        .project-modal.active {
             opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            max-width: 700px;
+            padding: 60px;
+            text-align: center;
+            transform: translateY(30px);
+            transition: transform 0.5s ease;
+        }
+
+        .project-modal.active .modal-content {
             transform: translateY(0);
         }
-        
-        /* 响应式设计 */
-        @media (max-width: 1200px) {
-            .projects-grid {
-                gap: 20px;
-                max-width: 1200px;
-            }
-            
-            .project-card {
-                width: 280px;
-                height: 400px;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .mobile-notice {
-                display: flex;
-            }
-            
-            body > *:not(.mobile-notice) {
-                display: none;
-            }
-            
-            .hero h1 {
-                font-size: 10vw;
-            }
-            
-            .hero .subtitle {
-                font-size: 4vw;
-            }
-            
-            .hero p {
-                font-size: 3.5vw;
-            }
-            
-            .projects-title {
-                font-size: 7vw;
-            }
-        }
-        
-        /* CTA按钮样式 */
-        .cta-button {
-            display: inline-block;
-            margin-top: 40px;
-            padding: 16px 45px;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.1em;
-            letter-spacing: 0.5px;
-            border-radius: 50px;
-            transform: translateY(50px);
-            opacity: 0;
-            animation: fadeUp 1s forwards 1.4s;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+
+        .modal-icon {
+            font-size: 4rem;
+            margin-bottom: 30px;
         }
 
-        .cta-button::before {
-            content: '';
-            position: absolute;
+        .modal-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-description {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.8;
+            margin-bottom: 25px;
+        }
+
+        .modal-status {
+            display: inline-block;
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            letter-spacing: 0.1em;
+        }
+
+        .modal-status:empty {
+            display: none;
+        }
+
+        .modal-links {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .modal-links:empty {
+            display: none;
+        }
+
+        .modal-link {
+            display: inline-block;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff;
+            padding: 10px 25px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-link:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.4);
+            color: #fff;
+            padding: 15px 40px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #fff;
+        }
+
+        .click-hint {
+            position: fixed;
+            padding: 12px 25px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 0.95rem;
+            letter-spacing: 0.1em;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 200;
+        }
+
+        .click-hint.visible {
+            opacity: 1;
+        }
+
+        .loading-screen {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                120deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.1) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: translateX(-100%);
-            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .cta-button::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(
-                circle,
-                rgba(255, 255, 255, 0.08) 0%,
-                transparent 70%
-            );
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15),
-                       0 0 0 1px rgba(255, 255, 255, 0.1);
-        }
-
-        .cta-button:hover::before {
-            transform: translateX(100%);
-        }
-
-        .cta-button:hover::after {
-            opacity: 1;
-        }
-
-        /* 联系部分样式 */
-        .contact {
-            padding: 100px 5%;
-            background: #121212;
-            color: white;
-            text-align: center;
-        }
-
-        .contact h2 {
-            font-size: 2vw;
-            margin-bottom: 60px;
-            position: relative;
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .contact-item {
-            padding: 25px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            z-index: 2000;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             align-items: center;
-            min-height: 120px;
+            justify-content: center;
+            transition: opacity 1s ease;
         }
 
-        .contact-item h3 {
-            margin-bottom: 15px;
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .contact-item p {
-            margin-top: 0;
-            display: flex;
-            align-items: center;
-            height: 40px;
+        .loading-text {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 0.3em;
+            margin-bottom: 30px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(255,255,255,0.2);
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            width: 0%;
+            height: 100%;
+            background: #fff;
+            transition: width 0.3s ease;
+        }
+
+        .name-title {
+            position: fixed;
+            top: 50%;
+            left: 50px;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: left center;
+            z-index: 100;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.4em;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
         }
 
         .social-links {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 100;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 12px;
-            margin-top: 0;
-            flex: 1;
-            width: 100%;
-            padding-top: 0;
-            height: 40px;
+            gap: 20px;
         }
 
-        .social-links a {
-            color: white;
+        .social-link {
+            color: rgba(255,255,255,0.5);
             text-decoration: none;
-            opacity: 0.7;
-            transition: all 0.3s;
-            font-size: 0.95em;
-            padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            transition: color 0.3s ease;
+        }
+
+        .social-link:hover {
+            color: #fff;
+        }
+
+        .switch-view-btn {
+            position: fixed;
+            top: 40px;
+            right: 40px;
+            z-index: 500;
+            padding: 12px 24px;
+            background: rgba(180, 180, 180, 0.4);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 30px;
+            color: #333;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
+            pointer-events: auto;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
         }
 
-        .social-links a i {
-            font-size: 1.1em;
+        .switch-view-btn:hover {
+            background: rgba(160, 160, 160, 0.5);
+            border-color: rgba(255,255,255,0.8);
+            color: #222;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .social-links a i.fa-linkedin {
-            color: #0077B5;
-        }
-
-        .social-links a i.fa-github {
-            color: #ffffff;
-        }
-
-        .social-links a i.fa-instagram {
-            background: -webkit-linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .social-links a:hover {
-            opacity: 1;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .social-links a:hover i {
-            transform: scale(1.1);
-            transition: transform 0.3s ease;
-        }
-
-        .spark-word {
-            position: relative;
-            display: inline-block;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .spark-word:hover .spark-letter {
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
-        }
-
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            width: 8px;
-            height: 8px;
-            background: linear-gradient(to right, #FFD700, #fff);
-            border-radius: 50%;
-            opacity: 0;
-            box-shadow: 0 0 15px #FFD700;
-        }
-
-        @keyframes particleAnimation {
-            0% {
-                transform: translate(0, 0) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--tx), var(--ty)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        .spark-letter {
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: linear-gradient(45deg, #36D1DC, #5B86E5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: textShine 3s ease-in-out infinite alternate;
-        }
-        
-        .spark-letter:hover {
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
-        }
-        
-        @keyframes textShine {
-            0% {
-                background-position: 0% 50%;
-            }
-            100% {
-                background-position: 100% 50%;
-            }
-        }
-
-        .project-links a {
-            color: #666;
-            text-decoration: none;
-            font-size: 0.95em;
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .project-links a:hover {
-            background: rgba(0, 0, 0, 0.1);
-            color: #333;
-        }
-
-        .project-link {
-            text-decoration: none;
-            color: inherit;
+        .switch-view-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: #555;
         }
     </style>
 </head>
 <body>
-    <!-- 移动端提示 -->
-    <div class="mobile-notice">
-        <p>当前仅支持电脑端访问，手机版即将上线，敬请期待。
-        Please access via desktop. Mobile version coming soon.</p>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">ENTERING JANE'S INNER WORLD</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
     </div>
-    
-    
-    <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
-    <video autoplay loop muted playsinline style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
-        <source src="logoo.mp4" type="video/mp4">
-        <!-- 备用图片，当视频无法播放时显示 -->
-        <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
-    </video>
+
+    <div id="canvas-container"></div>
+
+    <div class="season-indicator">
+        <div class="season-name spring active" id="springTitle">Spring</div>
+        <div class="season-name summer" id="summerTitle">Summer</div>
+        <div class="season-name autumn" id="autumnTitle">Autumn</div>
+        <div class="season-name winter" id="winterTitle">Winter</div>
     </div>
-    <nav style="padding-left: 220px;"> <!-- 给nav加左内边距，避免和logo重叠 -->
-        <ul style="margin-left: auto;">
-            <li><a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">Home</a></li>
-            <li><a href="#projects" onclick="document.getElementById('projects').scrollIntoView({behavior: 'smooth'}); return false;">Projects</a></li>
-            <li><a href="#blog">Blog</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </nav>
-    
-    <section class="hero">
-        <div class="hero-text">
-            <h1>Jane Zhang</h1>
-            <div class="subtitle">Entrepreneur | Designer | Rock Climber</div>
-            <p>Curious mind, creative doer, and natural connector. I love bringing people and ideas together to spark real-world impact.</p>
-            <a href="#projects" class="cta-button">Explore My Work</a>
+
+    <div class="hint-text" id="hintText">Click the apples to explore</div>
+
+    <div class="scroll-indicator">
+        <div class="scroll-dot active" data-season="0"></div>
+        <div class="scroll-dot" data-season="1"></div>
+        <div class="scroll-dot" data-season="2"></div>
+        <div class="scroll-dot" data-season="3"></div>
+    </div>
+
+    <div class="click-hint" id="clickHint">Click to view project</div>
+
+    <div class="name-title">Jane's Portfolio</div>
+
+    <a href="index-classic.html" class="switch-view-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+        </svg>
+        Classic View
+    </a>
+
+    <div class="social-links">
+        <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" class="social-link">LinkedIn</a>
+        <a href="https://github.com/jo1-yo" target="_blank" class="social-link">GitHub</a>
+        <a href="mailto:janezhang2033@163.com" class="social-link">Email</a>
+    </div>
+
+    <div class="project-modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">🍎</div>
+            <h2 class="modal-title" id="modalTitle">Project Title</h2>
+            <div class="modal-status" id="modalStatus"></div>
+            <p class="modal-description" id="modalDescription">Project description goes here.</p>
+            <div class="modal-links" id="modalLinks"></div>
+            <button class="modal-close" onclick="closeModal()">Close</button>
         </div>
-        <div class="scroll-indicator">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M12 5l-8 8 1.4 1.4L12 7.8l6.6 6.6L20 13l-8-8z" transform="rotate(180 12 12)"></path>
-            </svg>
-        </div>
-    </section>
-    
-    <section class="projects" id="projects">
-        <h2 class="projects-title">Projects</h2>
-        <div class="projects-grid">
-            <div class="project-card" onclick="window.location.href='traller.html'">
-                <img src="001.png" alt="Traller">
-                <h3>Traller</h3>
-            </div>
-            <div class="project-card" onclick="window.location.href='gensync.html'">
-                <img src="../images/gensync.jpg" alt="Gensync">
-                <h3>Gensync</h3>
-            </div>
-            <div class="project-card" onclick="window.location.href='suab.html'">
-                <img src="../images/suab.jpg" alt="SUAB">
-                <h3>SUAB</h3>
-            </div>
-            <div class="project-card">
-                <img src="../images/more.jpg" alt="More">
-                <h3>More...</h3>
-            </div>
-        </div>
-    </section>
-    
-    <section id="contact" class="contact">
-        <h2>Connect with me — to see what we can <span class="spark-word">
-            <span class="spark-letter">s</span><span class="spark-letter">p</span><span class="spark-letter">a</span><span class="spark-letter">r</span><span class="spark-letter">k</span>
-        </span> together</h2>
-        <div class="contact-grid">
-            <div class="contact-item">
-                <h3>Email</h3>
-                <p>janezhang2033@163.com</p>
-            </div>
-            <div class="contact-item">
-                <h3>Social Media</h3>
-                <div class="social-links">
-                    <a href="https://linkedin.com/in/jane-z-439910293" target="_blank"><i class="fab fa-linkedin"></i>LinkedIn</a>
-                    <a href="https://github.com/jo1-yo" target="_blank"><i class="fab fa-github"></i>GitHub</a>
-                    <a href="https://www.instagram.com/janezz1_yo/" target="_blank"><i class="fab fa-instagram"></i>Instagram</a>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <footer>
-        <p>&copy; 2025 Jane Zhang. All rights reserved.</p>
-    </footer>
-    
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
-        // JavaScript代码保持不变
-        window.addEventListener('scroll', function() {
-            const scrollPosition = window.scrollY;
-            const windowHeight = window.innerHeight;
+        // ============================================
+        // SIMPLEX NOISE 实现 (用于树皮位移)
+        // ============================================
+        class SimplexNoise {
+            constructor(seed = Math.random()) {
+                this.p = new Uint8Array(256);
+                this.perm = new Uint8Array(512);
+                this.permMod12 = new Uint8Array(512);
+                
+                for (let i = 0; i < 256; i++) this.p[i] = i;
+                for (let i = 255; i > 0; i--) {
+                    const n = Math.floor((seed = (seed * 16807) % 2147483647) / 2147483647 * (i + 1));
+                    [this.p[i], this.p[n]] = [this.p[n], this.p[i]];
+                }
+                for (let i = 0; i < 512; i++) {
+                    this.perm[i] = this.p[i & 255];
+                    this.permMod12[i] = this.perm[i] % 12;
+                }
+            }
             
-            // 项目部分动画
-            const projectsSection = document.querySelector('.projects');
-            const projectsTitle = document.querySelector('.projects-title');
-            const projects = document.querySelectorAll('.project');
-            const footer = document.querySelector('footer');
-            const logo = document.getElementById('logo');
+            // 3D Simplex noise
+            noise3D(x, y, z) {
+                const F3 = 1/3, G3 = 1/6;
+                const grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+                
+                const s = (x + y + z) * F3;
+                const i = Math.floor(x + s), j = Math.floor(y + s), k = Math.floor(z + s);
+                const t = (i + j + k) * G3;
+                const X0 = i - t, Y0 = j - t, Z0 = k - t;
+                const x0 = x - X0, y0 = y - Y0, z0 = z - Z0;
+                
+                let i1, j1, k1, i2, j2, k2;
+                if (x0 >= y0) {
+                    if (y0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=1; k2=0; }
+                    else if (x0 >= z0) { i1=1; j1=0; k1=0; i2=1; j2=0; k2=1; }
+                    else { i1=0; j1=0; k1=1; i2=1; j2=0; k2=1; }
+                } else {
+                    if (y0 < z0) { i1=0; j1=0; k1=1; i2=0; j2=1; k2=1; }
+                    else if (x0 < z0) { i1=0; j1=1; k1=0; i2=0; j2=1; k2=1; }
+                    else { i1=0; j1=1; k1=0; i2=1; j2=1; k2=0; }
+                }
+                
+                const x1 = x0 - i1 + G3, y1 = y0 - j1 + G3, z1 = z0 - k1 + G3;
+                const x2 = x0 - i2 + 2*G3, y2 = y0 - j2 + 2*G3, z2 = z0 - k2 + 2*G3;
+                const x3 = x0 - 1 + 3*G3, y3 = y0 - 1 + 3*G3, z3 = z0 - 1 + 3*G3;
+                
+                const ii = i & 255, jj = j & 255, kk = k & 255;
+                
+                const dot = (g, x, y, z) => g[0]*x + g[1]*y + g[2]*z;
+                const contrib = (t, gi, x, y, z) => t < 0 ? 0 : Math.pow(t, 4) * dot(grad3[gi], x, y, z);
+                
+                const t0 = 0.6 - x0*x0 - y0*y0 - z0*z0;
+                const t1 = 0.6 - x1*x1 - y1*y1 - z1*z1;
+                const t2 = 0.6 - x2*x2 - y2*y2 - z2*z2;
+                const t3 = 0.6 - x3*x3 - y3*y3 - z3*z3;
+                
+                const n0 = contrib(t0, this.permMod12[ii + this.perm[jj + this.perm[kk]]], x0, y0, z0);
+                const n1 = contrib(t1, this.permMod12[ii + i1 + this.perm[jj + j1 + this.perm[kk + k1]]], x1, y1, z1);
+                const n2 = contrib(t2, this.permMod12[ii + i2 + this.perm[jj + j2 + this.perm[kk + k2]]], x2, y2, z2);
+                const n3 = contrib(t3, this.permMod12[ii + 1 + this.perm[jj + 1 + this.perm[kk + 1]]], x3, y3, z3);
+                
+                return 32 * (n0 + n1 + n2 + n3);
+            }
+        }
+        
+        const simplex = new SimplexNoise(12345);
+
+        // Projects data
+        const projects = [
+            {
+                id: 1,
+                title: "Jane's Blog",
+                description: "Built an automated GitHub logging system using Shell scripts and GitHub Actions to generate daily, time-stamped commits.",
+                icon: "📝",
+                links: [
+                    { label: "View Code", url: "https://github.com/jo1-yo/learning-log" }
+                ]
+            },
+            {
+                id: 2,
+                title: "AI Relationship Mapper",
+                description: "AI-powered relationship mapper that visualizes and analyzes the connections between characters in stories, movies, and real-world networks.",
+                icon: "🔗",
+                links: [
+                    { label: "View Demo", url: "https://www.youtube.com/watch?v=mQsZdZ9svwM" },
+                    { label: "View Project", url: "https://mulerun.com/" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Pawse",
+                description: "A desktop companion that helps students reduce stress through on-demand supportive conversations and intelligent academic scheduling. Your friendly study buddy.",
+                icon: "🐾",
+                status: "In Development"
+            },
+            {
+                id: 4,
+                title: "Absolute Navigation Lab",
+                description: "This study investigates whether learning an absolute spatial reference frame can alter navigation strategies and performance, for which I developed a custom testing app to deploy and run the experimental tasks for the lab.",
+                icon: "🧭",
+                links: [
+                    { label: "View Code", url: "https://github.com/jo1-yo/Navigation-Training-Study" }
+                ]
+            },
+            {
+                id: 5,
+                title: "Gensync",
+                description: "Bridging the knowledge gap between elderly and young generations. A platform for intergenerational learning and meaningful connections.",
+                icon: "🤝",
+                links: [
+                    { label: "View Code", url: "https://github.com/ms48-gensync" }
+                ]
+            },
+            {
+                id: 6,
+                title: "SUAB",
+                description: "Student Union Against Bullying. A community-driven initiative to create safer, more inclusive educational environments for everyone.",
+                icon: "💪",
+                links: [
+                    { label: "View Project", url: "https://imjane.top/suab.html" }
+                ]
+            }
+        ];
+
+        // Scene setup
+        let scene, camera, renderer, controls;
+        let tree, leaves = [], flowers = [], animals = [], fallingLeaves = [], snowflakes = [];
+        let interactiveObjects = [];
+        let currentSeason = 0;
+        let targetSeason = 0;
+        let seasonTransition = 0;
+        let windTime = 0;
+        let mouse = new THREE.Vector2();
+        let raycaster = new THREE.Raycaster();
+        let hoveredObject = null;
+
+        // Season colors
+        const seasonColors = {
+            spring: {
+                bg: [0.95, 0.92, 0.93],
+                leaves: 0x7cb342,
+                accent: 0xf8bbd9
+            },
+            summer: {
+                bg: [0.85, 0.95, 0.85],
+                leaves: 0x2e7d32,
+                accent: 0x81c784
+            },
+            autumn: {
+                bg: [0.98, 0.9, 0.8],
+                leaves: 0xe65100,
+                accent: 0xffb74d
+            },
+            winter: {
+                bg: [0.88, 0.91, 0.96],      // 稍微偏蓝的天空
+                ground: [0.95, 0.96, 0.98],  // 更白的地面
+                leaves: 0x78909c,
+                accent: 0xeceff1
+            }
+        };
+
+        const seasons = ['spring', 'summer', 'autumn', 'winter'];
+        const hintTexts = [
+            'Click the apples to explore',
+            'Click the animals to discover',
+            'Click the falling leaves',
+            'Click the snowman to discover'
+        ];
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0xfaf0e6, 20, 80);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 30);
+            camera.lookAt(0, 10, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.target.set(0, 10, 0);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 15;
+            controls.maxDistance = 40;
+            controls.maxPolarAngle = Math.PI / 1.8;
+            controls.minPolarAngle = Math.PI / 4;
+            controls.enablePan = false;
+
+            // Lighting
+            setupLighting();
+
+            // Create tree
+            createTree();
+
+            // Create ground
+            createGround();
+
+            // Create seasonal elements
+            createSpringElements();
+            createSummerElements();
+            createAutumnElements();
+            createWinterElements();
+
+            // Create river for autumn
+            createRiver();
+
+            // Events
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('wheel', onWheel, { passive: false });
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mousedown', onMouseDown);
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('click', onClick);
+            window.addEventListener('touchstart', onTouchStart, { passive: false });
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('keydown', onKeyDown);
             
-            // 检查是否滚动到projects部分
-            if (projectsSection.getBoundingClientRect().top < windowHeight * 0.7) {
-                projectsSection.classList.add('visible');
-                projectsTitle.classList.add('visible');
-                logo.style.opacity = '0';
+            // 添加季节点击切换
+            setupSeasonDotClicks();
+
+            // Loading simulation
+            simulateLoading();
+
+            // Start animation
+            animate();
+        }
+
+        function setupLighting() {
+            // Ambient light
+            const ambientLight = new THREE.AmbientLight(0xfff5e6, 0.4);
+            scene.add(ambientLight);
+
+            // Main sun light
+            const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.5);
+            sunLight.position.set(30, 50, 20);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 10;
+            sunLight.shadow.camera.far = 100;
+            sunLight.shadow.camera.left = -30;
+            sunLight.shadow.camera.right = 30;
+            sunLight.shadow.camera.top = 30;
+            sunLight.shadow.camera.bottom = -30;
+            sunLight.shadow.bias = -0.0001;
+            scene.add(sunLight);
+
+            // Fill light
+            const fillLight = new THREE.DirectionalLight(0x87ceeb, 0.3);
+            fillLight.position.set(-20, 20, -10);
+            scene.add(fillLight);
+
+            // Rim light
+            const rimLight = new THREE.DirectionalLight(0xffd700, 0.2);
+            rimLight.position.set(0, 10, -30);
+            scene.add(rimLight);
+
+            // Hemisphere light for sky/ground color
+            const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d2817, 0.3);
+            scene.add(hemiLight);
+        }
+
+        // ============================================
+        // 可调参数 - 树干
+        // ============================================
+        const TRUNK_CONFIG = {
+            radiusTop: 0.4,           // 顶部半径
+            radiusBottom: 1.2,        // 底部半径
+            height: 10,               // 高度
+            radialSegments: 24,       // 圆周分段 (≥24 保证平滑)
+            heightSegments: 64,       // 高度分段 (≥64 保证噪声细节)
+            noiseScale: 2.5,          // 噪声缩放 (越大越细碎)
+            noiseStrength: 0.12,      // 噪声强度 (树皮凹凸深度)
+            knotCount: 3,             // 结疤数量
+            knotSize: 0.25,           // 结疤大小
+            knotStrength: 0.15        // 结疤凸起强度
+        };
+
+        // 主树干 mesh 引用 (用于冬季积雪)
+        let trunkMesh = null;
+        let branchMeshes = [];
+
+        function createTree() {
+            tree = new THREE.Group();
+
+            // 创建高精度真实感树干
+            trunkMesh = createRealisticTrunk();
+            tree.add(trunkMesh);
+
+            // Main branches (保存引用用于冬季积雪)
+            branchMeshes = [];
+            createBranches(tree);
+
+            // Foliage
+            createFoliage(tree);
+
+            scene.add(tree);
+        }
+
+        // ============================================
+        // 创建真实感树干 (Simplex Noise + 结疤)
+        // ============================================
+        function createRealisticTrunk() {
+            const cfg = TRUNK_CONFIG;
+            
+            // 高精度圆柱几何体
+            const trunkGeo = new THREE.CylinderGeometry(
+                cfg.radiusTop,
+                cfg.radiusBottom,
+                cfg.height,
+                cfg.radialSegments,
+                cfg.heightSegments,
+                false  // 不封口，便于查看效果
+            );
+
+            const positions = trunkGeo.attributes.position;
+            const normals = trunkGeo.attributes.normal;
+            
+            // 定义结疤位置 (高度比例, 角度)
+            const knots = [
+                { y: 0.25, angle: 0.5, size: cfg.knotSize * 1.2 },
+                { y: 0.55, angle: 2.8, size: cfg.knotSize },
+                { y: 0.75, angle: 4.5, size: cfg.knotSize * 0.8 }
+            ];
+
+            // 遍历所有顶点应用位移
+            for (let i = 0; i < positions.count; i++) {
+                let x = positions.getX(i);
+                let y = positions.getY(i);
+                let z = positions.getZ(i);
+                
+                // 计算当前点的圆柱坐标
+                const angle = Math.atan2(z, x);
+                const radius = Math.sqrt(x * x + z * z);
+                const heightRatio = (y + cfg.height / 2) / cfg.height; // 0-1
+                
+                // === 1. Simplex Noise 树皮位移 ===
+                // 使用3D噪声，让树皮纹理在各方向自然过渡
+                const noiseX = simplex.noise3D(
+                    x * cfg.noiseScale, 
+                    y * cfg.noiseScale * 0.5,  // Y方向压缩，产生纵向纹理
+                    z * cfg.noiseScale
+                );
+                const noiseZ = simplex.noise3D(
+                    x * cfg.noiseScale + 100, 
+                    y * cfg.noiseScale * 0.5, 
+                    z * cfg.noiseScale + 100
+                );
+                
+                // 噪声位移 (沿径向)
+                const barkDisplace = noiseX * cfg.noiseStrength;
+                
+                // === 2. 结疤 Bulge 位移 ===
+                let knotDisplace = 0;
+                for (const knot of knots) {
+                    const knotY = knot.y * cfg.height - cfg.height / 2;
+                    const distY = Math.abs(y - knotY);
+                    const distAngle = Math.min(
+                        Math.abs(angle - knot.angle),
+                        Math.abs(angle - knot.angle + Math.PI * 2),
+                        Math.abs(angle - knot.angle - Math.PI * 2)
+                    );
+                    
+                    // 高斯衰减
+                    const knotRadius = knot.size;
+                    const dist = Math.sqrt(distY * distY + (distAngle * radius) * (distAngle * radius));
+                    if (dist < knotRadius * 2) {
+                        const falloff = Math.exp(-(dist * dist) / (knotRadius * knotRadius));
+                        knotDisplace += falloff * cfg.knotStrength;
+                    }
+                }
+                
+                // === 3. 应用总位移 ===
+                const totalDisplace = barkDisplace + knotDisplace;
+                const newRadius = radius + totalDisplace;
+                
+                positions.setX(i, Math.cos(angle) * newRadius);
+                positions.setZ(i, Math.sin(angle) * newRadius);
+                
+                // 轻微Y向位移增加有机感
+                positions.setY(i, y + noiseZ * cfg.noiseStrength * 0.3);
+            }
+            
+            positions.needsUpdate = true;
+            trunkGeo.computeVertexNormals(); // 重新计算法线
+
+            // 统一树皮材质 - 树干和分支共用
+            const trunk = new THREE.Mesh(trunkGeo, sharedBarkMaterial);
+            trunk.position.y = cfg.height / 2;
+            trunk.castShadow = true;
+            trunk.receiveShadow = true;
+            trunk.userData.isTrunk = true;
+
+            return trunk;
+        }
+        
+        // ============================================
+        // 统一树皮材质 (树干和分支共用)
+        // ============================================
+        const sharedBarkMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a3728,
+            roughness: 0.95,
+            metalness: 0,
+            flatShading: false
+            });
+
+        // ============================================
+        // 严格 start/end 驱动的树枝系统
+        // ============================================
+        const BRANCH_CONFIG = {
+            radialSegments: 12,       // 分支圆周分段
+            heightSegments: 8,        // 分支高度分段
+            collarSize: 1.4,          // 接头大小倍数
+            collarTubeRatio: 0.4      // 接头管半径比例
+        };
+        
+        // 存储所有分支数据用于 snapBranchJoints
+        let branchDataList = [];
+        let collarMeshes = [];
+        
+        function createBranches(parent) {
+            branchDataList = [];
+            collarMeshes = [];
+            branchMeshes = [];
+            
+            // 计算树干在指定高度的半径 (线性插值)
+            function getTrunkRadiusAtHeight(y) {
+                const cfg = TRUNK_CONFIG;
+                const t = Math.max(0, Math.min(1, y / cfg.height));
+                return cfg.radiusBottom + (cfg.radiusTop - cfg.radiusBottom) * t;
+            }
+            
+            // 主分支配置 - 定义目标方向和高度
+            const mainBranchConfigs = [
+                { height: 7.0, angle: 0.5, end: [5, 12, 3], radius: 0.4, id: 'main1' },
+                { height: 7.5, angle: 2.5, end: [-4, 13, 2], radius: 0.35, id: 'main2' },
+                { height: 8.0, angle: 4.0, end: [3, 14, -4], radius: 0.3, id: 'main3' },
+                { height: 6.5, angle: 3.8, end: [-5, 11, -3], radius: 0.38, id: 'main4' },
+                { height: 8.5, angle: 1.57, end: [0, 15, 0], radius: 0.35, id: 'main5' },
+                { height: 7.2, angle: 5.5, end: [4, 11, -3], radius: 0.32, id: 'main6' },
+                { height: 8.8, angle: 2.0, end: [-3, 14, -1], radius: 0.28, id: 'main7' },
+                { height: 6.8, angle: 1.0, end: [2, 10, 4], radius: 0.3, id: 'main8' },
+            ];
+
+            mainBranchConfigs.forEach(config => {
+                // 计算分支起点 - 稍微深入树干内部以确保连接
+                const trunkRadius = getTrunkRadiusAtHeight(config.height);
+                // 起点设置在树干内部 (50% 深度) 以确保重叠
+                const penetration = trunkRadius * 0.5;
+                const effectiveRadius = trunkRadius - penetration;
+                const startX = Math.cos(config.angle) * effectiveRadius;
+                const startZ = Math.sin(config.angle) * effectiveRadius;
+                const startVec = new THREE.Vector3(startX, config.height, startZ);
+                const endVec = new THREE.Vector3(...config.end);
+                
+                // 创建主分支段 - 使用更大的底部半径
+                const branchData = createBranchSegment(startVec, endVec, config.radius, config.id, null, trunkRadius);
+                parent.add(branchData.group);
+                branchMeshes.push(branchData.mesh);
+                branchDataList.push(branchData);
+                
+                // 严格从 parent.end 开始创建子分支
+                for (let i = 0; i < 3; i++) {
+                    // 子分支的 start 严格等于父分支的 end
+                    const subStart = endVec.clone();
+                    const subEnd = subStart.clone().add(new THREE.Vector3(
+                        (Math.random() - 0.5) * 3,
+                        1 + Math.random() * 2,
+                        (Math.random() - 0.5) * 3
+                    ));
+                    const subRadius = config.radius * 0.5;
+                    
+                    // 直接创建子分支（无接头）
+                    const subBranchData = createBranchSegment(
+                        subStart, subEnd, subRadius, 
+                        `${config.id}_sub${i}`,
+                        config.id // 父分支 ID
+                    );
+                    parent.add(subBranchData.group);
+                    branchMeshes.push(subBranchData.mesh);
+                    branchDataList.push(subBranchData);
+                }
+            });
+        }
+
+        // ============================================
+        // 创建单个分支段 (使用 Unit Cylinder + Group Scale)
+        // ============================================
+        function createBranchSegment(startVec, endVec, radius, id, parentId = null, connectToTrunkRadius = null) {
+            const direction = new THREE.Vector3().subVectors(endVec, startVec);
+            const length = direction.length();
+            const dirNorm = direction.clone().normalize();
+            
+            // 创建 Group 作为分支容器
+            const group = new THREE.Group();
+            group.position.copy(startVec);
+            
+            // 计算底部半径 - 如果连接到树干，使用更大的底部以确保重叠
+            let bottomRadius, topRadius;
+            if (connectToTrunkRadius) {
+                // 连接到树干的主分支：底部要大到能覆盖树干
+                bottomRadius = connectToTrunkRadius * 0.8; // 底部接近树干半径
+                topRadius = radius * 0.5;
             } else {
-                logo.style.opacity = '1';
+                // 普通分支
+                bottomRadius = radius * 0.85;
+                topRadius = radius * 0.45;
             }
             
-            // 检测每个项目是否在视口中
-            projects.forEach((project, index) => {
-                if (project.getBoundingClientRect().top < windowHeight * 0.85) {
-                    setTimeout(() => {
-                        project.style.transition = `transform 0.8s ease-out ${index * 0.15}s, opacity 0.8s ease-out ${index * 0.15}s, box-shadow 0.6s`;
-                        project.classList.add('visible');
-                    }, 100);
-                }
-            });
+            // 使用 Unit Cylinder (高度=1, 中心在 y=0.5)
+            // 通过 scale.y 拉伸到实际长度
+            const unitGeo = new THREE.CylinderGeometry(
+                topRadius,      // 顶部半径
+                bottomRadius,   // 底部半径
+                1,              // 单位高度
+                BRANCH_CONFIG.radialSegments,
+                BRANCH_CONFIG.heightSegments
+            );
             
-            // 页脚动画
-            if (footer.getBoundingClientRect().top < windowHeight * 0.9) {
-                footer.classList.add('visible');
-            }
+            // 应用树皮噪声变形
+            applyBarkNoise(unitGeo, startVec, length, radius);
+            unitGeo.computeVertexNormals();
             
-            // 视差效果
-            document.querySelectorAll('.project-image').forEach((image) => {
-                const speed = 0.03;
-                const rect = image.getBoundingClientRect();
-                if (rect.top < windowHeight && rect.bottom > 0) {
-                    const yPos = (rect.top - windowHeight) * speed;
-                    image.style.backgroundPosition = `center ${yPos}px`;
-                }
-            });
-        });
+            const branchMesh = new THREE.Mesh(unitGeo, sharedBarkMaterial);
+            
+            // 关键: mesh 的 position.y = 0.5 使底部对齐 group 原点
+            branchMesh.position.y = 0.5;
+            
+            // 通过 group.scale.y 拉伸到实际长度
+            group.scale.y = length;
+            
+            // 对齐方向
+            group.quaternion.setFromUnitVectors(
+                new THREE.Vector3(0, 1, 0),
+                dirNorm
+            );
+            
+            group.add(branchMesh);
+            
+            branchMesh.castShadow = true;
+            branchMesh.receiveShadow = true;
+            branchMesh.userData.isBranch = true;
+            
+            return {
+                id: id,
+                parentId: parentId,
+                group: group,
+                mesh: branchMesh,
+                start: startVec.clone(),
+                end: endVec.clone(),
+                direction: dirNorm,
+                length: length,
+                radius: radius
+            };
+        }
         
-        // 页面加载时触发一次滚动事件
-        window.addEventListener('load', function() {
+        // 对分支几何体应用树皮噪声
+        function applyBarkNoise(geometry, startVec, length, radius) {
+            const positions = geometry.attributes.position;
+            const cfg = TRUNK_CONFIG;
+            
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i); // 0 到 1
+                const z = positions.getZ(i);
+                
+                // 计算世界坐标用于噪声采样
+                const worldX = startVec.x + x;
+                const worldY = startVec.y + y * length;
+                const worldZ = startVec.z + z;
+                
+                const noiseScale = 1.0 - y * 0.4; // 顶部噪声减弱
+                const noise = simplex.noise3D(
+                    worldX * cfg.noiseScale * 0.8,
+                    worldY * cfg.noiseScale * 0.4,
+                    worldZ * cfg.noiseScale * 0.8
+                ) * cfg.noiseStrength * 0.4 * noiseScale;
+                
+                const angle = Math.atan2(z, x);
+                const r = Math.sqrt(x * x + z * z);
+                if (r > 0.01) {
+                    const newR = r + noise;
+                    positions.setX(i, Math.cos(angle) * newR);
+                    positions.setZ(i, Math.sin(angle) * newR);
+                }
+            }
+            positions.needsUpdate = true;
+        }
+        
+        // ============================================
+        // 创建分支接头 (木结/collar) - 平滑融合到树干
+        // ============================================
+        function createBranchCollar(startVec, endVec, branchRadius, trunkRadius = null) {
+            const direction = new THREE.Vector3().subVectors(endVec, startVec).normalize();
+            const cfg = BRANCH_CONFIG;
+            const tcfg = TRUNK_CONFIG;
+            
+            // 接头大小 - 如果有树干半径，使用更大的接头融入树干
+            const baseSize = trunkRadius 
+                ? Math.max(branchRadius * 1.5, trunkRadius * 0.6) 
+                : branchRadius * cfg.collarSize;
+            
+            // 使用变形的椭球体创建自然的木结
+            const collarGeo = new THREE.SphereGeometry(baseSize, 14, 10);
+            const positions = collarGeo.attributes.position;
+            
+            // 计算从起点指向树干中心的方向（用于让接头向树干内部延伸）
+            const toCenter = new THREE.Vector3(-startVec.x, 0, -startVec.z).normalize();
+            
+            for (let i = 0; i < positions.count; i++) {
+                let x = positions.getX(i);
+                let y = positions.getY(i);
+                let z = positions.getZ(i);
+                
+                // 沿分支方向压扁
+                const alongBranch = x * direction.x + y * direction.y + z * direction.z;
+                x -= alongBranch * direction.x * 0.4;
+                y -= alongBranch * direction.y * 0.4;
+                z -= alongBranch * direction.z * 0.4;
+                
+                // 向树干方向拉伸（创建融合效果）
+                if (trunkRadius) {
+                    const toCenterDot = x * toCenter.x + z * toCenter.z;
+                    if (toCenterDot > 0) {
+                        // 向树干内部延伸
+                        x += toCenter.x * toCenterDot * 0.5;
+                        z += toCenter.z * toCenterDot * 0.5;
+                    }
+                }
+                
+                // 应用树皮噪声
+                const worldX = x + startVec.x;
+                const worldY = y + startVec.y;
+                const worldZ = z + startVec.z;
+                
+                const noise = simplex.noise3D(
+                    worldX * tcfg.noiseScale * 0.8,
+                    worldY * tcfg.noiseScale * 0.4,
+                    worldZ * tcfg.noiseScale * 0.8
+                ) * tcfg.noiseStrength * 0.5;
+                
+                const dist = Math.sqrt(x * x + z * z);
+                if (dist > 0.01) {
+                    const scale = 1 + noise;
+                    positions.setX(i, x * scale);
+                    positions.setZ(i, z * scale);
+                } else {
+                    positions.setX(i, x);
+                    positions.setZ(i, z);
+                }
+                positions.setY(i, y + noise * 0.15);
+            }
+            positions.needsUpdate = true;
+            collarGeo.computeVertexNormals();
+            
+            const collar = new THREE.Mesh(collarGeo, sharedBarkMaterial);
+            
+            // 位置略微向树干内部偏移
+            const offsetPos = startVec.clone();
+            if (trunkRadius) {
+                offsetPos.add(toCenter.multiplyScalar(baseSize * 0.3));
+            }
+            collar.position.copy(offsetPos);
+            
+            // 朝向分支方向倾斜
+            const upDir = new THREE.Vector3(0, 1, 0);
+            const tiltedDir = direction.clone().lerp(upDir, 0.5).normalize();
+            collar.quaternion.setFromUnitVectors(upDir, tiltedDir);
+            
+            collar.castShadow = true;
+            collar.receiveShadow = true;
+            collar.userData.isCollar = true;
+            
+            return collar;
+        }
+        
+        // ============================================
+        // snapBranchJoints() - 修复分支接缝
+        // 确保 child.start === parent.end
+        // ============================================
+        function snapBranchJoints() {
+            branchDataList.forEach(branchData => {
+                if (branchData.parentId) {
+                    // 找到父分支
+                    const parent = branchDataList.find(b => b.id === branchData.parentId);
+                    if (parent) {
+                        // 计算偏移量
+                        const offset = new THREE.Vector3().subVectors(parent.end, branchData.start);
+                        
+                        if (offset.length() > 0.001) {
+                            // 吸附 start 到 parent.end
+                            branchData.start.copy(parent.end);
+                            
+                            // 更新 group 位置 (保持方向和长度不变)
+                            branchData.group.position.copy(branchData.start);
+                            
+                            // 更新 end 位置
+                            branchData.end.copy(branchData.start).add(
+                                branchData.direction.clone().multiplyScalar(branchData.length)
+                            );
+                        }
+                    }
+                }
+            });
+            
+            // 更新 collar 位置
+            collarMeshes.forEach((collar, index) => {
+                if (index < branchDataList.length) {
+                    collar.position.copy(branchDataList[index].start);
+                }
+            });
+        }
+        
+        // 旧函数保持向后兼容 (重定向到新系统)
+        function createBranch(start, end, radius) {
+            const startVec = Array.isArray(start) ? new THREE.Vector3(...start) : start;
+            const endVec = Array.isArray(end) ? new THREE.Vector3(...end) : end;
+            return createBranchSegment(startVec, endVec, radius, 'compat_' + Math.random()).mesh;
+        }
+
+        function createFoliage(parent) {
+            const leafPositions = [];
+            const leafCount = 1000;
+
+            for (let i = 0; i < leafCount; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI * 0.6;
+                const r = 4 + Math.random() * 6;
+
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = 12 + r * Math.cos(phi) * 0.7 + Math.random() * 3;
+                const z = r * Math.sin(phi) * Math.sin(theta);
+
+                leafPositions.push({ x, y, z });
+            }
+
+            // Create leaf clusters
+            leafPositions.forEach((pos, i) => {
+                const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.2, 6, 4);
+                const leafMat = new THREE.MeshStandardMaterial({
+                    color: 0x7cb342,
+                    roughness: 0.8,
+                    metalness: 0.1,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const leaf = new THREE.Mesh(leafGeom, leafMat);
+                leaf.position.set(pos.x, pos.y, pos.z);
+                leaf.castShadow = true;
+                leaf.userData.originalY = pos.y;
+                leaf.userData.originalX = pos.x;
+                leaf.userData.phase = Math.random() * Math.PI * 2;
+                leaves.push(leaf);
+                parent.add(leaf);
+            });
+        }
+
+        // ============================================
+        // 地面系统 (支持冬季雪地切换)
+        // ============================================
+        const GROUND_CONFIG = {
+            radius: 50,
+            segments: 64,
+            grassColor: 0x4a7c3f,
+            snowColor: 0xfafcff,    // 更亮的雪地颜色，与天空区分
+            snowRoughness: 0.85,    // 稍微光滑一点让雪地更亮
+            snowNoiseScale: 3.0,
+            snowNoiseStrength: 0.15
+        };
+        
+        let groundMesh = null;
+        let grassMeshes = [];
+        let originalGroundMaterial = null;
+        let snowGroundMaterial = null;
+
+        function createGround() {
+            const cfg = GROUND_CONFIG;
+            
+            // 创建更高分段的地面以支持雪地起伏
+            const groundGeom = new THREE.CircleGeometry(cfg.radius, cfg.segments * 2);
+            
+            // 原始草地材质
+            originalGroundMaterial = new THREE.MeshStandardMaterial({
+                color: cfg.grassColor,
+                roughness: 0.95,
+                metalness: 0
+            });
+            
+            groundMesh = new THREE.Mesh(groundGeom, originalGroundMaterial);
+            groundMesh.rotation.x = -Math.PI / 2;
+            groundMesh.receiveShadow = true;
+            scene.add(groundMesh);
+
+            // 创建草丛 (存储引用以便冬季隐藏)
+            // 避开河流区域
+            grassMeshes = [];
+            const grassCount = 200;
+            
+            // 检查点是否在河流区域内 (使用多段线段近似曲线)
+            function isInRiverArea(x, z) {
+                // 河流路径关键点 (与 createRiver 中的 curvePoints 对应)
+                const riverPoints = [
+                    [-50, 35], [-30, 28], [-15, 18], [0, 12],
+                    [12, 8], [18, -2], [25, -12], [35, -25], [50, -40]
+                ];
+                const riverWidth = 14; // 河流宽度 + 缓冲区
+                
+                // 检查点到河流每段线段的最短距离
+                for (let i = 0; i < riverPoints.length - 1; i++) {
+                    const [x1, z1] = riverPoints[i];
+                    const [x2, z2] = riverPoints[i + 1];
+                    
+                    // 线段向量
+                    const dx = x2 - x1;
+                    const dz = z2 - z1;
+                    const segLen = Math.sqrt(dx * dx + dz * dz);
+                    
+                    // 点到线段起点的向量
+                    const px = x - x1;
+                    const pz = z - z1;
+                    
+                    // 投影参数 t
+                    const t = Math.max(0, Math.min(1, (px * dx + pz * dz) / (segLen * segLen)));
+                    
+                    // 线段上最近点
+                    const closestX = x1 + t * dx;
+                    const closestZ = z1 + t * dz;
+                    
+                    // 距离
+                    const dist = Math.sqrt((x - closestX) ** 2 + (z - closestZ) ** 2);
+                    if (dist < riverWidth) return true;
+                }
+                return false;
+            }
+            
+            let created = 0;
+            let attempts = 0;
+            while (created < grassCount && attempts < 1000) {
+                attempts++;
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 5 + Math.random() * 25;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                
+                // 跳过河流区域
+                if (isInRiverArea(x, z)) continue;
+
+                const grassGeom = new THREE.ConeGeometry(0.1, 0.4 + Math.random() * 0.3, 4);
+                const grassMat = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color().setHSL(0.28, 0.6 + Math.random() * 0.2, 0.35 + Math.random() * 0.15),
+                    roughness: 0.9
+                });
+                const grass = new THREE.Mesh(grassGeom, grassMat);
+                grass.position.set(x, 0.15, z);
+                grass.rotation.x = (Math.random() - 0.5) * 0.2;
+                grass.userData.isGrass = true;
+                scene.add(grass);
+                grassMeshes.push(grass);
+                created++;
+            }
+            
+            // 预创建雪地材质和几何体
+            createSnowGroundMaterial();
+        }
+        
+        // ============================================
+        // 创建雪地材质 (带 Simplex 噪声起伏)
+        // ============================================
+        function createSnowGroundMaterial() {
+            const cfg = GROUND_CONFIG;
+            
+            // 创建程序化雪地法线贴图
+            const snowNormalMap = createSnowNormalMap(256);
+            
+            snowGroundMaterial = new THREE.MeshStandardMaterial({
+                color: cfg.snowColor,
+                roughness: cfg.snowRoughness,
+                metalness: 0,
+                normalMap: snowNormalMap,
+                normalScale: new THREE.Vector2(0.3, 0.3)
+            });
+        }
+        
+        // 创建雪地法线贴图 (颗粒感)
+        function createSnowNormalMap(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(size, size);
+            const data = imageData.data;
+            
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const i = (y * size + x) * 4;
+                    
+                    // 多层噪声模拟雪地颗粒
+                    const nx = x / size;
+                    const ny = y / size;
+                    
+                    const n1 = Math.sin(nx * 50 + Math.random() * 0.5) * Math.cos(ny * 50);
+                    const n2 = (Math.random() - 0.5) * 0.3; // 细小颗粒
+                    const n3 = Math.sin(nx * 20) * Math.sin(ny * 20) * 0.2;
+                    
+                    const dx = (n1 + n2) * 0.15;
+                    const dy = (n3 + n2) * 0.15;
+                    
+                    // RGB 编码法线
+                    data[i] = Math.floor(128 + dx * 127);
+                    data[i + 1] = Math.floor(128 + dy * 127);
+                    data[i + 2] = 255;
+                    data[i + 3] = 255;
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(8, 8);
+            return texture;
+        }
+        
+        // ============================================
+        // 设置冬季雪地
+        // ============================================
+        function setWinterGround() {
+            // 隐藏所有草丛
+            grassMeshes.forEach(grass => {
+                grass.visible = false;
+            });
+            
+            // 隐藏花朵
+            flowers.forEach(flower => {
+                flower.visible = false;
+            });
+            
+            // 切换到雪地材质
+            if (groundMesh && snowGroundMaterial) {
+                groundMesh.material = snowGroundMaterial;
+                
+                // 应用轻微的顶点位移创建雪地起伏
+                applySnowDisplacement(groundMesh.geometry);
+            }
+        }
+        
+        // 对地面应用雪地起伏
+        function applySnowDisplacement(geometry) {
+            const positions = geometry.attributes.position;
+            const cfg = GROUND_CONFIG;
+            
+            // 存储原始位置 (首次)
+            if (!geometry.userData.originalPositions) {
+                geometry.userData.originalPositions = positions.array.slice();
+            }
+            
+            const original = geometry.userData.originalPositions;
+            
+            for (let i = 0; i < positions.count; i++) {
+                const x = original[i * 3];
+                const y = original[i * 3 + 1];
+                const z = original[i * 3 + 2];
+                
+                // 使用 Simplex 噪声创建起伏
+                const noise = simplex.noise2D(x * cfg.snowNoiseScale * 0.1, z * cfg.snowNoiseScale * 0.1);
+                const displacement = noise * cfg.snowNoiseStrength;
+                
+                positions.setY(i, y + displacement);
+            }
+            
+            positions.needsUpdate = true;
+            geometry.computeVertexNormals();
+        }
+        
+        // ============================================
+        // 恢复非冬季地面
+        // ============================================
+        function restoreNonWinterGround() {
+            // 显示草丛
+            grassMeshes.forEach(grass => {
+                grass.visible = true;
+            });
+            
+            // 花朵可见性由春季逻辑控制
+            // flowers.forEach(flower => { flower.visible = currentSeason === 0; });
+            
+            // 恢复草地材质
+            if (groundMesh && originalGroundMaterial) {
+                groundMesh.material = originalGroundMaterial;
+                
+                // 恢复原始地面高度
+                restoreGroundDisplacement(groundMesh.geometry);
+            }
+        }
+        
+        // 恢复地面原始高度
+        function restoreGroundDisplacement(geometry) {
+            const positions = geometry.attributes.position;
+            
+            if (geometry.userData.originalPositions) {
+                const original = geometry.userData.originalPositions;
+                
+                for (let i = 0; i < positions.count; i++) {
+                    positions.setX(i, original[i * 3]);
+                    positions.setY(i, original[i * 3 + 1]);
+                    positions.setZ(i, original[i * 3 + 2]);
+                }
+                
+                positions.needsUpdate = true;
+                geometry.computeVertexNormals();
+            }
+        }
+
+        function createSpringElements() {
+            // Apples (clickable projects)
+            const applePositions = [
+                { x: 3, y: 14, z: 2 },
+                { x: -3, y: 13, z: 3 },
+                { x: 4, y: 12, z: -2 },
+                { x: -2, y: 15, z: -2 },
+                { x: 1, y: 13, z: 4 },
+                { x: -4, y: 14, z: -1 }
+            ];
+
+            applePositions.forEach((pos, i) => {
+                const appleGeom = new THREE.SphereGeometry(0.45, 16, 12);
+                const appleMat = new THREE.MeshStandardMaterial({
+                    color: 0xff4444,
+                    roughness: 0.3,
+                    metalness: 0.1
+                });
+                const apple = new THREE.Mesh(appleGeom, appleMat);
+                apple.position.set(pos.x, pos.y, pos.z);
+                apple.userData.type = 'spring';
+                apple.userData.projectId = i;
+                apple.userData.originalScale = 1;
+                apple.castShadow = true;
+                
+                // Add stem
+                const stemGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 6);
+                const stemMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
+                const stem = new THREE.Mesh(stemGeom, stemMat);
+                stem.position.y = 0.5;
+                apple.add(stem);
+                
+                tree.add(apple);
+                interactiveObjects.push(apple);
+            });
+
+            // Flowers around the tree
+            for (let i = 0; i < 40; i++) {
+                const flower = createFlower();
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 3 + Math.random() * 8;
+                flower.position.set(
+                    Math.cos(angle) * radius,
+                    0.1,
+                    Math.sin(angle) * radius
+                );
+                flower.userData.type = 'decoration';
+                flower.userData.season = 'spring';
+                flower.visible = true;
+                flowers.push(flower);
+                scene.add(flower);
+            }
+        }
+
+        function createFlower() {
+            const flower = new THREE.Group();
+            const colors = [0xff69b4, 0xffb6c1, 0xffc0cb, 0xffffff, 0xffff99];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            // Petals
+            for (let i = 0; i < 5; i++) {
+                const petalGeom = new THREE.SphereGeometry(0.15, 8, 6);
+                petalGeom.scale(1, 0.3, 1);
+                const petalMat = new THREE.MeshStandardMaterial({
+                    color: color,
+                    roughness: 0.7
+                });
+                const petal = new THREE.Mesh(petalGeom, petalMat);
+                const angle = (i / 5) * Math.PI * 2;
+                petal.position.set(Math.cos(angle) * 0.15, 0.3, Math.sin(angle) * 0.15);
+                flower.add(petal);
+            }
+
+            // Center
+            const centerGeom = new THREE.SphereGeometry(0.08, 8, 6);
+            const centerMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+            const center = new THREE.Mesh(centerGeom, centerMat);
+            center.position.y = 0.3;
+            flower.add(center);
+
+            // Stem
+            const stemGeom = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+            const stem = new THREE.Mesh(stemGeom, stemMat);
+            stem.position.y = 0.15;
+            flower.add(stem);
+
+            return flower;
+        }
+
+        function createSummerElements() {
+            // Animals (clickable projects)
+            const animalConfigs = [
+                { type: 'squirrel', pos: { x: 4, y: 10, z: 2 } },
+                { type: 'bird', pos: { x: -3, y: 15, z: 2 } },
+                { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
+                { type: 'rabbit', pos: { x: -5, y: 0.5, z: 4 } },
+                { type: 'deer', pos: { x: 6, y: 1.5, z: -4 } },
+                { type: 'owl', pos: { x: 0, y: 17, z: 0 } }
+            ];
+
+            animalConfigs.forEach((config, i) => {
+                const animal = createAnimal(config.type);
+                animal.position.set(config.pos.x, config.pos.y, config.pos.z);
+                animal.userData.type = 'summer';
+                animal.userData.projectId = i;
+                animal.userData.animalType = config.type;
+                animal.userData.originalScale = 1;
+                animal.visible = false;
+                animals.push(animal);
+                scene.add(animal);
+                interactiveObjects.push(animal);
+            });
+        }
+
+        // ============================================
+        // 可调参数 - 动物
+        // ============================================
+        const ANIMAL_CONFIG = {
+            roughness: 0.85,          // 统一粗糙度 (毛皮质感)
+            metalness: 0,             // 零金属度
+            segmentsHigh: 16,         // 高细节球体分段
+            segmentsMed: 12           // 中等细节分段
+        };
+
+        function createAnimal(type) {
+            const group = new THREE.Group();
+            const cfg = ANIMAL_CONFIG;
+            let color;
+
+            // 统一材质创建函数
+            const createFurMaterial = (c, roughnessOffset = 0) => new THREE.MeshStandardMaterial({
+                color: c,
+                roughness: cfg.roughness + roughnessOffset,
+                metalness: cfg.metalness
+            });
+
+            switch(type) {
+                case 'squirrel':
+                    color = 0xd2691e;
+                    const matS = createFurMaterial(color);
+                    const matSLight = createFurMaterial(0xe8a060, -0.1);
+                    
+                    // 身体 - 更高分段
+                    const bodyS = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.4, cfg.segmentsHigh, cfg.segmentsMed),
+                        matS
+                    );
+                    bodyS.scale.set(1, 0.9, 0.8);
+                    bodyS.castShadow = true;
+                    bodyS.receiveShadow = true;
+                    
+                    // 头
+                    const headS = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.28, cfg.segmentsHigh, cfg.segmentsMed),
+                        matS
+                    );
+                    headS.position.set(0.35, 0.25, 0);
+                    headS.castShadow = true;
+                    
+                    // 鼻子
+                    const noseS = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.05, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.3 })
+                    );
+                    noseS.position.set(0.6, 0.25, 0);
+                    
+                    // 眼睛
+                    const eyeMatS = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 });
+                    const eyeS1 = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), eyeMatS);
+                    eyeS1.position.set(0.5, 0.35, 0.12);
+                    const eyeS2 = eyeS1.clone();
+                    eyeS2.position.set(0.5, 0.35, -0.12);
+                    
+                    // 尾巴 - 蓬松
+                    const tailS = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.35, cfg.segmentsHigh, cfg.segmentsMed),
+                        matSLight
+                    );
+                    tailS.scale.set(0.4, 1.8, 0.5);
+                    tailS.position.set(-0.45, 0.5, 0);
+                    tailS.rotation.z = 0.6;
+                    tailS.castShadow = true;
+                    
+                    // 耳朵
+                    const earS1 = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.08, 0.15, 8),
+                        matS
+                    );
+                    earS1.position.set(0.3, 0.5, 0.12);
+                    const earS2 = earS1.clone();
+                    earS2.position.set(0.3, 0.5, -0.12);
+                    
+                    group.add(bodyS, headS, noseS, eyeS1, eyeS2, tailS, earS1, earS2);
+                    break;
+
+                case 'bird':
+                    color = 0x4169e1;
+                    const matB = createFurMaterial(color, -0.2);
+                    const matBLight = createFurMaterial(0x87ceeb, -0.15);
+                    
+                    // 身体
+                    const bodyB = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.32, cfg.segmentsHigh, cfg.segmentsMed),
+                        matB
+                    );
+                    bodyB.scale.set(1.2, 1, 0.9);
+                    bodyB.castShadow = true;
+                    bodyB.receiveShadow = true;
+                    
+                    // 胸部 (浅色)
+                    const chestB = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, cfg.segmentsMed, 8),
+                        matBLight
+                    );
+                    chestB.position.set(0.15, -0.05, 0);
+                    
+                    // 头
+                    const headB = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.22, cfg.segmentsHigh, cfg.segmentsMed),
+                        matB
+                    );
+                    headB.position.set(0.35, 0.18, 0);
+                    headB.castShadow = true;
+                    
+                    // 喙
+                    const beakB = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.06, 0.25, 8),
+                        new THREE.MeshStandardMaterial({ color: 0xffa500, roughness: 0.4 })
+                    );
+                    beakB.rotation.z = -Math.PI / 2;
+                    beakB.position.set(0.58, 0.15, 0);
+                    
+                    // 眼睛
+                    const eyeB = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.04, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 })
+                    );
+                    eyeB.position.set(0.45, 0.25, 0.15);
+                    const eyeB2 = eyeB.clone();
+                    eyeB2.position.z = -0.15;
+                    
+                    // 翅膀
+                    const wingGeoB = new THREE.SphereGeometry(0.25, 8, 6);
+                    wingGeoB.scale(0.3, 1, 0.8);
+                    const wingB1 = new THREE.Mesh(wingGeoB, matB);
+                    wingB1.position.set(-0.1, 0.05, 0.25);
+                    wingB1.rotation.x = 0.3;
+                    const wingB2 = wingB1.clone();
+                    wingB2.position.z = -0.25;
+                    wingB2.rotation.x = -0.3;
+                    
+                    // 尾巴
+                    const tailB = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.15, 0.4, 6),
+                        matB
+                    );
+                    tailB.rotation.z = Math.PI / 2 + 0.3;
+                    tailB.position.set(-0.4, 0.1, 0);
+                    
+                    group.add(bodyB, chestB, headB, beakB, eyeB, eyeB2, wingB1, wingB2, tailB);
+                    break;
+
+                case 'butterfly':
+                    // 身体
+                    const bodyBu = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.04, 0.06, 0.5, 12),
+                        new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 })
+                    );
+                    bodyBu.castShadow = true;
+                    
+                    // 头
+                    const headBu = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.08, 12, 8),
+                        new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 })
+                    );
+                    headBu.position.y = 0.3;
+                    
+                    // 触角
+                    const antennaMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+                    const ant1 = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.2, 6), antennaMat);
+                    ant1.position.set(0.03, 0.4, 0);
+                    ant1.rotation.z = -0.3;
+                    const ant2 = ant1.clone();
+                    ant2.position.x = -0.03;
+                    ant2.rotation.z = 0.3;
+                    
+                    // 翅膀 - 渐变色
+                    const wingColors = [0xff69b4, 0xff1493, 0xda70d6];
+                    const createWing = (isLeft) => {
+                        const wingGroup = new THREE.Group();
+                        // 主翅
+                        const mainWing = new THREE.Mesh(
+                            new THREE.CircleGeometry(0.35, 16),
+                            new THREE.MeshStandardMaterial({
+                                color: wingColors[0],
+                                side: THREE.DoubleSide,
+                                transparent: true,
+                                opacity: 0.85,
+                                roughness: 0.5
+                            })
+                        );
+                        // 下翅
+                        const lowerWing = new THREE.Mesh(
+                            new THREE.CircleGeometry(0.25, 12),
+                            new THREE.MeshStandardMaterial({
+                                color: wingColors[1],
+                                side: THREE.DoubleSide,
+                                transparent: true,
+                                opacity: 0.8,
+                                roughness: 0.5
+                            })
+                        );
+                        lowerWing.position.y = -0.2;
+                        
+                        // 翅膀斑点
+                        const spot = new THREE.Mesh(
+                            new THREE.CircleGeometry(0.08, 8),
+                            new THREE.MeshStandardMaterial({
+                                color: 0xffffff,
+                                side: THREE.DoubleSide,
+                                transparent: true,
+                                opacity: 0.7
+                            })
+                        );
+                        spot.position.set(0.1, 0.1, 0.01);
+                        
+                        wingGroup.add(mainWing, lowerWing, spot);
+                        wingGroup.position.set(isLeft ? 0.25 : -0.25, 0.1, 0);
+                        wingGroup.rotation.y = isLeft ? 0.4 : -0.4;
+                        return wingGroup;
+                    };
+                    
+                    const wing1Bu = createWing(true);
+                    const wing2Bu = createWing(false);
+                    
+                    group.add(bodyBu, headBu, ant1, ant2, wing1Bu, wing2Bu);
+                    group.userData.wings = [wing1Bu, wing2Bu]; // 保存翅膀引用用于动画
+                    break;
+
+                case 'rabbit':
+                    color = 0xf5f5dc;
+                    const matR = createFurMaterial(color);
+                    const matRPink = createFurMaterial(0xffcccc, -0.1);
+                    
+                    // 身体
+                    const bodyR = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.55, cfg.segmentsHigh, cfg.segmentsMed),
+                        matR
+                    );
+                    bodyR.scale.set(1, 0.85, 0.9);
+                    bodyR.castShadow = true;
+                    bodyR.receiveShadow = true;
+                    
+                    // 头
+                    const headR = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.38, cfg.segmentsHigh, cfg.segmentsMed),
+                        matR
+                    );
+                    headR.position.set(0.55, 0.25, 0);
+                    headR.castShadow = true;
+                    
+                    // 鼻子
+                    const noseR = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.05, 8, 6),
+                        matRPink
+                    );
+                    noseR.position.set(0.9, 0.2, 0);
+                    
+                    // 眼睛
+                    const eyeR = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.06, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.2 })
+                    );
+                    eyeR.position.set(0.75, 0.4, 0.2);
+                    const eyeR2 = eyeR.clone();
+                    eyeR2.position.z = -0.2;
+                    
+                    // 耳朵 - 更长更细腻
+                    const earGeoR = new THREE.CylinderGeometry(0.06, 0.1, 0.6, 12);
+                    const ear1R = new THREE.Mesh(earGeoR, matR);
+                    ear1R.position.set(0.5, 0.75, 0.12);
+                    ear1R.rotation.z = -0.15;
+                    ear1R.castShadow = true;
+                    const ear2R = ear1R.clone();
+                    ear2R.position.z = -0.12;
+                    ear2R.rotation.z = 0.15;
+                    
+                    // 耳朵内部 (粉色)
+                    const innerEarGeo = new THREE.CylinderGeometry(0.03, 0.06, 0.5, 8);
+                    const innerEar1 = new THREE.Mesh(innerEarGeo, matRPink);
+                    innerEar1.position.set(0.52, 0.73, 0.12);
+                    innerEar1.rotation.z = -0.15;
+                    const innerEar2 = innerEar1.clone();
+                    innerEar2.position.z = -0.12;
+                    
+                    // 尾巴
+                    const tailR = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.15, 12, 8),
+                        matR
+                    );
+                    tailR.position.set(-0.5, 0, 0);
+                    tailR.castShadow = true;
+                    
+                    group.add(bodyR, headR, noseR, eyeR, eyeR2, ear1R, ear2R, innerEar1, innerEar2, tailR);
+                    break;
+
+                case 'deer':
+                    color = 0xcd853f;
+                    const matD = createFurMaterial(color);
+                    const matDLight = createFurMaterial(0xdeb887);
+                    
+                    // 身体
+                    const bodyD = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.42, 0.45, 1.4, cfg.segmentsHigh),
+                        matD
+                    );
+                    bodyD.rotation.z = Math.PI / 2;
+                    bodyD.castShadow = true;
+                    bodyD.receiveShadow = true;
+                    
+                    // 颈部
+                    const neckD = new THREE.Mesh(
+                        new THREE.CylinderGeometry(0.15, 0.25, 0.6, 12),
+                        matD
+                    );
+                    neckD.position.set(0.6, 0.4, 0);
+                    neckD.rotation.z = -0.4;
+                    neckD.castShadow = true;
+                    
+                    // 头
+                    const headD = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.28, cfg.segmentsHigh, cfg.segmentsMed),
+                        matD
+                    );
+                    headD.scale.set(1.3, 1, 0.9);
+                    headD.position.set(0.85, 0.7, 0);
+                    headD.castShadow = true;
+                    
+                    // 鼻子
+                    const noseD = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.08, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.5 })
+                    );
+                    noseD.position.set(1.1, 0.65, 0);
+                    
+                    // 眼睛
+                    const eyeD = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.05, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 })
+                    );
+                    eyeD.position.set(0.95, 0.8, 0.18);
+                    const eyeD2 = eyeD.clone();
+                    eyeD2.position.z = -0.18;
+                    
+                    // 鹿角
+                    const antlerMat = new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.7 });
+                    const createAntler = (side) => {
+                        const antler = new THREE.Group();
+                        const main = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.03, 0.05, 0.5, 8),
+                            antlerMat
+                        );
+                        main.rotation.z = side * 0.4;
+                        const branch1 = new THREE.Mesh(
+                            new THREE.CylinderGeometry(0.02, 0.03, 0.25, 6),
+                            antlerMat
+                        );
+                        branch1.position.set(side * 0.1, 0.15, 0);
+                        branch1.rotation.z = side * 0.8;
+                        antler.add(main, branch1);
+                        antler.position.set(0.75, 1.0, side * 0.15);
+                        return antler;
+                    };
+                    const antler1 = createAntler(1);
+                    const antler2 = createAntler(-1);
+                    
+                    // 腿
+                    const legGeoD = new THREE.CylinderGeometry(0.05, 0.07, 0.9, 10);
+                    const legMats = [matD, matDLight];
+                    const legs = [];
+                    const legPositions = [
+                        [0.35, -0.45, 0.22], [-0.35, -0.45, 0.22],
+                        [0.35, -0.45, -0.22], [-0.35, -0.45, -0.22]
+                    ];
+                    legPositions.forEach((pos, i) => {
+                        const leg = new THREE.Mesh(legGeoD, matD);
+                        leg.position.set(...pos);
+                        leg.castShadow = true;
+                        legs.push(leg);
+                    });
+                    
+                    // 尾巴
+                    const tailD = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.08, 0.2, 8),
+                        matDLight
+                    );
+                    tailD.position.set(-0.7, 0.1, 0);
+                    tailD.rotation.z = Math.PI / 2 + 0.3;
+                    
+                    group.add(bodyD, neckD, headD, noseD, eyeD, eyeD2, antler1, antler2, tailD, ...legs);
+                    break;
+
+                case 'owl':
+                    color = 0x8b4513;
+                    const matO = createFurMaterial(color);
+                    const matOLight = createFurMaterial(0xdeb887);
+                    
+                    // 身体
+                    const bodyO = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.45, cfg.segmentsHigh, cfg.segmentsMed),
+                        matO
+                    );
+                    bodyO.scale.set(1, 1.2, 0.9);
+                    bodyO.castShadow = true;
+                    bodyO.receiveShadow = true;
+                    
+                    // 胸部羽毛
+                    const chestO = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.35, cfg.segmentsMed, 8),
+                        matOLight
+                    );
+                    chestO.position.set(0, -0.1, 0.2);
+                    chestO.scale.set(0.8, 1, 0.5);
+                    
+                    // 头
+                    const headO = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.38, cfg.segmentsHigh, cfg.segmentsMed),
+                        matO
+                    );
+                    headO.position.y = 0.55;
+                    headO.castShadow = true;
+                    
+                    // 面盘
+                    const faceO = new THREE.Mesh(
+                        new THREE.CircleGeometry(0.3, 16),
+                        matOLight
+                    );
+                    faceO.position.set(0, 0.55, 0.3);
+                    
+                    // 眼睛 - 大而圆
+                    const eyeOuterO = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.14, 12, 8),
+                        new THREE.MeshStandardMaterial({ color: 0xffff00, roughness: 0.3 })
+                    );
+                    const eyeInnerO = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.06, 8, 6),
+                        new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.2 })
+                    );
+                    eyeOuterO.position.set(0.12, 0.6, 0.3);
+                    eyeInnerO.position.set(0.12, 0.6, 0.38);
+                    const eyeOuterO2 = eyeOuterO.clone();
+                    const eyeInnerO2 = eyeInnerO.clone();
+                    eyeOuterO2.position.x = -0.12;
+                    eyeInnerO2.position.x = -0.12;
+                    
+                    // 喙
+                    const beakO = new THREE.Mesh(
+                        new THREE.ConeGeometry(0.06, 0.15, 8),
+                        new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.5 })
+                    );
+                    beakO.rotation.x = Math.PI;
+                    beakO.position.set(0, 0.45, 0.35);
+                    
+                    // 耳羽
+                    const earTuftGeo = new THREE.ConeGeometry(0.08, 0.2, 6);
+                    const earTuft1 = new THREE.Mesh(earTuftGeo, matO);
+                    earTuft1.position.set(0.2, 0.85, 0.1);
+                    earTuft1.rotation.z = -0.3;
+                    const earTuft2 = earTuft1.clone();
+                    earTuft2.position.x = -0.2;
+                    earTuft2.rotation.z = 0.3;
+                    
+                    // 翅膀
+                    const wingGeoO = new THREE.SphereGeometry(0.35, 8, 6);
+                    wingGeoO.scale(0.3, 1, 0.8);
+                    const wingO1 = new THREE.Mesh(wingGeoO, matO);
+                    wingO1.position.set(0.35, 0, 0);
+                    wingO1.castShadow = true;
+                    const wingO2 = wingO1.clone();
+                    wingO2.position.x = -0.35;
+                    
+                    group.add(bodyO, chestO, headO, faceO, eyeOuterO, eyeInnerO, eyeOuterO2, eyeInnerO2, beakO, earTuft1, earTuft2, wingO1, wingO2);
+                    break;
+            }
+
+            // 为所有子对象设置阴影
+            group.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            
+            return group;
+        }
+
+        function createAutumnElements() {
+            // Falling leaves (clickable projects)
+            for (let i = 0; i < 6; i++) {
+                const leaf = createFallingLeaf(i);
+                leaf.userData.type = 'autumn';
+                leaf.userData.projectId = i;
+                leaf.userData.originalScale = 1;
+                leaf.visible = false;
+                fallingLeaves.push(leaf);
+                scene.add(leaf);
+                interactiveObjects.push(leaf);
+            }
+
+            // More decorative falling leaves
+            for (let i = 0; i < 50; i++) {
+                const leaf = createFallingLeaf(-1);
+                leaf.userData.type = 'decoration';
+                leaf.userData.season = 'autumn';
+                leaf.visible = false;
+                fallingLeaves.push(leaf);
+                scene.add(leaf);
+            }
+        }
+
+        function createFallingLeaf(projectId) {
+            const colors = [0xff6b35, 0xf7c59f, 0xe8a838, 0xc14747, 0xd4a373];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            const shape = new THREE.Shape();
+            shape.moveTo(0, 0);
+            shape.quadraticCurveTo(0.15, 0.1, 0.1, 0.3);
+            shape.quadraticCurveTo(0, 0.35, -0.1, 0.3);
+            shape.quadraticCurveTo(-0.15, 0.1, 0, 0);
+
+            const geom = new THREE.ShapeGeometry(shape);
+            const mat = new THREE.MeshStandardMaterial({
+                color,
+                side: THREE.DoubleSide,
+                roughness: 0.8
+            });
+            const leaf = new THREE.Mesh(geom, mat);
+
+            leaf.position.set(
+                (Math.random() - 0.5) * 20,
+                15 + Math.random() * 10,
+                (Math.random() - 0.5) * 20
+            );
+            leaf.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+            leaf.userData.fallSpeed = 0.02 + Math.random() * 0.02;
+            leaf.userData.swaySpeed = 0.5 + Math.random() * 0.5;
+            leaf.userData.swayAmount = 0.3 + Math.random() * 0.3;
+            leaf.userData.phase = Math.random() * Math.PI * 2;
+            leaf.userData.startY = leaf.position.y;
+            leaf.userData.startX = leaf.position.x;
+
+            if (projectId >= 0) {
+                leaf.scale.setScalar(2);
+            }
+
+            return leaf;
+        }
+
+        // ============================================
+        // 雪人系统
+        // ============================================
+        let snowman = null;
+        let snowmanParts = []; // 可交互的雪人部件
+
+        function createSnowman() {
+            snowman = new THREE.Group();
+            snowman.position.set(0, 0, 0);
+            snowman.visible = false;
+            
+            const snowMat = new THREE.MeshStandardMaterial({
+                color: 0xfcfcfc,
+                roughness: 0.85,
+                metalness: 0
+            });
+            
+            // 身体 - 底部大球
+            const bodyBottom = new THREE.Mesh(
+                new THREE.SphereGeometry(2.2, 32, 32),
+                snowMat
+            );
+            bodyBottom.position.y = 2.2;
+            bodyBottom.castShadow = true;
+            bodyBottom.receiveShadow = true;
+            snowman.add(bodyBottom);
+            
+            // 身体 - 中间球
+            const bodyMiddle = new THREE.Mesh(
+                new THREE.SphereGeometry(1.6, 32, 32),
+                snowMat
+            );
+            bodyMiddle.position.y = 5.5;
+            bodyMiddle.castShadow = true;
+            bodyMiddle.receiveShadow = true;
+            snowman.add(bodyMiddle);
+            
+            // 头部
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(1.2, 32, 32),
+                snowMat
+            );
+            head.position.y = 8.2;
+            head.castShadow = true;
+            head.receiveShadow = true;
+            snowman.add(head);
+            
+            // === 可交互部件 ===
+            
+            // 帽子 - 棕色软呢帽 (project 0 - Jane's Blog)
+            const hatGroup = new THREE.Group();
+            const hatMat = new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.9 });
+            // 帽檐
+            const hatBrim = new THREE.Mesh(
+                new THREE.CylinderGeometry(1.5, 1.6, 0.12, 32),
+                hatMat
+            );
+            hatBrim.position.y = 9.25;
+            hatGroup.add(hatBrim);
+            // 帽身 - 软呢帽圆顶
+            const hatBody = new THREE.Mesh(
+                new THREE.SphereGeometry(1.0, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+                hatMat
+            );
+            hatBody.position.y = 9.3;
+            hatGroup.add(hatBody);
+            // 帽带
+            const hatBand = new THREE.Mesh(
+                new THREE.CylinderGeometry(1.02, 1.02, 0.18, 32),
+                new THREE.MeshStandardMaterial({ color: 0x5c3d2e, roughness: 0.7 })
+            );
+            hatBand.position.y = 9.4;
+            hatGroup.add(hatBand);
+            hatGroup.userData = { type: 'winter', projectId: 0, partName: 'hat', originalScale: 1 };
+            snowman.add(hatGroup);
+            snowmanParts.push(hatGroup);
+            interactiveObjects.push(hatGroup);
+            
+            // 左眼 (project 1 - AI Relationship Mapper)
+            const eyeMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3 });
+            const leftEye = new THREE.Mesh(
+                new THREE.SphereGeometry(0.15, 16, 16),
+                eyeMat
+            );
+            leftEye.position.set(-0.35, 8.45, 1.05);
+            leftEye.userData = { type: 'winter', projectId: 1, partName: 'leftEye', originalScale: 1 };
+            snowman.add(leftEye);
+            snowmanParts.push(leftEye);
+            interactiveObjects.push(leftEye);
+            
+            // 右眼 (project 2 - Pawse)
+            const rightEye = new THREE.Mesh(
+                new THREE.SphereGeometry(0.15, 16, 16),
+                eyeMat
+            );
+            rightEye.position.set(0.35, 8.45, 1.05);
+            rightEye.userData = { type: 'winter', projectId: 2, partName: 'rightEye', originalScale: 1 };
+            snowman.add(rightEye);
+            snowmanParts.push(rightEye);
+            interactiveObjects.push(rightEye);
+            
+            // 胡萝卜鼻子 (project 3 - Absolute Navigation Lab)
+            const nose = new THREE.Mesh(
+                new THREE.ConeGeometry(0.15, 0.8, 12),
+                new THREE.MeshStandardMaterial({ color: 0xff7733, roughness: 0.7 })
+            );
+            nose.position.set(0, 8.15, 1.2);
+            nose.rotation.x = Math.PI / 2;
+            nose.userData = { type: 'winter', projectId: 3, partName: 'nose', originalScale: 1 };
+            snowman.add(nose);
+            snowmanParts.push(nose);
+            interactiveObjects.push(nose);
+            
+            // 嘴巴 - 弯曲的微笑线 (project 4 - Gensync)
+            const smileCurve = new THREE.QuadraticBezierCurve3(
+                new THREE.Vector3(-0.5, 7.7, 1.1),
+                new THREE.Vector3(0, 7.5, 1.2),
+                new THREE.Vector3(0.5, 7.7, 1.1)
+            );
+            const smileGeo = new THREE.TubeGeometry(smileCurve, 16, 0.06, 8, false);
+            const smile = new THREE.Mesh(
+                smileGeo,
+                new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 })
+            );
+            smile.userData = { type: 'winter', projectId: 4, partName: 'mouth', originalScale: 1 };
+            snowman.add(smile);
+            snowmanParts.push(smile);
+            interactiveObjects.push(smile);
+            
+            // 树枝手臂材质
+            const armMat = new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.95 });
+            
+            // 左手臂 (project 5 - SUAB)
+            const leftArmGroup = new THREE.Group();
+            const leftArmMain = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.1, 2.5, 8),
+                armMat
+            );
+            leftArmMain.rotation.z = Math.PI / 2.5;
+            leftArmGroup.add(leftArmMain);
+            // 小分支 (只保留上面那根)
+            const leftTwig1 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.05, 0.6, 6),
+                armMat
+            );
+            leftTwig1.position.set(-0.8, 0.4, 0);
+            leftTwig1.rotation.z = Math.PI / 4;
+            leftArmGroup.add(leftTwig1);
+            leftArmGroup.position.set(-2.5, 5.5, 0);
+            leftArmGroup.userData = { type: 'winter', projectId: 5, partName: 'leftArm', originalScale: 1 };
+            snowman.add(leftArmGroup);
+            snowmanParts.push(leftArmGroup);
+            interactiveObjects.push(leftArmGroup);
+            
+            // 右手臂 (装饰用 - 不可交互)
+            const rightArmGroup = new THREE.Group();
+            const rightArmMain = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.06, 0.1, 2.5, 8),
+                armMat
+            );
+            rightArmMain.rotation.z = -Math.PI / 2.5;
+            rightArmGroup.add(rightArmMain);
+            const rightTwig1 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.05, 0.6, 6),
+                armMat
+            );
+            rightTwig1.position.set(0.8, 0.4, 0);
+            rightTwig1.rotation.z = -Math.PI / 4;
+            rightArmGroup.add(rightTwig1);
+            rightArmGroup.position.set(2.5, 5.5, 0);
+            snowman.add(rightArmGroup);
+            
+            // 纽扣
+            const buttonMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4 });
+            for (let i = 0; i < 3; i++) {
+                const button = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.12, 10, 10),
+                    buttonMat
+                );
+                button.position.set(0, 4.8 + i * 0.65, 1.5 - i * 0.08);
+                snowman.add(button);
+            }
+            
+            // 围巾 - 黄色 (只保留围脖部分)
+            const scarfMat = new THREE.MeshStandardMaterial({ color: 0xd4a017, roughness: 0.75 });
+            // 围巾主环
+            const scarfRing = new THREE.Mesh(
+                new THREE.TorusGeometry(1.3, 0.28, 12, 32),
+                scarfMat
+            );
+            scarfRing.position.y = 6.85;
+            scarfRing.rotation.x = Math.PI / 2;
+            snowman.add(scarfRing);
+            
+            scene.add(snowman);
+        }
+
+        function createWinterElements() {
+            // 创建雪人
+            createSnowman();
+            
+            // 大量装饰雪花 (大雪效果)
+            for (let i = 0; i < 250; i++) {
+                const snowflake = createSnowflake(false, -1);
+                snowflake.userData.type = 'decoration';
+                snowflake.userData.season = 'winter';
+                snowflake.visible = false;
+                snowflakes.push(snowflake);
+                scene.add(snowflake);
+            }
+        }
+
+        // ============================================
+        // 雪花系统 (Billboard Sprite - 不变形)
+        // ============================================
+        const SNOWFLAKE_CONFIG = {
+            interactiveSize: 0.5,     // 可交互雪花大小
+            decorativeMinSize: 0.15,  // 装饰雪花最小尺寸 (增大)
+            decorativeMaxSize: 0.4,   // 装饰雪花最大尺寸 (增大)
+            fallSpeedMin: 0.015,      // 最小下落速度 (加快 - 大雪)
+            fallSpeedMax: 0.045,      // 最大下落速度 (加快 - 大雪)
+            swayAmount: 0.4,          // 摇摆幅度
+            opacity: 0.95,            // 透明度
+            alphaTest: 0.1            // Alpha 测试阈值
+        };
+        
+        let snowflakeTexture = null;
+        
+        // 创建程序化雪花纹理 (圆形/六边形)
+        function createSnowflakeTexture() {
+            const size = 128;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // 清除背景 (透明)
+            ctx.clearRect(0, 0, size, size);
+            
+            const cx = size / 2;
+            const cy = size / 2;
+            const radius = size * 0.4;
+            
+            // 绘制六角雪花
+            ctx.strokeStyle = 'white';
+            ctx.fillStyle = 'white';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            
+            // 中心圆
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 六条主臂
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
+                const armLength = radius;
+                
+                const endX = cx + Math.cos(angle) * armLength;
+                const endY = cy + Math.sin(angle) * armLength;
+                
+                // 主臂
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+                
+                // 侧枝
+                for (let j = 1; j <= 2; j++) {
+                    const branchDist = armLength * (0.35 + j * 0.25);
+                    const branchX = cx + Math.cos(angle) * branchDist;
+                    const branchY = cy + Math.sin(angle) * branchDist;
+                    const branchLen = armLength * 0.25 / j;
+                    
+                    // 两侧对称侧枝
+                    for (let side = -1; side <= 1; side += 2) {
+                        const branchAngle = angle + side * Math.PI / 4;
+                        ctx.beginPath();
+                        ctx.moveTo(branchX, branchY);
+                        ctx.lineTo(
+                            branchX + Math.cos(branchAngle) * branchLen,
+                            branchY + Math.sin(branchAngle) * branchLen
+                        );
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            // 添加径向渐变使边缘柔和
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.2);
+            gradient.addColorStop(0, 'rgba(255,255,255,0)');
+            gradient.addColorStop(0.8, 'rgba(255,255,255,0)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0.5)');
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+        
+        function createSnowflake(isInteractive, projectId) {
+            const cfg = SNOWFLAKE_CONFIG;
+            
+            // 确保纹理已创建
+            if (!snowflakeTexture) {
+                snowflakeTexture = createSnowflakeTexture();
+            }
+            
+            const size = isInteractive 
+                ? cfg.interactiveSize 
+                : cfg.decorativeMinSize + Math.random() * (cfg.decorativeMaxSize - cfg.decorativeMinSize);
+            
+            // 使用 Sprite (自动 Billboard，始终面向相机)
+            const spriteMat = new THREE.SpriteMaterial({
+                map: snowflakeTexture,
+                color: 0xffffff,
+                transparent: true,
+                opacity: isInteractive ? 1 : cfg.opacity,
+                alphaTest: cfg.alphaTest,  // 避免白边
+                depthWrite: false,         // 避免透明排序问题
+                sizeAttenuation: true      // 随距离缩小
+            });
+            
+            const snowflake = new THREE.Sprite(spriteMat);
+            
+            // 等比缩放 (关键: Sprite 只接受等比缩放)
+            snowflake.scale.setScalar(size);
+            
+            // 随机位置
+            snowflake.position.set(
+                (Math.random() - 0.5) * 30,
+                15 + Math.random() * 15,
+                (Math.random() - 0.5) * 30
+            );
+
+            // 运动参数
+            snowflake.userData.fallSpeed = cfg.fallSpeedMin + Math.random() * (cfg.fallSpeedMax - cfg.fallSpeedMin);
+            snowflake.userData.swaySpeed = 0.3 + Math.random() * 0.3;
+            snowflake.userData.swayAmount = cfg.swayAmount * (0.5 + Math.random() * 0.5);
+            snowflake.userData.phase = Math.random() * Math.PI * 2;
+            snowflake.userData.startY = snowflake.position.y;
+            snowflake.userData.startX = snowflake.position.x;
+            snowflake.userData.rotSpeed = (Math.random() - 0.5) * 0.02;
+            snowflake.userData.baseSize = size;
+            
+            // 交互雪花标记
+            if (isInteractive) {
+                snowflake.userData.type = 'winter';
+                snowflake.userData.projectId = projectId;
+                snowflake.userData.originalScale = size;
+            }
+
+            return snowflake;
+        }
+
+        // ============================================
+        // 可调参数 - 蜿蜒河流 (样条曲线生成)
+        // ============================================
+        const RIVER_CONFIG = {
+            width: 10,                // 河流宽度 (加宽)
+            segments: 100,            // 沿样条曲线的分段数
+            flowSpeed1: 0.025,        // 第一层法线流速
+            flowSpeed2: 0.06,         // 第二层法线流速
+            normalScale: 0.3,         // 法线强度
+            opacity: 0.88,            // 透明度
+            roughness: 0.12,          // 水面粗糙度
+            // 更柔和、更浅的水色
+            color: 0x5b9fbf,          // 浅蓝绿色
+            deepColor: 0x3a7a9a,      // 深色调
+            bankColor: 0x8fbc8f,      // 河岸颜色
+            waterLevel: 0.02          // 水面高度 (贴近地面)
+        };
+
+        let riverMesh = null;
+        let riverbedMesh = null;
+        let riverBanks = [];
+        let waterNormal1 = null;
+        let waterNormal2 = null;
+        let riverCurve = null;
+        
+        // ============================================
+        // 跳鱼与水花效果
+        // ============================================
+        const FISH_CONFIG = {
+            jumpInterval: 3000,       // 平均跳跃间隔 (ms)
+            jumpIntervalRandom: 2000, // 随机变化范围
+            jumpHeight: 1.2,          // 跳跃高度 (减小)
+            jumpDuration: 900,        // 跳跃持续时间 (ms)
+            fishSize: 0.15,           // 鱼的大小 (减小)
+            splashParticles: 10,      // 水花粒子数 (减少)
+            splashSpeed: 2.0          // 水花速度 (减慢)
+        };
+        
+        let jumpingFishes = [];
+        let splashParticles = [];
+        let nextFishJumpTime = 0;
+
+        // ============================================
+        // 沿样条曲线生成河流几何体
+        // ============================================
+        function createRiverGeometry(curve, width, segments) {
+            const geometry = new THREE.BufferGeometry();
+            
+            const positions = [];
+            const uvs = [];
+            const indices = [];
+            
+            const halfWidth = width / 2;
+            const points = curve.getSpacedPoints(segments);
+            const tangents = [];
+            
+            // 计算每个点的切线方向
+            for (let i = 0; i < points.length; i++) {
+                const t = i / (points.length - 1);
+                tangents.push(curve.getTangentAt(t));
+            }
+            
+            // 生成顶点
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                const tangent = tangents[i];
+                
+                // 计算垂直于切线的法线方向 (在XZ平面上)
+                const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+                
+                // 左右两个顶点
+                const leftPoint = point.clone().add(normal.clone().multiplyScalar(-halfWidth));
+                const rightPoint = point.clone().add(normal.clone().multiplyScalar(halfWidth));
+                
+                positions.push(leftPoint.x, leftPoint.y, leftPoint.z);
+                positions.push(rightPoint.x, rightPoint.y, rightPoint.z);
+                
+                // UV坐标: X方向0-1 (河宽), Y方向沿河流长度
+                const v = i / (points.length - 1);
+                uvs.push(0, v);
+                uvs.push(1, v);
+            }
+            
+            // 生成三角形索引
+            for (let i = 0; i < points.length - 1; i++) {
+                const a = i * 2;
+                const b = i * 2 + 1;
+                const c = (i + 1) * 2;
+                const d = (i + 1) * 2 + 1;
+                
+                // 两个三角形组成一个四边形
+                indices.push(a, c, b);
+                indices.push(b, c, d);
+            }
+            
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+            geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            return geometry;
+        }
+
+        // 生成程序化法线贴图 (避免外部纹理依赖)
+        function createProceduralNormalMap(size, scale, seed) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(size, size);
+            const data = imageData.data;
+            
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const i = (y * size + x) * 4;
+                    
+                    // 多层噪声叠加
+                    const nx = x / size * scale;
+                    const ny = y / size * scale;
+                    
+                    const n1 = Math.sin(nx * 6 + seed) * Math.cos(ny * 4 + seed * 0.7);
+                    const n2 = Math.sin(nx * 12 + ny * 8 + seed * 1.3) * 0.5;
+                    const n3 = Math.cos(nx * 3 - ny * 5 + seed * 0.5) * 0.3;
+                    
+                    const dx = (n1 + n2) * 0.5;
+                    const dy = (n1 + n3) * 0.5;
+                    
+                    // 编码为RGB法线 (0.5 + 0.5 * value)
+                    data[i] = Math.floor(128 + dx * 127);     // R = X
+                    data[i + 1] = Math.floor(128 + dy * 127); // G = Y
+                    data[i + 2] = 255;                         // B = Z (朝上)
+                    data[i + 3] = 255;                         // A
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        function createRiver() {
+            const cfg = RIVER_CONFIG;
+            
+            // === 1. 创建蜿蜒的样条曲线路径 ===
+            // 河流从场景远处蜿蜒穿过，延伸到雾中消失
+            const curvePoints = [
+                new THREE.Vector3(-50, 0, 35),    // 远处起点 (被雾隐藏)
+                new THREE.Vector3(-30, 0, 28),
+                new THREE.Vector3(-15, 0, 18),
+                new THREE.Vector3(0, 0, 12),
+                new THREE.Vector3(12, 0, 8),      // 靠近树的位置
+                new THREE.Vector3(18, 0, -2),
+                new THREE.Vector3(25, 0, -12),
+                new THREE.Vector3(35, 0, -25),
+                new THREE.Vector3(50, 0, -40)     // 远处终点 (被雾隐藏)
+            ];
+            
+            riverCurve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
+            
+            // === 2. 沿样条曲线生成河流几何体 ===
+            const riverGeo = createRiverGeometry(riverCurve, cfg.width, cfg.segments);
+            
+            // === 3. 河床几何体 (略宽，在水面下方) ===
+            const riverbedGeo = createRiverGeometry(riverCurve, cfg.width + 3, cfg.segments);
+            const riverbedMat = new THREE.MeshStandardMaterial({
+                color: 0x2a1a0a,
+                roughness: 0.95,
+                metalness: 0
+            });
+            riverbedMesh = new THREE.Mesh(riverbedGeo, riverbedMat);
+            riverbedMesh.position.y = -0.08; // 河床贴近地面
+            riverbedMesh.receiveShadow = true;
+            riverbedMesh.userData.type = 'river';
+            riverbedMesh.userData.season = 'autumn';
+            riverbedMesh.visible = false;
+            scene.add(riverbedMesh);
+            
+            // === 4. 河岸过渡带 (沿样条曲线生成) ===
+            const bankColors = [0x7a9b5a, 0x6a8b4a, 0x5a7b3a]; // 更柔和的绿色
+            
+            for (let side = -1; side <= 1; side += 2) {
+                for (let layer = 0; layer < 3; layer++) {
+                    const bankWidth = cfg.width + 2 + layer * 1.5;
+                    const bankGeo = createRiverGeometry(riverCurve, bankWidth, cfg.segments);
+                    const bankMat = new THREE.MeshStandardMaterial({
+                        color: bankColors[layer],
+                        roughness: 0.85,
+                        metalness: 0,
+                transparent: true,
+                        opacity: 0.9 - layer * 0.15
+                    });
+                    const bank = new THREE.Mesh(bankGeo, bankMat);
+                    bank.position.y = 0.01 - layer * 0.005; // 河岸略高于地面
+                    bank.receiveShadow = true;
+                    bank.userData.type = 'river';
+                    bank.userData.season = 'autumn';
+                    bank.visible = false;
+                    scene.add(bank);
+                    riverBanks.push(bank);
+                }
+            }
+            
+            // 创建两个不同比例的程序化法线贴图
+            waterNormal1 = createProceduralNormalMap(256, 4, 1.0);
+            waterNormal2 = createProceduralNormalMap(256, 8, 2.5);
+            
+            // 设置不同的重复比例避免明显平铺
+            waterNormal1.repeat.set(2, 12);
+            waterNormal2.repeat.set(6, 30);
+            
+            // 自定义水面着色器 - 双法线混合 + 菲涅尔
+            const waterVertexShader = `
+                varying vec2 vUv;
+                varying vec3 vWorldPos;
+                varying vec3 vViewDir;
+                
+                void main() {
+                    vUv = uv;
+                    vec4 worldPos = modelMatrix * vec4(position, 1.0);
+                    vWorldPos = worldPos.xyz;
+                    vViewDir = normalize(cameraPosition - worldPos.xyz);
+                    gl_Position = projectionMatrix * viewMatrix * worldPos;
+                }
+            `;
+            
+            const waterFragmentShader = `
+                uniform sampler2D uNormal1;
+                uniform sampler2D uNormal2;
+                uniform vec2 uOffset1;
+                uniform vec2 uOffset2;
+                uniform vec3 uShallowColor;
+                uniform vec3 uDeepColor;
+                uniform vec3 uFogColor;
+                uniform float uOpacity;
+                uniform float uNormalScale;
+                uniform float uFresnelPower;
+                uniform float uFogNear;
+                uniform float uFogFar;
+                
+                varying vec2 vUv;
+                varying vec3 vWorldPos;
+                varying vec3 vViewDir;
+                
+                void main() {
+                    // 采样两层法线并混合 (调整UV比例适配蜿蜒河流)
+                    vec2 uv1 = vUv * vec2(1.5, 8.0) + uOffset1;
+                    vec2 uv2 = vUv * vec2(4.0, 20.0) + uOffset2;
+                    
+                    vec3 n1 = texture2D(uNormal1, uv1).rgb * 2.0 - 1.0;
+                    vec3 n2 = texture2D(uNormal2, uv2).rgb * 2.0 - 1.0;
+                    
+                    // 混合法线 (第二层权重较小)
+                    vec3 normal = normalize(vec3(
+                        n1.x * uNormalScale + n2.x * uNormalScale * 0.5,
+                        n1.y * uNormalScale + n2.y * uNormalScale * 0.5,
+                        1.0
+                    ));
+                    
+                    // 菲涅尔效果
+                    float fresnel = pow(1.0 - max(dot(vViewDir, vec3(0.0, 1.0, 0.0)), 0.0), uFresnelPower);
+                    
+                    // 深度颜色渐变 (基于UV的X方向模拟河流中心更深)
+                    float depthFactor = 1.0 - abs(vUv.x - 0.5) * 2.0;
+                    depthFactor = smoothstep(0.0, 1.0, depthFactor);
+                    vec3 waterColor = mix(uShallowColor, uDeepColor, depthFactor * 0.5);
+                    
+                    // 法线影响的高光
+                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+                    vec3 halfVec = normalize(lightDir + vViewDir);
+                    float spec = pow(max(dot(normal, halfVec), 0.0), 48.0) * 0.3;
+                    
+                    // 流动高光条纹 (更柔和)
+                    float flowStreak = sin(vUv.y * 25.0 + uOffset1.y * 40.0) * 0.5 + 0.5;
+                    flowStreak = pow(flowStreak, 6.0) * 0.1;
+                    
+                    // 最终颜色
+                    vec3 finalColor = waterColor;
+                    finalColor += vec3(0.75, 0.88, 1.0) * fresnel * 0.35;
+                    finalColor += vec3(1.0) * spec;
+                    finalColor += vec3(1.0) * flowStreak;
+                    
+                    // === 雾效淡出 (使河流端点融入雾中) ===
+                    float fogDistance = length(vWorldPos - cameraPosition);
+                    float fogFactor = smoothstep(uFogNear, uFogFar, fogDistance);
+                    finalColor = mix(finalColor, uFogColor, fogFactor);
+                    
+                    // 边缘淡出 (河流起始和终点)
+                    float edgeFade = smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
+                    float finalOpacity = uOpacity * edgeFade;
+                    
+                    gl_FragColor = vec4(finalColor, finalOpacity);
+                }
+            `;
+            
+            const riverMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    uNormal1: { value: waterNormal1 },
+                    uNormal2: { value: waterNormal2 },
+                    uOffset1: { value: new THREE.Vector2(0, 0) },
+                    uOffset2: { value: new THREE.Vector2(0, 0) },
+                    uShallowColor: { value: new THREE.Color(cfg.color) },
+                    uDeepColor: { value: new THREE.Color(cfg.deepColor) },
+                    uFogColor: { value: new THREE.Color(0xfaf0e6) }, // 匹配场景雾色
+                    uOpacity: { value: cfg.opacity },
+                    uNormalScale: { value: cfg.normalScale },
+                    uFresnelPower: { value: 2.2 },
+                    uFogNear: { value: 25 },
+                    uFogFar: { value: 60 }
+                },
+                vertexShader: waterVertexShader,
+                fragmentShader: waterFragmentShader,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            
+            riverMesh = new THREE.Mesh(riverGeo, riverMat);
+            riverMesh.position.y = cfg.waterLevel; // 水面贴近地面
+            riverMesh.userData.type = 'river';
+            riverMesh.userData.season = 'autumn';
+            riverMesh.visible = false;
+            scene.add(riverMesh);
+            
+            // === 创建跳鱼和水花系统 ===
+            createFishAndSplashSystem();
+        }
+        
+        // ============================================
+        // 跳鱼与水花系统
+        // ============================================
+        function createFishAndSplashSystem() {
+            // 鱼的材质
+            const fishMat = new THREE.MeshStandardMaterial({
+                color: 0xc0c0c0,
+                roughness: 0.3,
+                metalness: 0.4
+            });
+            
+            // 预创建几条鱼 (复用)
+            for (let i = 0; i < 3; i++) {
+                const fishGroup = new THREE.Group();
+                
+                // 鱼身
+                const bodyGeo = new THREE.SphereGeometry(FISH_CONFIG.fishSize, 8, 6);
+                bodyGeo.scale(2, 0.6, 0.8);
+                const body = new THREE.Mesh(bodyGeo, fishMat);
+                fishGroup.add(body);
+                
+                // 鱼尾
+                const tailGeo = new THREE.ConeGeometry(FISH_CONFIG.fishSize * 0.5, FISH_CONFIG.fishSize * 0.8, 4);
+                const tail = new THREE.Mesh(tailGeo, fishMat);
+                tail.position.x = -FISH_CONFIG.fishSize * 1.5;
+                tail.rotation.z = Math.PI / 2;
+                fishGroup.add(tail);
+                
+                fishGroup.visible = false;
+                fishGroup.userData.type = 'river';
+                fishGroup.userData.season = 'autumn';
+                fishGroup.userData.isJumping = false;
+                scene.add(fishGroup);
+                jumpingFishes.push(fishGroup);
+            }
+            
+            // 水花粒子
+            const splashGeo = new THREE.SphereGeometry(0.03, 4, 4);
+            const splashMat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            for (let i = 0; i < 30; i++) {
+                const splash = new THREE.Mesh(splashGeo, splashMat.clone());
+                splash.visible = false;
+                splash.userData.type = 'river';
+                splash.userData.season = 'autumn';
+                splash.userData.velocity = new THREE.Vector3();
+                splash.userData.life = 0;
+                scene.add(splash);
+                splashParticles.push(splash);
+            }
+            
+            nextFishJumpTime = Date.now() + 1000;
+        }
+        
+        // 触发鱼跳跃
+        function triggerFishJump() {
+            const availableFish = jumpingFishes.find(f => !f.userData.isJumping);
+            if (!availableFish || !riverCurve) return;
+            
+            // 在河流曲线上随机位置
+            const t = 0.2 + Math.random() * 0.6; // 避免太靠近端点
+            const riverPoint = riverCurve.getPointAt(t);
+            
+            availableFish.position.copy(riverPoint);
+            availableFish.position.y = RIVER_CONFIG.waterLevel;
+            availableFish.userData.isJumping = true;
+            availableFish.userData.jumpStart = Date.now();
+            availableFish.userData.startPos = riverPoint.clone();
+            availableFish.visible = currentSeason === 2;
+            
+            // 随机跳跃方向
+            const jumpAngle = Math.random() * Math.PI * 2;
+            availableFish.userData.jumpDir = new THREE.Vector3(
+                Math.cos(jumpAngle) * 0.5,
+                0,
+                Math.sin(jumpAngle) * 0.5
+            );
+            
+            // 生成入水水花
+            createSplash(riverPoint.x, RIVER_CONFIG.waterLevel, riverPoint.z);
+        }
+        
+        // 创建水花
+        function createSplash(x, y, z) {
+            const cfg = FISH_CONFIG;
+            let spawned = 0;
+            
+            for (let splash of splashParticles) {
+                if (splash.userData.life <= 0 && spawned < cfg.splashParticles) {
+                    splash.position.set(x, y, z);
+                    splash.visible = currentSeason === 2;
+                    splash.userData.life = 1.0;
+                    
+                    // 随机向外喷射
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = cfg.splashSpeed * (0.5 + Math.random() * 0.5);
+                    splash.userData.velocity.set(
+                        Math.cos(angle) * speed * 0.3,
+                        speed * (0.5 + Math.random() * 0.5),
+                        Math.sin(angle) * speed * 0.3
+                    );
+                    spawned++;
+                }
+            }
+        }
+        
+        // 更新跳鱼和水花动画
+        function updateFishAndSplash(deltaTime) {
+            const now = Date.now();
+            const cfg = FISH_CONFIG;
+            
+            // 检查是否该触发新的跳跃
+            if (now > nextFishJumpTime && currentSeason === 2) {
+                triggerFishJump();
+                nextFishJumpTime = now + cfg.jumpInterval + Math.random() * cfg.jumpIntervalRandom;
+            }
+            
+            // 更新跳跃中的鱼
+            jumpingFishes.forEach(fish => {
+                if (fish.userData.isJumping) {
+                    const elapsed = now - fish.userData.jumpStart;
+                    const progress = elapsed / cfg.jumpDuration;
+                    
+                    if (progress >= 1) {
+                        // 跳跃结束
+                        fish.userData.isJumping = false;
+                        fish.visible = false;
+                        // 落水水花
+                        createSplash(fish.position.x, RIVER_CONFIG.waterLevel, fish.position.z);
+                    } else {
+                        // 抛物线运动
+                        const jumpY = Math.sin(progress * Math.PI) * cfg.jumpHeight;
+                        fish.position.y = RIVER_CONFIG.waterLevel + jumpY;
+                        
+                        // 水平移动
+                        fish.position.x = fish.userData.startPos.x + fish.userData.jumpDir.x * progress;
+                        fish.position.z = fish.userData.startPos.z + fish.userData.jumpDir.z * progress;
+                        
+                        // 旋转鱼身模拟跳跃姿态
+                        fish.rotation.z = (progress - 0.5) * Math.PI * 0.8;
+                        
+                        // 朝向移动方向
+                        fish.rotation.y = Math.atan2(fish.userData.jumpDir.z, fish.userData.jumpDir.x);
+                    }
+                }
+            });
+            
+            // 更新水花粒子
+            splashParticles.forEach(splash => {
+                if (splash.userData.life > 0) {
+                    splash.userData.life -= deltaTime * 2;
+                    
+                    // 物理运动
+                    splash.userData.velocity.y -= 9.8 * deltaTime;
+                    splash.position.add(splash.userData.velocity.clone().multiplyScalar(deltaTime));
+                    
+                    // 透明度衰减
+                    splash.material.opacity = splash.userData.life * 0.8;
+                    
+                    // 到达水面或寿命结束时隐藏
+                    if (splash.position.y < RIVER_CONFIG.waterLevel || splash.userData.life <= 0) {
+                        splash.visible = false;
+                        splash.userData.life = 0;
+                    }
+                }
+            });
+        }
+        
+        // 河流动画更新函数
+        function updateRiverAnimation(deltaTime) {
+            if (!riverMesh || !riverMesh.visible || !riverMesh.material.uniforms) return;
+            
+            const cfg = RIVER_CONFIG;
+            const uniforms = riverMesh.material.uniforms;
+            
+            // 滚动UV偏移而非顶点位移
+            uniforms.uOffset1.value.y -= deltaTime * cfg.flowSpeed1;
+            uniforms.uOffset2.value.y -= deltaTime * cfg.flowSpeed2;
+            uniforms.uOffset2.value.x += deltaTime * 0.005; // 轻微横向偏移
+            
+            // 防止数值过大
+            if (uniforms.uOffset1.value.y < -100) uniforms.uOffset1.value.y += 100;
+            if (uniforms.uOffset2.value.y < -100) uniforms.uOffset2.value.y += 100;
+        }
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwiping = false;
+        let seasonChangeCooldown = false;
+
+        function onKeyDown(e) {
+            if (seasonChangeCooldown) return;
+            
+            if (e.code === 'Space' || e.code === 'ArrowRight') {
+                e.preventDefault();
+                if (currentSeason < 3) {
+                    changeSeason(1);
+                }
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSeason > 0) {
+                    changeSeason(-1);
+                }
+            }
+        }
+
+        function onTouchStart(e) {
+            if (e.touches.length === 2) {
+                touchStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                isSwiping = true;
+            }
+        }
+
+        function onTouchMove(e) {
+            if (!isSwiping || e.touches.length !== 2 || seasonChangeCooldown) return;
+            const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const deltaX = currentX - touchStartX;
+            if (Math.abs(deltaX) > 80) {
+                if (deltaX < 0 && currentSeason < 3) {
+                    changeSeason(1);
+                } else if (deltaX > 0 && currentSeason > 0) {
+                    changeSeason(-1);
+                }
+                isSwiping = false;
+            }
+        }
+
+        function onTouchEnd() {
+            isSwiping = false;
+        }
+
+        function onWheel(e) {
+            if (seasonChangeCooldown) return;
+            
+            // Detect horizontal swipe (two finger on trackpad)
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
+                e.preventDefault();
+                if (e.deltaX > 0 && currentSeason < 3) {
+                    changeSeason(1);
+                } else if (e.deltaX < 0 && currentSeason > 0) {
+                    changeSeason(-1);
+                }
+            }
+        }
+
+        function changeSeason(direction) {
+            if (seasonChangeCooldown) return;
+            
+            targetSeason = Math.max(0, Math.min(3, currentSeason + direction));
+            if (targetSeason !== currentSeason) {
+                seasonChangeCooldown = true;
+                currentSeason = targetSeason;
+                updateSeasonUI();
+                transitionSeason();
+                
+                setTimeout(() => {
+                    seasonChangeCooldown = false;
+                }, 800);
+            }
+        }
+        
+        // 点击跳转到指定季节
+        function jumpToSeason(seasonIndex) {
+            if (seasonChangeCooldown || seasonIndex === currentSeason) return;
+            if (seasonIndex < 0 || seasonIndex > 3) return;
+            
+            seasonChangeCooldown = true;
+            currentSeason = seasonIndex;
+            updateSeasonUI();
+            transitionSeason();
+            
             setTimeout(() => {
-                window.dispatchEvent(new Event('scroll'));
-            }, 100);
-        });
+                seasonChangeCooldown = false;
+            }, 800);
+        }
         
-        // 添加spark-letter爆炸火花效果
-        document.querySelectorAll('.spark-letter').forEach(letter => {
-            letter.addEventListener('mouseenter', () => {
-                const rect = letter.getBoundingClientRect();
-                for (let i = 0; i < 36; i++) { // 增加火花数量
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    const angle = (Math.random() * 360) * (Math.PI / 180);
-                    const distance = 80 + Math.random() * 80; // 增加爆炸范围
-                    const tx = Math.cos(angle) * distance;
-                    const ty = Math.sin(angle) * distance;
-                    particle.style.left = `${rect.width / 2}px`;
-                    particle.style.top = `${rect.height / 2}px`;
-                    particle.style.setProperty('--tx', `${tx}px`);
-                    particle.style.setProperty('--ty', `${ty}px`);
-                    const duration = 1.0 + Math.random() * 0.3; // 保持较慢的速度
-                    particle.style.animation = `particleAnimation ${duration}s ease-out forwards`;
-                    letter.appendChild(particle); 
-                    setTimeout(() => {
-                        particle.remove();
-                    }, duration * 1000);
+        // 设置季节点击切换
+        function setupSeasonDotClicks() {
+            document.querySelectorAll('.scroll-dot').forEach((dot) => {
+                dot.style.cursor = 'pointer';
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const seasonIndex = parseInt(dot.getAttribute('data-season'));
+                    jumpToSeason(seasonIndex);
+                });
+            });
+        }
+
+        function updateSeasonUI() {
+            // Update season title with animation reset
+            document.querySelectorAll('.season-name').forEach(el => {
+                el.classList.remove('active');
+                el.style.animation = 'none';
+                el.offsetHeight; // Trigger reflow
+                el.style.animation = '';
+            });
+            
+            const activeTitle = document.getElementById(`${seasons[currentSeason]}Title`);
+            activeTitle.classList.add('active');
+
+            // Update dots
+            document.querySelectorAll('.scroll-dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSeason);
+            });
+
+            // Update hint text
+            document.getElementById('hintText').textContent = hintTexts[currentSeason];
+        }
+
+        // ============================================
+        // 可调参数 - 冬季积雪
+        // ============================================
+        const SNOW_CONFIG = {
+            normalYThreshold: 0.45,   // 世界法线Y阈值 (稍低一点让雪覆盖更多)
+            snowThickness: 0.12,      // 积雪厚度 (增加一点填补缝隙)
+            snowRoughness: 0.92,      // 积雪粗糙度
+            snowOpacity: 0.95,        // 积雪透明度
+            snowColor: 0xe8eaec,      // 积雪颜色 (稍深的白色)
+            edgeSoftness: 0.2         // 边缘过渡柔和度 (更柔和的边缘帮助融合)
+        };
+
+        let snowShells = []; // 存储积雪 mesh 引用
+        let snowShaderMaterial = null; // 共享的积雪着色器材质
+
+        // 创建积雪着色器材质 (基于世界法线Y控制可见性)
+        function createSnowShaderMaterial() {
+            const cfg = SNOW_CONFIG;
+            
+            const snowVertexShader = `
+                varying vec3 vWorldNormal;
+                varying vec3 vWorldPos;
+                
+                void main() {
+                    // 计算世界空间法线
+                    vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
+                    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+                    gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPos, 1.0);
+                }
+            `;
+            
+            const snowFragmentShader = `
+                uniform vec3 uSnowColor;
+                uniform float uOpacity;
+                uniform float uThreshold;
+                uniform float uSoftness;
+                
+                varying vec3 vWorldNormal;
+                varying vec3 vWorldPos;
+                
+                void main() {
+                    // 基于世界法线Y分量决定积雪可见性
+                    float snowAmount = smoothstep(uThreshold - uSoftness, uThreshold + uSoftness, vWorldNormal.y);
+                    
+                    // 完全没有积雪的地方直接丢弃
+                    if (snowAmount < 0.01) discard;
+                    
+                    // 简单光照
+                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+                    float diffuse = max(dot(vWorldNormal, lightDir), 0.3);
+                    
+                    // 轻微的蓝色阴影
+                    vec3 shadowColor = vec3(0.85, 0.9, 1.0);
+                    vec3 finalColor = mix(shadowColor * 0.7, uSnowColor, diffuse);
+                    
+                    // 细微的闪光点
+                    float sparkle = pow(max(dot(vWorldNormal, normalize(vec3(0.3, 1.0, 0.5))), 0.0), 32.0);
+                    finalColor += vec3(1.0) * sparkle * 0.2;
+                    
+                    gl_FragColor = vec4(finalColor, uOpacity * snowAmount);
+                }
+            `;
+            
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    uSnowColor: { value: new THREE.Color(cfg.snowColor) },
+                    uOpacity: { value: cfg.snowOpacity },
+                    uThreshold: { value: cfg.normalYThreshold },
+                    uSoftness: { value: cfg.edgeSoftness }
+                },
+                vertexShader: snowVertexShader,
+                fragmentShader: snowFragmentShader,
+                transparent: true,
+                side: THREE.FrontSide,
+                depthWrite: true
+            });
+        }
+
+        // ============================================
+        // 添加积雪壳 (复制几何体并沿法线扩展)
+        // ============================================
+        function addSnowShell(mesh) {
+            if (!mesh.geometry) return null;
+            
+            const cfg = SNOW_CONFIG;
+            
+            // 克隆几何体
+            const geo = mesh.geometry.clone();
+            
+            // 确保有法线
+            if (!geo.attributes.normal) {
+                geo.computeVertexNormals();
+            }
+            
+            const positions = geo.attributes.position;
+            const normals = geo.attributes.normal;
+            
+            // 沿法线方向均匀扩展 (创建"壳")
+            const newPositions = new Float32Array(positions.count * 3);
+            
+            for (let i = 0; i < positions.count; i++) {
+                const x = positions.getX(i);
+                const y = positions.getY(i);
+                const z = positions.getZ(i);
+                
+                const nx = normals.getX(i);
+                const ny = normals.getY(i);
+                const nz = normals.getZ(i);
+                
+                // 沿法线扩展固定厚度
+                newPositions[i * 3] = x + nx * cfg.snowThickness;
+                newPositions[i * 3 + 1] = y + ny * cfg.snowThickness;
+                newPositions[i * 3 + 2] = z + nz * cfg.snowThickness;
+            }
+            
+            geo.setAttribute('position', new THREE.BufferAttribute(newPositions, 3));
+            geo.computeVertexNormals();
+            
+            // 使用共享的着色器材质
+            if (!snowShaderMaterial) {
+                snowShaderMaterial = createSnowShaderMaterial();
+            }
+            
+            const snowMesh = new THREE.Mesh(geo, snowShaderMaterial);
+            
+            // 复制原 mesh 的变换
+            snowMesh.position.copy(mesh.position);
+            snowMesh.rotation.copy(mesh.rotation);
+            snowMesh.scale.copy(mesh.scale);
+            snowMesh.quaternion.copy(mesh.quaternion);
+            
+            // 如果原 mesh 有父级，需要考虑父级变换
+            if (mesh.parent && mesh.parent !== scene) {
+                // 获取世界变换
+                const worldPos = new THREE.Vector3();
+                const worldQuat = new THREE.Quaternion();
+                const worldScale = new THREE.Vector3();
+                mesh.getWorldPosition(worldPos);
+                mesh.getWorldQuaternion(worldQuat);
+                mesh.getWorldScale(worldScale);
+                
+                snowMesh.position.copy(worldPos);
+                snowMesh.quaternion.copy(worldQuat);
+                snowMesh.scale.copy(worldScale);
+            }
+            
+            snowMesh.castShadow = true;
+            snowMesh.receiveShadow = true;
+            snowMesh.userData.isSnow = true;
+            snowMesh.visible = false;
+            
+            return snowMesh;
+        }
+
+        // 创建所有积雪
+        function createSnowShells() {
+            // 为树干添加积雪
+            if (trunkMesh) {
+                const trunkSnow = addSnowShell(trunkMesh);
+                if (trunkSnow) {
+                    scene.add(trunkSnow);
+                    snowShells.push(trunkSnow);
+                }
+            }
+            
+            // 为分支添加积雪
+            branchMeshes.forEach(branch => {
+                const branchSnow = addSnowShell(branch);
+                if (branchSnow) {
+                    scene.add(branchSnow);
+                    snowShells.push(branchSnow);
                 }
             });
-        });
+            
+            // 不再为接头添加积雪（已移除接头）
+        }
+
+        function transitionSeason() {
+            const season = seasons[currentSeason];
+            const colors = seasonColors[season];
+
+            // Background transition
+            scene.background = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
+            scene.fog.color = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
+
+            // Update leaves color
+            leaves.forEach(leaf => {
+                leaf.material.color.setHex(colors.leaves);
+            });
+
+            // Toggle seasonal elements
+            // Spring elements
+            interactiveObjects.forEach(obj => {
+                if (obj.userData.type === 'spring') {
+                    obj.visible = currentSeason === 0;
+                }
+            });
+            flowers.forEach(f => f.visible = currentSeason === 0);
+
+            // Summer elements
+            animals.forEach(a => {
+                a.visible = currentSeason === 1;
+            });
+
+            // Autumn elements
+            fallingLeaves.forEach(l => {
+                l.visible = currentSeason === 2;
+            });
+            
+            // 河流及河岸 (秋季)
+            scene.children.forEach(child => {
+                if (child.userData.type === 'river') {
+                    child.visible = currentSeason === 2;
+                }
+            });
+            riverBanks.forEach(bank => {
+                bank.visible = currentSeason === 2;
+            });
+
+            // Winter elements
+            snowflakes.forEach(s => {
+                s.visible = currentSeason === 3;
+            });
+
+            // === 冬季特殊处理 ===
+            if (currentSeason === 3) {
+                // 冬季：隐藏整棵树，显示雪人
+                if (tree) tree.visible = false;
+                leaves.forEach(leaf => leaf.visible = false);
+                snowShells.forEach(snow => snow.visible = false);
+                branchMeshes.forEach(branch => branch.visible = false);
+                if (trunkMesh) trunkMesh.visible = false;
+                
+                // 显示雪人和所有可交互部件
+                if (snowman) snowman.visible = true;
+                snowmanParts.forEach(part => part.visible = true);
+                
+                // 设置冬季地面 (纯白雪地)
+                setWinterGround();
+            } else {
+                // 非冬季：显示树，隐藏雪人
+                if (tree) tree.visible = true;
+                leaves.forEach(leaf => {
+                    leaf.visible = true;
+                    leaf.material.opacity = 0.9;
+                });
+                
+                snowShells.forEach(snow => {
+                    snow.visible = false;
+                });
+                branchMeshes.forEach(branch => branch.visible = true);
+                if (trunkMesh) trunkMesh.visible = true;
+                
+                // 隐藏雪人
+                if (snowman) snowman.visible = false;
+                snowmanParts.forEach(part => part.visible = false);
+                
+                // 恢复非冬季地面
+                restoreNonWinterGround();
+            }
+        }
+
+        // ============================================
+        // 动物拖拽系统
+        // ============================================
+        let isDragging = false;
+        let draggedAnimal = null;
+        let dragStartTime = 0;
+        let dragStartPos = new THREE.Vector2();
+        const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Y=0 地面平面
+        const DRAG_THRESHOLD = 10; // 像素，区分点击和拖拽
+        const CLICK_TIME_THRESHOLD = 500; // 毫秒，快速点击判定（增加）
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // 如果正在拖拽动物
+            if (isDragging && draggedAnimal) {
+                handleAnimalDrag(event);
+                return;
+            }
+
+            checkHover();
+
+            const hint = document.getElementById('clickHint');
+            if (hoveredObject) {
+                hint.style.left = event.clientX + 15 + 'px';
+                hint.style.top = event.clientY + 15 + 'px';
+                hint.classList.add('visible');
+            } else {
+                hint.classList.remove('visible');
+            }
+        }
+
+        function handleAnimalDrag(event) {
+            raycaster.setFromCamera(mouse, camera);
+            
+            // 获取射线与地面平面的交点
+            const intersectPoint = new THREE.Vector3();
+            raycaster.ray.intersectPlane(groundPlane, intersectPoint);
+            
+            if (intersectPoint) {
+                // 限制动物在合理范围内移动
+                const clampedX = Math.max(-20, Math.min(20, intersectPoint.x));
+                const clampedZ = Math.max(-20, Math.min(20, intersectPoint.z));
+                
+                // 获取动物的原始Y高度偏移 (保持动物不贴地)
+                const baseY = draggedAnimal.userData.originalY || draggedAnimal.position.y;
+                const animalType = draggedAnimal.userData.animalType;
+                
+                // 根据动物类型设置不同的Y高度
+                let targetY = 0.5; // 默认地面高度
+                if (animalType === 'squirrel') targetY = 0.5;
+                else if (animalType === 'rabbit') targetY = 0.5;
+                else if (animalType === 'deer') targetY = 1.5;
+                else if (animalType === 'bird') targetY = intersectPoint.y + 2; // 鸟在空中
+                else if (animalType === 'butterfly') targetY = intersectPoint.y + 3;
+                else if (animalType === 'owl') targetY = intersectPoint.y + 4;
+                
+                // 平滑移动
+                draggedAnimal.position.x += (clampedX - draggedAnimal.position.x) * 0.3;
+                draggedAnimal.position.z += (clampedZ - draggedAnimal.position.z) * 0.3;
+                
+                // 对于飞行动物，可以用射线Y来控制高度
+                if (animalType === 'bird' || animalType === 'butterfly' || animalType === 'owl') {
+                    const targetHeight = Math.max(3, Math.min(20, 10 + intersectPoint.y * 0.5));
+                    draggedAnimal.position.y += (targetHeight - draggedAnimal.position.y) * 0.3;
+                }
+            }
+            
+            document.body.style.cursor = 'grabbing';
+        }
+
+        function checkHover() {
+            raycaster.setFromCamera(mouse, camera);
+            
+            const visibleObjects = interactiveObjects.filter(obj => obj.visible);
+            const intersects = raycaster.intersectObjects(visibleObjects, true);
+
+            let newHovered = null;
+
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                // 向上遍历找到可交互的父对象
+                while (obj.parent && obj.userData.projectId === undefined) {
+                    obj = obj.parent;
+                }
+                if (obj.userData.projectId !== undefined) {
+                    newHovered = obj;
+                }
+            }
+            
+            // 只有当悬停对象改变时才更新缩放
+            if (newHovered !== hoveredObject) {
+                // 重置之前悬停对象的缩放
+                if (hoveredObject && !isDragging) {
+                    const scale = hoveredObject.userData.originalScale || 1;
+                    hoveredObject.scale.setScalar(scale);
+                }
+                
+                // 设置新悬停对象的缩放
+                hoveredObject = newHovered;
+                if (hoveredObject && !isDragging) {
+                    const scale = (hoveredObject.userData.originalScale || 1) * 1.15;
+                    hoveredObject.scale.setScalar(scale);
+                }
+            }
+            
+            // 更新鼠标样式
+            if (hoveredObject) {
+                if (hoveredObject.userData.type === 'summer' && currentSeason === 1) {
+                    document.body.style.cursor = 'grab';
+                } else {
+                    document.body.style.cursor = 'pointer';
+                }
+            } else {
+            document.body.style.cursor = 'default';
+            }
+        }
+
+        function onMouseDown(event) {
+            if (event.button !== 0) return; // 只响应左键
+            
+            dragStartTime = Date.now();
+            dragStartPos.set(event.clientX, event.clientY);
+            
+            // 检查是否点击了春季动物
+            if (hoveredObject && hoveredObject.userData.type === 'summer' && currentSeason === 1) {
+                isDragging = true;
+                draggedAnimal = hoveredObject;
+                draggedAnimal.userData.originalY = draggedAnimal.position.y;
+                controls.enabled = false; // 禁用轨道控制
+                document.body.style.cursor = 'grabbing';
+            }
+        }
+
+        function onMouseUp(event) {
+            const dragDuration = Date.now() - dragStartTime;
+            const dragDistance = Math.sqrt(
+                Math.pow(event.clientX - dragStartPos.x, 2) + 
+                Math.pow(event.clientY - dragStartPos.y, 2)
+            );
+            
+            // 重置拖拽状态
+            const wasDragging = isDragging;
+            if (isDragging) {
+                isDragging = false;
+                draggedAnimal = null;
+                controls.enabled = true; // 重新启用轨道控制
+            }
+            
+            // 如果不是拖拽动物，且点击时间/距离在阈值内，打开项目
+            if (!wasDragging && dragDistance < DRAG_THRESHOLD) {
+                if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
+                    openProject(hoveredObject.userData.projectId);
+                }
+            }
+            
+            checkHover();
+        }
+
+        function onClick(event) {
+            // 作为备用：如果 mouseUp 没有处理，这里也尝试打开项目
+            if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
+                // 只有在没有拖拽的情况下才处理
+                if (!isDragging) {
+                openProject(hoveredObject.userData.projectId);
+                }
+            }
+        }
+
+        function openProject(id) {
+            const project = projects[id];
+            document.getElementById('modalIcon').textContent = project.icon;
+            document.getElementById('modalTitle').textContent = project.title;
+            document.getElementById('modalDescription').textContent = project.description;
+            
+            // 显示状态 (如 "In Development")
+            const statusEl = document.getElementById('modalStatus');
+            statusEl.textContent = project.status || '';
+            
+            // 显示链接
+            const linksEl = document.getElementById('modalLinks');
+            linksEl.innerHTML = '';
+            if (project.links && project.links.length > 0) {
+                project.links.forEach(link => {
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.className = 'modal-link';
+                    a.textContent = link.label;
+                    linksEl.appendChild(a);
+                });
+            }
+            
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function simulateLoading() {
+            let progress = 0;
+            const progressBar = document.getElementById('loadingProgress');
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                    }, 500);
+                }
+                progressBar.style.width = progress + '%';
+            }, 100);
+        }
+
+        let lastTime = 0;
+        
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+            
+            // 计算 deltaTime
+            const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0.016;
+            lastTime = currentTime;
+
+            windTime += 0.01;
+
+            // === 河流动画 (UV滚动，不是顶点位移) ===
+            updateRiverAnimation(deltaTime);
+            
+            // === 跳鱼与水花动画 (秋季) ===
+            if (currentSeason === 2) {
+                updateFishAndSplash(deltaTime);
+            }
+
+            // Animate leaves with wind (非冬季)
+            if (currentSeason !== 3) {
+            leaves.forEach((leaf, i) => {
+                const windEffect = Math.sin(windTime + leaf.userData.phase) * 0.1;
+                leaf.position.y = leaf.userData.originalY + windEffect;
+                leaf.position.x = leaf.userData.originalX + Math.sin(windTime * 0.5 + leaf.userData.phase) * 0.05;
+            });
+            }
+
+            // Animate animals
+            animals.forEach((animal, i) => {
+                if (animal.visible) {
+                    const type = animal.userData.animalType;
+                    if (type === 'butterfly') {
+                        animal.position.y += Math.sin(windTime * 3 + i) * 0.02;
+                        animal.position.x += Math.sin(windTime * 2 + i) * 0.01;
+                        // 蝴蝶翅膀动画 - 使用保存的翅膀引用
+                        if (animal.userData.wings) {
+                            animal.userData.wings[0].rotation.y = Math.sin(windTime * 10) * 0.6 + 0.4;
+                            animal.userData.wings[1].rotation.y = -Math.sin(windTime * 10) * 0.6 - 0.4;
+                        }
+                    } else if (type === 'bird') {
+                        animal.position.y += Math.sin(windTime * 2 + i) * 0.01;
+                        // 轻微转头
+                        animal.rotation.y = Math.sin(windTime * 0.5) * 0.1;
+                    } else if (type === 'squirrel') {
+                        // 松鼠尾巴摆动
+                        animal.position.y += Math.sin(windTime * 4 + i) * 0.008;
+                    } else if (type === 'rabbit') {
+                        // 兔子轻微跳动
+                        animal.position.y += Math.abs(Math.sin(windTime * 3 + i)) * 0.015;
+                    } else if (type === 'deer') {
+                        // 鹿轻微晃动
+                        animal.rotation.y = Math.sin(windTime * 0.3) * 0.05;
+                    } else if (type === 'owl') {
+                        // 猫头鹰转头
+                        const head = animal.children.find(c => c.position && c.position.y > 0.4);
+                        if (head) {
+                            head.rotation.y = Math.sin(windTime * 0.8) * 0.3;
+                        }
+                    }
+                }
+            });
+
+            // Animate falling leaves
+            fallingLeaves.forEach(leaf => {
+                if (leaf.visible) {
+                    leaf.position.y -= leaf.userData.fallSpeed;
+                    leaf.position.x = leaf.userData.startX + 
+                        Math.sin(windTime * leaf.userData.swaySpeed + leaf.userData.phase) * leaf.userData.swayAmount;
+                    leaf.rotation.x += 0.01;
+                    leaf.rotation.y += 0.02;
+
+                    if (leaf.position.y < 0) {
+                        leaf.position.y = leaf.userData.startY;
+                        leaf.position.x = (Math.random() - 0.5) * 20;
+                        leaf.userData.startX = leaf.position.x;
+                    }
+                }
+            });
+
+            // Animate snowflakes (Sprite - 自动 billboard)
+            snowflakes.forEach(snowflake => {
+                if (snowflake.visible) {
+                    // 下落
+                    snowflake.position.y -= snowflake.userData.fallSpeed;
+                    
+                    // 水平摇摆
+                    snowflake.position.x = snowflake.userData.startX + 
+                        Math.sin(windTime * snowflake.userData.swaySpeed + snowflake.userData.phase) * snowflake.userData.swayAmount;
+                    
+                    // Z轴轻微飘动
+                    snowflake.position.z += Math.sin(windTime * 0.5 + snowflake.userData.phase) * 0.002;
+                    
+                    // Sprite 材质旋转 (使雪花自转)
+                    if (snowflake.material && snowflake.material.rotation !== undefined) {
+                        snowflake.material.rotation += snowflake.userData.rotSpeed;
+                    }
+                    
+                    // 确保等比缩放 (避免任何父级影响)
+                    const baseSize = snowflake.userData.baseSize || 0.1;
+                    snowflake.scale.setScalar(baseSize);
+
+                    // 重置到顶部
+                    if (snowflake.position.y < 0) {
+                        snowflake.position.y = snowflake.userData.startY;
+                        snowflake.position.x = (Math.random() - 0.5) * 30;
+                        snowflake.position.z = (Math.random() - 0.5) * 30;
+                        snowflake.userData.startX = snowflake.position.x;
+                    }
+                }
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Initialize
+        init();
+        
+        // 创建积雪壳 (必须在树创建后)
+        createSnowShells();
+        
+        transitionSeason();
     </script>
 </body>
 </html>
