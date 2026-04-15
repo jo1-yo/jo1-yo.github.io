@@ -1,72 +1,49 @@
-🪐 Jane's Personal Website
+# Jane Zhang — Personal Website
 
-Welcome to the source code of my personal website, hosted via GitHub Pages.
+Live at **[imjane.top](https://imjane.top)**
 
-🔗 Visit here: https://imjane.top/ 
+## Views
 
-This website serves as my digital space to share who I am — my interests, projects, and passions. Built with HTML, CSS, and a bit of JavaScript, it’s minimal, responsive, and evolving.
+| View | Description |
+|---|---|
+| **Tree Portfolio** (`index.html`) | Interactive 3D tree with seasons (Spring → Summer → Autumn). Click the apples/animals/leaves to explore projects. |
+| **Classic View** (`index-classic.html`) | Standard portfolio layout with project cards, contact, and social links. |
 
+## Project Pages
 
+- `gensync.html` — Gensync: intergenerational learning platform
+- `suab.html` — SUAB: Student Union Against Bullying
+- `traller.html` — Traller: travel trailer app
 
-📁 Project Structure:
-```plaintext
-Jane_personalweb/
-├── public/               # Static web files
-│   ├── css/              # CSS stylesheets
-│   │   ├── main.css      # Main styles for all pages
-│   │   └── parallax.css  # Parallax and monitor display effects
-│   ├── js/               # JavaScript files
-│   │   └── script.js     # Main script file
-│   ├── index.html        # Homepage
-│   ├── gensync.html      # Gensync project page
-│   ├── suab.html         # SUAB project page
-│   └── favicon.ico       # Website favicon
-├── media/                # Media directory
-│   └── videos/           # Video files
-│       ├── gensync-hero.mp4
-│       ├── chatwai.mp4
-│       ├── match.mp4
-│       └── chat.mp4
-├── images/               # Image files
-│   ├── gensync.jpg
-│   ├── suab.jpg
-│   └── more.jpg
-├── server.js             # Express server for development
-├── simple_server.py      # Alternative Python server
-└── CNAME                 # GitHub Pages custom domain
+## Structure
+
+```
+├── index.html              # Tree portfolio (main entry)
+├── index-classic.html      # Classic portfolio view
+├── gensync.html
+├── suab.html
+├── traller.html
+├── css/                    # Stylesheets for gensync page
+│   ├── main.css
+│   └── parallax.css
+├── images/                 # All images
+└── videos/                 # All videos (logo, gensync demos)
 ```
 
+## Run Locally
 
-🛠️ Tech Stack：
-1. HTML5
-2. CSS3
-3. GitHub Pages for hosting
+**Node.js**
+```bash
+node server.js
+# → http://localhost:3000
+```
 
+**Python**
+```bash
+python simple_server.py
+# → http://localhost:8000
+```
 
-📌 To-Do：
- 1. Fill my blog section
- 2. Finish each project's description
- 3. Improve accessibility
- 4. Add more interactive elements
+## Tech Stack
 
- 📄 License:
- This project is open source under the MIT License.
-
- 🚀 How to Run Locally:
-### Using Node.js (Recommended)
-
-1. Make sure you have Node.js installed
-2. Run the server:
-   ```
-   node server.js
-   ```
-3. Visit `http://localhost:3000` in your browser
-
-### Using Python
-
-1. Make sure you have Python installed
-2. Run the server:
-   ```
-   python simple_server.py
-   ```
-3. Visit `http://localhost:8000` in your browser
+HTML5 · CSS3 · Vanilla JavaScript · Three.js (tree portfolio) · GitHub Pages

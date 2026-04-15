@@ -82,14 +82,16 @@
             z-index: 100;
             font-size: 1.1rem;
             letter-spacing: 0.2em;
-            color: rgba(255,255,255,0.6);
+            color: #fff;
             text-transform: uppercase;
+            text-shadow: 0 0 12px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5);
             animation: pulse 2s ease-in-out infinite;
+            white-space: nowrap;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 0.75; }
+            50% { opacity: 1; }
         }
 
         .scroll-indicator {
@@ -375,6 +377,115 @@
             height: 16px;
             fill: #555;
         }
+
+        @media (max-width: 768px) {
+            .season-name {
+                font-size: 2.4rem;
+                letter-spacing: 0.15em;
+            }
+
+            .name-title {
+                display: none;
+            }
+
+            .social-links {
+                bottom: 70px;
+                right: 16px;
+                gap: 12px;
+            }
+
+            .social-link {
+                font-size: 0.75rem;
+            }
+
+            .switch-view-btn {
+                top: 16px;
+                right: 16px;
+                padding: 9px 16px;
+                font-size: 0.85rem;
+            }
+
+            .hint-text {
+                font-size: 0.85rem;
+                letter-spacing: 0.1em;
+                bottom: 48px;
+            }
+
+            .scroll-indicator {
+                bottom: 20px;
+            }
+
+            .modal-content {
+                padding: 32px 24px;
+                max-width: 92vw;
+            }
+
+            .modal-title {
+                font-size: 1.8rem;
+            }
+
+            .modal-description {
+                font-size: 1.05rem;
+            }
+
+            .modal-close {
+                padding: 12px 28px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .season-name {
+                font-size: 1.8rem;
+                letter-spacing: 0.1em;
+            }
+
+            .switch-view-btn {
+                top: 12px;
+                right: 12px;
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+
+            .social-links {
+                display: none;
+            }
+        }
+
+        /* Season nav buttons — mobile only */
+        .season-nav-btn {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            z-index: 500;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.45);
+            color: #fff;
+            font-size: 1.6rem;
+            line-height: 1;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            transition: background 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .season-nav-btn:active {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .season-prev { left: 20px; }
+        .season-next { right: 20px; }
+
+        @media (max-width: 768px) {
+            .season-nav-btn {
+                display: flex;
+            }
+        }
     </style>
 </head>
 <body>
@@ -391,7 +502,6 @@
         <div class="season-name spring active" id="springTitle">Spring</div>
         <div class="season-name summer" id="summerTitle">Summer</div>
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
-        <div class="season-name winter" id="winterTitle">Winter</div>
     </div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
@@ -400,8 +510,10 @@
         <div class="scroll-dot active" data-season="0"></div>
         <div class="scroll-dot" data-season="1"></div>
         <div class="scroll-dot" data-season="2"></div>
-        <div class="scroll-dot" data-season="3"></div>
     </div>
+
+    <button class="season-nav-btn season-prev" id="seasonPrev" onclick="changeSeason(-1)">&#8249;</button>
+    <button class="season-nav-btn season-next" id="seasonNext" onclick="changeSeason(1)">&#8250;</button>
 
     <div class="click-hint" id="clickHint">Click to view project</div>
 
@@ -527,15 +639,19 @@
                 title: "Pawse",
                 description: "A desktop companion that helps students reduce stress through on-demand supportive conversations and intelligent academic scheduling. Your friendly study buddy.",
                 icon: "🐾",
-                status: "In Development"
+                status: "In Development",
+                links: [
+                    { label: "View Demo", url: "https://imjane.top/Pawse_demo/" }
+                ]
             },
             {
                 id: 4,
-                title: "Absolute Navigation Lab",
-                description: "This study investigates whether learning an absolute spatial reference frame can alter navigation strategies and performance, for which I developed a custom testing app to deploy and run the experimental tasks for the lab.",
+                title: "Spatial Cognition Lab",
+                description: "I designed and built the full experimental platform for this research study, which investigates whether training in absolute spatial reference frames alters navigation strategies. Open the platform on mobile for the best experience.",
                 icon: "🧭",
                 links: [
-                    { label: "View Code", url: "https://github.com/jo1-yo/Navigation-Training-Study" }
+                    { label: "View Platform", url: "https://navigationresearch.vercel.app/" },
+                    { label: "View Code", url: "https://github.com/jo1-yo/navigation_research" }
                 ]
             },
             {
@@ -554,6 +670,15 @@
                 icon: "💪",
                 links: [
                     { label: "View Project", url: "https://imjane.top/suab.html" }
+                ]
+            },
+            {
+                id: 7,
+                title: "Choosely",
+                description: "Can't decide? Choosely is a decision-making tool that helps you compare options through multi-dimensional weighted scoring — so you can choose with clarity and confidence.",
+                icon: "⚖️",
+                links: [
+                    { label: "Try Choosely", url: "https://imjane.top/choosely" }
                 ]
             }
         ];
@@ -595,12 +720,11 @@
             }
         };
 
-        const seasons = ['spring', 'summer', 'autumn', 'winter'];
+        const seasons = ['spring', 'summer', 'autumn'];
         const hintTexts = [
             'Click the apples to explore',
             'Click the animals to discover',
-            'Click the falling leaves',
-            'Click the snowman to discover'
+            'Click the falling leaves'
         ];
 
         function init() {
@@ -1469,7 +1593,8 @@
                 { x: 4, y: 12, z: -2 },
                 { x: -2, y: 15, z: -2 },
                 { x: 1, y: 13, z: 4 },
-                { x: -4, y: 14, z: -1 }
+                { x: -4, y: 14, z: -1 },
+                { x: 2, y: 16, z: -3 }
             ];
 
             applePositions.forEach((pos, i) => {
@@ -3011,7 +3136,7 @@
             
             if (e.code === 'Space' || e.code === 'ArrowRight') {
                 e.preventDefault();
-                if (currentSeason < 3) {
+                if (currentSeason < 2) {
                     changeSeason(1);
                 }
             } else if (e.code === 'ArrowLeft') {
@@ -3022,7 +3147,16 @@
             }
         }
 
+        let touchStartSingleX = 0;
+        let touchStartSingleY = 0;
+        let touchStartTime = 0;
+
         function onTouchStart(e) {
+            if (e.touches.length === 1) {
+                touchStartSingleX = e.touches[0].clientX;
+                touchStartSingleY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+            }
             if (e.touches.length === 2) {
                 touchStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 isSwiping = true;
@@ -3034,7 +3168,7 @@
             const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const deltaX = currentX - touchStartX;
             if (Math.abs(deltaX) > 80) {
-                if (deltaX < 0 && currentSeason < 3) {
+                if (deltaX < 0 && currentSeason < 2) {
                     changeSeason(1);
                 } else if (deltaX > 0 && currentSeason > 0) {
                     changeSeason(-1);
@@ -3043,8 +3177,36 @@
             }
         }
 
-        function onTouchEnd() {
+        function onTouchEnd(e) {
             isSwiping = false;
+
+            // Single tap: detect short-duration, low-movement touch and raycast for project objects
+            if (e.changedTouches.length === 1) {
+                const touch = e.changedTouches[0];
+                const dx = touch.clientX - touchStartSingleX;
+                const dy = touch.clientY - touchStartSingleY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const elapsed = Date.now() - touchStartTime;
+
+                if (dist < 12 && elapsed < 300) {
+                    mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+                    raycaster.setFromCamera(mouse, camera);
+                    const visibleObjects = interactiveObjects.filter(obj => obj.visible);
+                    const intersects = raycaster.intersectObjects(visibleObjects, true);
+
+                    if (intersects.length > 0) {
+                        let obj = intersects[0].object;
+                        while (obj && obj.userData.projectId === undefined && obj.parent) {
+                            obj = obj.parent;
+                        }
+                        if (obj && obj.userData.projectId !== undefined) {
+                            openProject(obj.userData.projectId);
+                        }
+                    }
+                }
+            }
         }
 
         function onWheel(e) {
@@ -3053,7 +3215,7 @@
             // Detect horizontal swipe (two finger on trackpad)
             if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
                 e.preventDefault();
-                if (e.deltaX > 0 && currentSeason < 3) {
+                if (e.deltaX > 0 && currentSeason < 2) {
                     changeSeason(1);
                 } else if (e.deltaX < 0 && currentSeason > 0) {
                     changeSeason(-1);
@@ -3064,7 +3226,7 @@
         function changeSeason(direction) {
             if (seasonChangeCooldown) return;
             
-            targetSeason = Math.max(0, Math.min(3, currentSeason + direction));
+            targetSeason = Math.max(0, Math.min(2, currentSeason + direction));
             if (targetSeason !== currentSeason) {
                 seasonChangeCooldown = true;
                 currentSeason = targetSeason;
@@ -3080,7 +3242,7 @@
         // 点击跳转到指定季节
         function jumpToSeason(seasonIndex) {
             if (seasonChangeCooldown || seasonIndex === currentSeason) return;
-            if (seasonIndex < 0 || seasonIndex > 3) return;
+            if (seasonIndex < 0 || seasonIndex > 2) return;
             
             seasonChangeCooldown = true;
             currentSeason = seasonIndex;

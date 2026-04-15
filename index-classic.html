@@ -17,30 +17,11 @@
             cursor: auto;
         }
         
-        /* 移动端提示 */
-        .mobile-notice {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #121212;
-            color: white;
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        
-        .mobile-notice p {
-            font-size: 24px;
-            line-height: 1.5;
-            max-width: 80%;
-        }
-        
+        /* Suppress browser/iOS video play overlay */
+        #logo video::-webkit-media-controls { display: none !important; }
+        #logo video::-webkit-media-controls-enclosure { display: none !important; }
+        #logo video::-webkit-media-controls-overlay-play-button { display: none !important; }
+
         /* 让所有可点击元素使用指针光标 */
         a, button, input[type="button"], input[type="submit"], .project {
             cursor: pointer;
@@ -348,36 +329,145 @@
                 gap: 20px;
                 max-width: 1200px;
             }
-            
+
             .project-card {
                 width: 280px;
                 height: 400px;
             }
         }
-        
+
+
         @media (max-width: 768px) {
-            .mobile-notice {
-                display: flex;
+            /* Logo — smaller on mobile */
+            #logo {
+                top: 16px !important;
+                left: 16px !important;
             }
-            
-            body > *:not(.mobile-notice) {
-                display: none;
+
+            #logo video {
+                width: 68px !important;
+                height: 68px !important;
             }
-            
+
+            /* Give nav a real background, reset blend mode, make room for logo */
+            nav {
+                mix-blend-mode: normal !important;
+                background: rgba(18, 18, 18, 0.96) !important;
+                padding: 12px 16px 12px 100px !important;
+                backdrop-filter: blur(8px);
+            }
+
+            nav ul li:first-child {
+                margin-left: 0;
+            }
+
+            nav ul li {
+                margin-left: 18px;
+            }
+
+            nav a {
+                font-size: 14px;
+                color: rgba(255,255,255,0.85) !important;
+                -webkit-text-fill-color: unset !important;
+            }
+
+            /* Hero */
+            .hero {
+                padding: 0 7%;
+            }
+
             .hero h1 {
-                font-size: 10vw;
+                font-size: 36px;
             }
-            
+
             .hero .subtitle {
-                font-size: 4vw;
+                font-size: 16px;
             }
-            
+
             .hero p {
-                font-size: 3.5vw;
+                font-size: 14px;
+                max-width: 100%;
             }
-            
+
+            .cta-button {
+                margin-top: 28px;
+                padding: 13px 32px;
+                font-size: 1em;
+            }
+
+            /* Projects */
+            .projects {
+                padding: 56px 5% 64px;
+            }
+
             .projects-title {
-                font-size: 7vw;
+                font-size: 28px;
+                margin-bottom: 28px;
+            }
+
+            .projects-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .project-card {
+                width: 92%;
+                height: 200px;
+            }
+
+            /* Contact */
+            .contact {
+                padding: 60px 6%;
+            }
+
+            .contact h2 {
+                font-size: 21px !important;
+                margin-bottom: 32px;
+            }
+
+            .contact-item {
+                padding: 18px 16px;
+                min-height: 90px;
+            }
+
+            .contact-item h3 {
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+
+            .contact-item p {
+                font-size: 15px;
+            }
+
+            .social-links {
+                gap: 8px;
+            }
+
+            .social-links a {
+                font-size: 0.92em;
+                padding: 6px 11px;
+                gap: 6px;
+            }
+
+            /* Footer */
+            footer {
+                padding: 32px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 30px;
+            }
+
+            .hero .subtitle {
+                font-size: 15px;
+            }
+
+            .project-card {
+                width: 96%;
+                height: 185px;
             }
         }
         
@@ -638,17 +728,9 @@
     </style>
 </head>
 <body>
-    <!-- 移动端提示 -->
-    <div class="mobile-notice">
-        <p>当前仅支持电脑端访问，手机版即将上线，敬请期待。
-        Please access via desktop. Mobile version coming soon.</p>
-    </div>
-    
-    
     <div id="logo" style="position: fixed; top: 40px; left: 40px; z-index: 200; transition: opacity 0.3s ease;">
-    <video autoplay loop muted playsinline style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
-        <source src="logoo.mp4" type="video/mp4">
-        <!-- 备用图片，当视频无法播放时显示 -->
+    <video autoplay loop muted playsinline disablepictureinpicture style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; pointer-events: none;">
+        <source src="videos/logoo.mp4" type="video/mp4">
         <img src="/favicon.ico" alt="Logo" style="width: 150px; height: 150px; border-radius: 50%;" />
     </video>
     </div>
@@ -679,19 +761,19 @@
         <h2 class="projects-title">Projects</h2>
         <div class="projects-grid">
             <div class="project-card" onclick="window.location.href='traller.html'">
-                <img src="001.png" alt="Traller">
+                <img src="images/001.png" alt="Traller">
                 <h3>Traller</h3>
             </div>
             <div class="project-card" onclick="window.location.href='gensync.html'">
-                <img src="../images/gensync.jpg" alt="Gensync">
+                <img src="images/gensync.jpg" alt="Gensync">
                 <h3>Gensync</h3>
             </div>
             <div class="project-card" onclick="window.location.href='suab.html'">
-                <img src="../images/suab.jpg" alt="SUAB">
+                <img src="images/suab.jpg" alt="SUAB">
                 <h3>SUAB</h3>
             </div>
             <div class="project-card">
-                <img src="../images/more.jpg" alt="More">
+                <img src="images/more.jpg" alt="More">
                 <h3>More...</h3>
             </div>
         </div>
@@ -704,7 +786,7 @@
         <div class="contact-grid">
             <div class="contact-item">
                 <h3>Email</h3>
-                <p>janezhang2033@163.com</p>
+                <p>13810998512@163.com</p>
             </div>
             <div class="contact-item">
                 <h3>Social Media</h3>
@@ -720,6 +802,7 @@
     <footer>
         <p>&copy; 2025 Jane Zhang. All rights reserved.</p>
     </footer>
+
     
     <script>
         // JavaScript代码保持不变
@@ -800,6 +883,32 @@
                 }
             });
         });
+    </script>
+    <script>
+        // Force logo video autoplay on iOS Safari.
+        // iOS blocks autoplay until the first user gesture; we hook the earliest
+        // touchstart/click and call play() then, and also try immediately.
+        (function() {
+            const vid = document.querySelector('#logo video');
+            if (!vid) return;
+
+            function tryPlay() {
+                vid.play().catch(function() {});
+            }
+
+            tryPlay(); // works on desktop / Android immediately
+
+            // On iOS the first touch unlocks audio/video — play on it
+            document.addEventListener('touchstart', function onFirstTouch() {
+                tryPlay();
+                document.removeEventListener('touchstart', onFirstTouch);
+            }, { passive: true, once: true });
+
+            // Restart if it gets paused (e.g. tab switch, iOS memory pressure)
+            vid.addEventListener('pause', function() {
+                vid.play().catch(function() {});
+            });
+        })();
     </script>
 </body>
 </html>
