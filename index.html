@@ -2,8 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jane's Portfolio | Four Seasons</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Jane Zhang — Portfolio | Four Seasons</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Jane Zhang's portfolio — an interactive 3D 'four seasons' tree where every apple is a project. Explore work across AI, web development, and research.">
+    <meta name="author" content="Jane Zhang">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#f3eef0">
+    <link rel="canonical" href="https://imjane.top/">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Jane Zhang">
+    <meta property="og:title" content="Jane Zhang — Portfolio">
+    <meta property="og:description" content="An interactive 3D 'four seasons' tree where every apple is a project. Explore Jane Zhang's work across AI, web development, and research.">
+    <meta property="og:url" content="https://imjane.top/">
+    <meta property="og:image" content="https://imjane.top/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="An interactive 3D tree representing Jane Zhang's portfolio.">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jane Zhang — Portfolio">
+    <meta name="twitter:description" content="An interactive 3D 'four seasons' tree where every apple is a project. Explore Jane Zhang's work across AI, web development, and research.">
+    <meta name="twitter:image" content="https://imjane.top/og-image.jpg">
+    <meta name="twitter:image:alt" content="An interactive 3D tree representing Jane Zhang's portfolio.">
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Jane Zhang",
+      "url": "https://imjane.top/",
+      "image": "https://imjane.top/og-image.jpg",
+      "sameAs": [
+        "https://linkedin.com/in/jane-z-439910293",
+        "https://github.com/jo1-yo"
+      ],
+      "email": "mailto:janezhang2033@163.com"
+    }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
     <style>
         * {
@@ -12,10 +57,19 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             overflow: hidden;
             font-family: 'Cormorant Garamond', serif;
-            background: #1a1a1a;
+            /* Light tone matching the scene so any transient viewport gap never reads as a black bar */
+            background: #f1ebee;
+        }
+
+        canvas {
+            display: block;
         }
 
         #canvas-container {
@@ -262,46 +316,82 @@
             opacity: 1;
         }
 
-        .loading-screen {
+        /* ============================================
+           Growth journey UI (sprout -> tree)
+           ============================================ */
+        .grow-hint {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            z-index: 2000;
+            bottom: 56px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 120;
+            color: #6b5b66;
+            font-size: 1rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
+            gap: 12px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
+            white-space: nowrap;
         }
 
-        .loading-screen.hidden {
+        .grow-arrow {
+            display: inline-block;
+            font-size: 1.3rem;
+            line-height: 1;
+            animation: growBounce 1.6s ease-in-out infinite;
+        }
+
+        @keyframes growBounce {
+            0%, 100% { transform: translateY(3px); opacity: 0.45; }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        .grow-progress {
+            position: fixed;
+            right: 34px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 160px;
+            background: rgba(120,100,110,0.16);
+            border-radius: 3px;
+            overflow: hidden;
+            z-index: 120;
             opacity: 0;
+            transition: opacity 0.6s ease;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .grow-progress-fill {
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #7cb342, #c8e6a0);
+            border-radius: 3px;
+            transition: height 0.12s linear;
+        }
+
+        body.growing .grow-hint,
+        body.growing .grow-progress {
+            opacity: 1;
+        }
+
+        body.growing .season-indicator,
+        body.growing .scroll-indicator,
+        body.growing .season-nav-btn,
+        body.growing .hint-text {
+            opacity: 0 !important;
             pointer-events: none;
         }
 
-        .loading-text {
-            font-family: 'Libre Baskerville', serif;
-            font-size: 1.5rem;
-            color: rgba(255,255,255,0.7);
-            letter-spacing: 0.3em;
-            margin-bottom: 30px;
-        }
-
-        .loading-bar {
-            width: 200px;
-            height: 2px;
-            background: rgba(255,255,255,0.2);
-            overflow: hidden;
-        }
-
-        .loading-progress {
-            width: 0%;
-            height: 100%;
-            background: #fff;
-            transition: width 0.3s ease;
+        @media (max-width: 768px) {
+            .grow-progress { right: 16px; height: 120px; }
+            .grow-hint { font-size: 0.8rem; letter-spacing: 0.12em; bottom: 44px; }
         }
 
         .name-title {
@@ -488,14 +578,7 @@
         }
     </style>
 </head>
-<body>
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-text">ENTERING JANE'S INNER WORLD</div>
-        <div class="loading-bar">
-            <div class="loading-progress" id="loadingProgress"></div>
-        </div>
-    </div>
-
+<body class="growing">
     <div id="canvas-container"></div>
 
     <div class="season-indicator">
@@ -512,19 +595,21 @@
         <div class="scroll-dot" data-season="2"></div>
     </div>
 
+    <div class="grow-hint" id="growHint">
+        <span class="grow-arrow">&#8963;</span>
+        <span>Scroll to grow the tree</span>
+    </div>
+
+    <div class="grow-progress" id="growProgress">
+        <div class="grow-progress-fill" id="growProgressFill"></div>
+    </div>
+
     <button class="season-nav-btn season-prev" id="seasonPrev" onclick="changeSeason(-1)">&#8249;</button>
     <button class="season-nav-btn season-next" id="seasonNext" onclick="changeSeason(1)">&#8250;</button>
 
     <div class="click-hint" id="clickHint">Click to view project</div>
 
     <div class="name-title">Jane's Portfolio</div>
-
-    <a href="index-classic.html" class="switch-view-btn">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
-        </svg>
-        Classic View
-    </a>
 
     <div class="social-links">
         <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" class="social-link">LinkedIn</a>
@@ -695,6 +780,13 @@
         let raycaster = new THREE.Raycaster();
         let hoveredObject = null;
 
+        // === Growth journey state (sprout -> tree, scroll-driven) ===
+        let growthTarget = 0;       // 0..1, accumulated from scroll / swipe input
+        let growthCurrent = 0;      // smoothed value chasing growthTarget
+        let hasGrown = false;       // latched true once fully grown; hands control to OrbitControls
+        let appleMarkers = [];      // project apples (children of `tree`, revealed late in growth)
+        const GROWTH_MIN = 0.05;    // tree scale at growth = 0 (a tiny sprout)
+
         // Season colors
         const seasonColors = {
             spring: {
@@ -757,15 +849,21 @@
             controls.maxPolarAngle = Math.PI / 1.8;
             controls.minPolarAngle = Math.PI / 4;
             controls.enablePan = false;
+            controls.enableZoom = false;   // wheel is reserved for growth until the tree is grown
+            controls.enabled = false;      // OrbitControls take over only after growth completes
 
             // Lighting
             setupLighting();
 
-            // Create tree
-            createTree();
+            // Build the procedural tree skeleton (deterministic) + instanced meshes
+            buildTree(20260618);
+            buildTreeMeshes();
 
             // Create ground
             createGround();
+
+            // Create the opening seedling (sprout)
+            createSeedling();
 
             // Create seasonal elements
             createSpringElements();
@@ -778,6 +876,11 @@
 
             // Events
             window.addEventListener('resize', onWindowResize);
+            window.addEventListener('orientationchange', onWindowResize);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', onWindowResize);
+                window.visualViewport.addEventListener('scroll', onWindowResize);
+            }
             window.addEventListener('wheel', onWheel, { passive: false });
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mousedown', onMouseDown);
@@ -791,8 +894,10 @@
             // 添加季节点击切换
             setupSeasonDotClicks();
 
-            // Loading simulation
-            simulateLoading();
+            // Size the renderer to the true visible viewport, then plant the sprout (growth = 0)
+            onWindowResize();
+            applyGrowth(0);
+            driveGrowthCamera(0);
 
             // Start animation
             animate();
@@ -852,6 +957,388 @@
         // 主树干 mesh 引用 (用于冬季积雪)
         let trunkMesh = null;
         let branchMeshes = [];
+
+        // ============================================================
+        // PROCEDURAL TREE — deterministic skeleton + scroll-scrubbable growth.
+        // buildTree(seed) runs ONCE. applyGrowth(g) composes every instance matrix
+        // PURELY from precomputed final data + current g (fully reversible, no
+        // accumulation). The tree's world size is formed by branch SEGMENTS appearing
+        // one after another — never by scaling a finished tree.
+        // ============================================================
+        let treeBranches = [];   // Branch[]
+        let treeSegments = [];   // BranchSegment[] (compiled)
+        let leafBuds = [];       // LeafBud[]
+        let appleBuds = [];      // AppleBud[]
+        let branchInst = null;   // InstancedMesh — branch segments
+        let leafInst = null;     // InstancedMesh — leaves
+        let budInst = null;      // InstancedMesh — pre-branch buds
+        let budData = [];        // [{position, startG, peakScale}]
+
+        // Deterministic PRNG (mulberry32) — used ONLY in buildTree, never in applyGrowth.
+        function makeRng(seed) {
+            let s = seed >>> 0;
+            return function () {
+                s = (s + 0x6D2B79F5) | 0;
+                let t = Math.imul(s ^ (s >>> 15), 1 | s);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+        // 3-edge smootherstep (radius easing)
+        function smootherstepE(e0, e1, x) {
+            const t = clamp01((x - e0) / (e1 - e0));
+            return t * t * t * (t * (t * 6 - 15) + 10);
+        }
+
+        const TREE_CFG = { trunkHeight: 8.5, trunkRadius: 0.5, leafSize: 0.5, appleCount: 7 };
+
+        // point + tangent at u in [0,1] along a branch polyline
+        function branchPointAt(branch, u) {
+            const pts = branch.points;
+            const f = clamp01(u) * (pts.length - 1);
+            const i = Math.min(pts.length - 2, Math.floor(f));
+            const t = f - i;
+            const p = pts[i].clone().lerp(pts[i + 1], t);
+            const tan = pts[i + 1].clone().sub(pts[i]).normalize();
+            return { p, tan };
+        }
+
+        function buildTree(seed) {
+            const rng = makeRng(seed);
+            treeBranches = []; leafBuds = []; appleBuds = [];
+            let nextId = 0;
+
+            function makeBranch(parentId, order, attachU, start, dir, length, startG, endG, rBase, rTip) {
+                const segN = order === 0 ? 6 : (order === 1 ? 4 : 3);
+                const points = [start.clone()];
+                const up = new THREE.Vector3(0, 1, 0);
+                let pos = start.clone();
+                let d = dir.clone().normalize();
+                const step = length / segN;
+                for (let i = 0; i < segN; i++) {
+                    // Order-weighted curvature: trunk is nearly straight, higher orders curve/search more
+                    const upPull = order === 0 ? 0.01 : (order === 1 ? 0.04 : (order === 2 ? 0.07 : 0.11));
+                    const jitter = order === 0 ? 0.04 : (order === 1 ? 0.09 : (order === 2 ? 0.15 : 0.22));
+                    d.lerp(up, upPull).normalize();
+                    d.x += (rng() - 0.5) * jitter; d.z += (rng() - 0.5) * jitter; d.normalize();
+                    pos = pos.clone().add(d.clone().multiplyScalar(step));
+                    points.push(pos.clone());
+                }
+                const branch = { id: nextId++, parentId, order, attachU, points, length, startG, endG, radiusBase: rBase, radiusTip: rTip };
+                treeBranches.push(branch);
+                return branch;
+            }
+
+            // Trunk (order 0): extends over g 0 -> 0.22
+            const trunk = makeBranch(-1, 0, 0,
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3((rng() - 0.5) * 0.12, 1, (rng() - 0.5) * 0.12),
+                TREE_CFG.trunkHeight, 0.0, 0.22, TREE_CFG.trunkRadius, TREE_CFG.trunkRadius * 0.5);
+
+            // Children: child.startG depends on parent.attachU, so a sub-branch only appears
+            // after the parent has grown past its fork point.
+            function addChildren(parent, order) {
+                if (order > 3) return;
+                const count = order === 0 ? 6 : (order === 1 ? 3 : 2);
+                const uMin = order === 0 ? 0.42 : 0.35;
+                for (let i = 0; i < count; i++) {
+                    const attachU = uMin + (0.95 - uMin) * ((i + rng() * 0.8) / count);
+                    const { p, tan } = branchPointAt(parent, attachU);
+                    const ang = rng() * Math.PI * 2;
+                    const outward = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang));
+                    const upMix = order === 0 ? 0.8 : (order === 1 ? 0.55 : 0.4);
+                    const dir = tan.clone().multiplyScalar(0.3).add(outward.multiplyScalar(1.0)).add(new THREE.Vector3(0, upMix, 0)).normalize();
+                    const length = (order === 0 ? 4.0 : order === 1 ? 2.5 : 1.5) * (0.7 + rng() * 0.5);
+                    const delay = 0.03 + rng() * 0.03;
+                    const startG = parent.startG + (parent.endG - parent.startG) * attachU + delay;
+                    if (startG > 0.78) continue;             // too late to matter
+                    const dur = order === 0 ? 0.2 : order === 1 ? 0.16 : 0.13;
+                    const endG = Math.min(0.9, startG + dur);
+                    const rBase = Math.max(0.06, parent.radiusTip * (0.8 + rng() * 0.2));
+                    const child = makeBranch(parent.id, order + 1, attachU, p.clone(), dir, length, startG, endG, rBase, Math.max(0.03, rBase * 0.5));
+                    addChildren(child, order + 1);
+                }
+            }
+            addChildren(trunk, 0);
+
+            // Leaves: cluster-based. Each twig gets 3-5 clusters of 5-10 leaves distributed
+            // around a common attachment point — this creates full-looking canopy without
+            // increasing branch count. Upper/outer clusters are born first (canopy wave).
+            const upY = new THREE.Vector3(0, 1, 0);
+            const canopyCenter = new THREE.Vector3(0, 11, 0);
+            treeBranches.forEach(branch => {
+                if (branch.order < 2) return;
+                const nClusters = branch.order === 2 ? 3 : 5;
+                for (let c = 0; c < nClusters; c++) {
+                    const u = clamp01(0.22 + 0.66 * (c / nClusters) + (rng() - 0.5) * 0.08);
+                    const { p, tan } = branchPointAt(branch, u);
+                    const clusterSize = 5 + Math.floor(rng() * 6); // 5–10 per cluster
+                    const baseBirthG = clamp01(branch.startG + (branch.endG - branch.startG) * u + 0.04);
+                    for (let j = 0; j < clusterSize; j++) {
+                        const spread = TREE_CFG.leafSize * (0.3 + rng() * 0.8);
+                        const ang = rng() * Math.PI * 2;
+                        const phi = rng() * Math.PI * 0.55;
+                        const side = new THREE.Vector3(
+                            Math.sin(phi) * Math.cos(ang),
+                            Math.abs(Math.cos(phi)) * 0.5 + 0.18,
+                            Math.sin(phi) * Math.sin(ang)
+                        ).normalize();
+                        const finalPosition = p.clone().add(side.clone().multiplyScalar(spread));
+                        const finalQuat = new THREE.Quaternion().setFromUnitVectors(upY, side);
+                        const foldDir = tan.clone().multiplyScalar(-1).lerp(new THREE.Vector3(0, -1, 0), 0.5).normalize();
+                        const foldQuat = new THREE.Quaternion().setFromUnitVectors(upY, foldDir);
+                        // Canopy waves: upper + outer leaves lead, interior fills last
+                        const heightBias = (1 - clamp01((finalPosition.y - 5) / 13)) * 0.07;
+                        const distBias = (1 - clamp01(finalPosition.distanceTo(canopyCenter) / 10)) * 0.04;
+                        const birthG = clamp01(baseBirthG - heightBias - distBias + (rng() - 0.5) * 0.035);
+                        leafBuds.push({
+                            finalPosition, finalQuat, foldQuat,
+                            finalScale: TREE_CFG.leafSize * (0.58 + rng() * 0.52),
+                            birthG, phase: rng() * Math.PI * 2,
+                            shade: { h: (rng() - 0.5) * 0.05, s: (rng() - 0.5) * 0.18, l: (rng() - 0.5) * 0.14 },
+                        });
+                    }
+                }
+            });
+
+            // Apples: on mature order-2 branches near the tips, fruiting only late (birthG >= 0.84).
+            const ripeBranches = treeBranches.filter(b => b.order === 2 && b.endG < 0.72);
+            for (let i = 0; i < TREE_CFG.appleCount; i++) {
+                const branch = ripeBranches.length ? ripeBranches[Math.floor(rng() * ripeBranches.length)] : treeBranches[treeBranches.length - 1];
+                const u = 0.65 + rng() * 0.3;
+                const { p } = branchPointAt(branch, u);
+                appleBuds.push({ finalPosition: p.clone().add(new THREE.Vector3(0, -0.18, 0)), projectId: i, birthG: 0.84 + rng() * 0.08 });
+            }
+
+            compileBranchSegments();
+        }
+
+        // Cut every branch curve into short segments, each with its own g0/g1 (from the
+        // branch's startG/endG and the segment's local u along the curve).
+        function compileBranchSegments() {
+            treeSegments = [];
+            const upY = new THREE.Vector3(0, 1, 0);
+            treeBranches.forEach(branch => {
+                const pts = branch.points;
+                const n = pts.length - 1;
+                for (let s = 0; s < n; s++) {
+                    const a = pts[s], b = pts[s + 1];
+                    const dir = b.clone().sub(a);
+                    const len = dir.length();
+                    if (len < 1e-4) continue;
+                    dir.normalize();
+                    const localU0 = s / n, localU1 = (s + 1) / n;
+                    treeSegments.push({
+                        a: a.clone(), dir, len,
+                        g0: branch.startG + (branch.endG - branch.startG) * localU0,
+                        g1: branch.startG + (branch.endG - branch.startG) * localU1,
+                        radius: branch.radiusBase + (branch.radiusTip - branch.radiusBase) * ((localU0 + localU1) * 0.5),
+                        quat: new THREE.Quaternion().setFromUnitVectors(upY, dir),
+                    });
+                }
+            });
+        }
+
+        function buildTreeMeshes() {
+            tree = new THREE.Group();   // container only — NEVER scaled for growth
+
+            // --- branch segments (InstancedMesh) ---
+            // 16 radial segments (vs 8) eliminates visible cylinder faceting on the trunk.
+            const cylGeo = new THREE.CylinderGeometry(1, 1, 1, 16, 1, false);
+            cylGeo.translate(0, 0.5, 0);    // base at y=0, tip at y=1 → scaling y grows from the base
+            branchInst = new THREE.InstancedMesh(cylGeo, sharedBarkMaterial, treeSegments.length);
+            branchInst.castShadow = true;
+            branchInst.receiveShadow = true;
+            branchInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            // Prime instanceColor so setColorAt() works every frame
+            branchInst.setColorAt(0, new THREE.Color(0x4a3728));
+            if (branchInst.instanceColor) branchInst.instanceColor.needsUpdate = true;
+            tree.add(branchInst);
+
+            // --- pre-branch buds (InstancedMesh) ---
+            // Small green spheres that swell at branch attachment points before the branch emerges.
+            // Each bud is hidden until the parent branch has actually grown to that point.
+            budData = [];
+            treeBranches.forEach(branch => {
+                if (branch.order === 0) return; // trunk has no bud
+                const parentBranch = treeBranches.find(b => b.id === branch.parentId);
+                // g value when parent branch tip reaches the attachment point
+                const parentReachG = parentBranch
+                    ? parentBranch.startG + (parentBranch.endG - parentBranch.startG) * branch.attachU
+                    : 0;
+                budData.push({
+                    position: branch.points[0].clone(),
+                    startG: branch.startG,
+                    parentReachG,
+                    peakScale: Math.max(0.045, branch.radiusBase * 2.2),
+                });
+            });
+            const budGeo = new THREE.SphereGeometry(1, 8, 6);
+            const budMat = new THREE.MeshStandardMaterial({ color: 0x7ab330, roughness: 0.45, metalness: 0 });
+            budInst = new THREE.InstancedMesh(budGeo, budMat, Math.max(1, budData.length));
+            budInst.castShadow = true;
+            budInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            tree.add(budInst);
+
+            // --- leaves (InstancedMesh) ---
+            const leafGeo = new THREE.SphereGeometry(0.5, 5, 4);
+            leafGeo.scale(1.0, 0.4, 1.5);   // flattened, elongated → leaf-ish
+            const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0 });
+            leafInst = new THREE.InstancedMesh(leafGeo, leafMat, Math.max(1, leafBuds.length));
+            leafInst.castShadow = true;
+            leafInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            tree.add(leafInst);
+            setTreeLeafSeasonColor(seasonColors.spring.leaves);
+
+            // --- apples (individual meshes — clickable projects) ---
+            appleMarkers = [];
+            appleBuds.forEach(bud => {
+                const apple = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.42, 14, 10),
+                    new THREE.MeshStandardMaterial({ color: 0xff4444, roughness: 0.3, metalness: 0.1 })
+                );
+                apple.position.copy(bud.finalPosition);
+                apple.userData.type = 'spring';
+                apple.userData.projectId = bud.projectId;
+                apple.userData.originalScale = 1;
+                apple.userData.birthG = bud.birthG;
+                apple.castShadow = true;
+                apple.scale.setScalar(0);
+                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 5), new THREE.MeshStandardMaterial({ color: 0x4a3728 }));
+                stem.position.y = 0.45;
+                apple.add(stem);
+                tree.add(apple);
+                interactiveObjects.push(apple);
+                appleMarkers.push(apple);
+            });
+
+            scene.add(tree);
+            applyGrowth(0);   // seed the initial (empty) state
+        }
+
+        // Per-season leaf tint (instanceColor), preserving each leaf's stored variation.
+        function setTreeLeafSeasonColor(baseHex) {
+            if (!leafInst) return;
+            const c = new THREE.Color();
+            const hsl = { h: 0, s: 0, l: 0 };
+            for (let i = 0; i < leafBuds.length; i++) {
+                c.set(baseHex); c.getHSL(hsl);
+                const j = leafBuds[i].shade;
+                c.setHSL((hsl.h + j.h + 1) % 1, clamp01(hsl.s + j.s), clamp01(hsl.l + j.l));
+                leafInst.setColorAt(i, c);
+            }
+            if (leafInst.instanceColor) leafInst.instanceColor.needsUpdate = true;
+        }
+
+        // --- per-frame pure compose (reused temporaries; no allocation, no accumulation) ---
+        const _tmpM = new THREE.Matrix4();
+        const _tmpP = new THREE.Vector3();
+        const _tmpS = new THREE.Vector3();
+        const _tmpQ = new THREE.Quaternion();
+        const _zeroM = new THREE.Matrix4().makeScale(0, 0, 0);
+        const _identQ = new THREE.Quaternion();          // stays identity
+        const _droopQ = new THREE.Quaternion();          // leaf droop rotation
+        const _droopAxis = new THREE.Vector3(1, 0, 0);  // droop axis (leaf's local x)
+        // Apical color palette — reused each frame, no heap allocation
+        const _branchC = new THREE.Color();
+        const _youngShoot = new THREE.Color(0x78b52a); // fresh green tip
+        const _youngWood  = new THREE.Color(0x6b5230); // young brown wood
+        const _matureBark = new THREE.Color(0x4a3728); // fully mature bark
+
+        function updateTreeBranches(g) {
+            if (!branchInst) return;
+            // Sprout-to-trunk crossfade: tree mesh fades in while seedling fades out
+            const treeFadeIn = smoothstep(0.14, 0.22, g);
+            const hasColors = !!branchInst.instanceColor;
+            for (let i = 0; i < treeSegments.length; i++) {
+                const seg = treeSegments[i];
+                const lenT = clamp01((g - seg.g0) / Math.max(1e-4, seg.g1 - seg.g0));
+                const visibleLen = seg.len * lenT * 1.14;       // grows a → b (slight overlap hides seams)
+                const radius = seg.radius * smootherstepE(seg.g0, seg.g1 + 0.12, g) * treeFadeIn; // girth lags length
+                if (visibleLen <= 1e-4 || radius <= 1e-4) {
+                    branchInst.setMatrixAt(i, _zeroM);
+                } else {
+                    _tmpP.copy(seg.a);
+                    _tmpS.set(radius, visibleLen, radius);
+                    _tmpM.compose(_tmpP, seg.quat, _tmpS);
+                    branchInst.setMatrixAt(i, _tmpM);
+                }
+                // Apical color: growing tip is green, matures to bark over ~0.25 of g
+                if (hasColors) {
+                    const age = clamp01((g - seg.g1) / 0.25); // 0=just emerged, 1=mature
+                    if (age < 0.4) _branchC.lerpColors(_youngShoot, _youngWood, age / 0.4);
+                    else           _branchC.lerpColors(_youngWood, _matureBark, (age - 0.4) / 0.6);
+                    branchInst.setColorAt(i, _branchC);
+                }
+            }
+            branchInst.instanceMatrix.needsUpdate = true;
+            if (hasColors && branchInst.instanceColor) branchInst.instanceColor.needsUpdate = true;
+        }
+
+        function updateTreeLeaves(g, windTime) {
+            if (!leafInst) return;
+            for (let i = 0; i < leafBuds.length; i++) {
+                const b = leafBuds[i];
+                const dur = Math.min(0.12, 1 - b.birthG + 1e-3);
+                const lifeT = clamp01((g - b.birthG) / Math.max(1e-4, dur));
+                if (lifeT <= 0) { leafInst.setMatrixAt(i, _zeroM); continue; }
+                const sc = b.finalScale * easeOutBack(lifeT);
+                // Unfurl: fold→open with a brief droop (hangs down before stiffening)
+                const unfurlT = smoothstep(0, 1, lifeT);
+                _tmpQ.copy(b.foldQuat).slerp(b.finalQuat, unfurlT);
+                const droopAmt = Math.max(0, 1 - lifeT * 2.4) * 0.55; // peaks early, gone by lifeT≈0.42
+                if (droopAmt > 0.001) {
+                    _droopQ.setFromAxisAngle(_droopAxis, droopAmt);
+                    _tmpQ.multiply(_droopQ);
+                }
+                _tmpP.copy(b.finalPosition);
+                // Sway scales in with lifeT so fresh leaves tremble gently; older leaves sway more
+                const sway = lifeT * 0.13;
+                _tmpP.x += Math.sin(windTime * 1.4 + b.phase) * sway;
+                _tmpP.y += Math.sin(windTime + b.phase) * 0.04 * lifeT;
+                _tmpS.set(sc, sc, sc);
+                _tmpM.compose(_tmpP, _tmpQ, _tmpS);
+                leafInst.setMatrixAt(i, _tmpM);
+            }
+            leafInst.instanceMatrix.needsUpdate = true;
+        }
+
+        function updateTreeApples(g) {
+            for (let i = 0; i < appleMarkers.length; i++) {
+                const ap = appleMarkers[i];
+                const bg = ap.userData.birthG || 0.85;
+                const dur = Math.min(0.12, 1 - bg + 1e-3);
+                const lifeT = clamp01((g - bg) / Math.max(1e-4, dur));
+                ap.scale.setScalar(easeOutBack(lifeT));
+            }
+        }
+
+        // Buds: small green spheres that swell at each branch attachment point just before the
+        // branch emerges, then dissolve as the branch base grows out of them.
+        // A bud is invisible until the parent branch has actually grown to its position.
+        function updateBuds(g) {
+            if (!budInst || budData.length === 0) return;
+            for (let i = 0; i < budData.length; i++) {
+                const bud = budData[i];
+                // Hide until parent bark has reached this attachment point
+                if (g < bud.parentReachG) { budInst.setMatrixAt(i, _zeroM); continue; }
+                const sg = bud.startG;
+                // Swell window: [parentReachG … sg], fade window: [sg … sg+0.035]
+                const swellDur = Math.max(0.01, sg - bud.parentReachG);
+                const swellT = clamp01((g - bud.parentReachG) / swellDur);
+                const fadeT  = clamp01((g - sg) / 0.035);
+                const sc = bud.peakScale * smoothstep(0, 1, swellT) * (1 - fadeT);
+                if (sc < 0.001) {
+                    budInst.setMatrixAt(i, _zeroM);
+                } else {
+                    _tmpP.copy(bud.position);
+                    _tmpS.set(sc, sc, sc);
+                    _tmpM.compose(_tmpP, _identQ, _tmpS);
+                    budInst.setMatrixAt(i, _tmpM);
+                }
+            }
+            budInst.instanceMatrix.needsUpdate = true;
+        }
 
         function createTree() {
             tree = new THREE.Group();
@@ -1293,7 +1780,7 @@
 
         function createFoliage(parent) {
             const leafPositions = [];
-            const leafCount = 1000;
+            const leafCount = 1100;
 
             for (let i = 0; i < leafCount; i++) {
                 const theta = Math.random() * Math.PI * 2;
@@ -1307,15 +1794,17 @@
                 leafPositions.push({ x, y, z });
             }
 
-            // Create leaf clusters
-            leafPositions.forEach((pos, i) => {
-                const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.2, 6, 4);
+            // Create leaf clusters with per-leaf color/size variation for a richer, less uniform canopy
+            leafPositions.forEach((pos) => {
+                const size = 0.2 + Math.random() * 0.26;
+                const leafGeom = new THREE.SphereGeometry(size, 7, 5);
                 const leafMat = new THREE.MeshStandardMaterial({
                     color: 0x7cb342,
-                    roughness: 0.8,
-                    metalness: 0.1,
+                    roughness: 0.85,
+                    metalness: 0,
                     transparent: true,
-                    opacity: 0.9
+                    opacity: 0.95,
+                    flatShading: false
                 });
                 const leaf = new THREE.Mesh(leafGeom, leafMat);
                 leaf.position.set(pos.x, pos.y, pos.z);
@@ -1323,9 +1812,100 @@
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
                 leaf.userData.phase = Math.random() * Math.PI * 2;
+                // Normalized canopy height (+ jitter) drives the base->tip growth front
+                leaf.userData.heightNorm = THREE.MathUtils.clamp(
+                    (pos.y - 12) / 10 + (Math.random() - 0.5) * 0.18,
+                    0, 1
+                );
+                // ~35% of the canopy is "mature only" — held back for extra stage-3 lushness, while
+                // the other ~65% fills early so the young tree's branches are never bare.
+                leaf.userData.matureOnly = Math.random() < 0.35;
+
+                // Higher/outer leaves catch more light; add subtle hue + lightness jitter for depth
+                const heightFactor = THREE.MathUtils.clamp((pos.y - 12) / 9, 0, 1);
+                leaf.userData.leafShade = {
+                    h: (Math.random() - 0.5) * 0.05,
+                    s: (Math.random() - 0.5) * 0.18,
+                    l: (Math.random() - 0.5) * 0.14 + heightFactor * 0.1
+                };
+                applyLeafColor(leaf, 0x7cb342);
+
                 leaves.push(leaf);
                 parent.add(leaf);
             });
+        }
+
+        // Apply a season's base leaf color with each leaf's stored variation, so the canopy
+        // keeps its natural depth across season changes instead of going flat.
+        function applyLeafColor(leaf, baseHex) {
+            const c = new THREE.Color(baseHex);
+            const hsl = { h: 0, s: 0, l: 0 };
+            c.getHSL(hsl);
+            const j = leaf.userData.leafShade || { h: 0, s: 0, l: 0 };
+            c.setHSL(
+                (hsl.h + j.h + 1) % 1,
+                THREE.MathUtils.clamp(hsl.s + j.s, 0, 1),
+                THREE.MathUtils.clamp(hsl.l + j.l, 0.08, 0.95)
+            );
+            leaf.material.color.copy(c);
+        }
+
+        // ============================================
+        // 嫩芽 Seedling — soil mound + green stem + two cotyledon leaves.
+        // This is what the visitor sees first; it shrinks away as the trunk emerges.
+        // ============================================
+        let seedling = null;
+
+        function createSeedling() {
+            seedling = new THREE.Group();
+
+            // Soil mound (flattened brown dome)
+            const moundGeo = new THREE.SphereGeometry(1.15, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
+            moundGeo.scale(1, 0.62, 1);
+            const moundMat = new THREE.MeshStandardMaterial({ color: 0x97603a, roughness: 0.6, metalness: 0, transparent: true });
+            const mound = new THREE.Mesh(moundGeo, moundMat);
+            mound.castShadow = true;
+            mound.receiveShadow = true;
+            seedling.add(mound);
+
+            // Stem (gently curved green tube)
+            const stemCurve = new THREE.QuadraticBezierCurve3(
+                new THREE.Vector3(0, 0.4, 0),
+                new THREE.Vector3(0.06, 1.0, 0.04),
+                new THREE.Vector3(0, 1.6, 0)
+            );
+            const stemGeo = new THREE.TubeGeometry(stemCurve, 24, 0.085, 12, false);
+            const stemMat = new THREE.MeshStandardMaterial({ color: 0x8bc34a, roughness: 0.32, metalness: 0, transparent: true });
+            const stem = new THREE.Mesh(stemGeo, stemMat);
+            stem.castShadow = true;
+            seedling.add(stem);
+
+            // A puffy cotyledon leaf: an ellipsoid whose base end sits at the pivot origin
+            function makeLeaf(len, wid, thick, colorHex) {
+                const g = new THREE.SphereGeometry(0.5, 24, 16);
+                g.scale(len, thick, wid);
+                g.translate(len * 0.5, 0, 0);
+                const m = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0, transparent: true });
+                const leaf = new THREE.Mesh(g, m);
+                leaf.castShadow = true;
+                return leaf;
+            }
+
+            const leafTopY = 1.55;
+
+            const leftPivot = new THREE.Group();
+            leftPivot.position.set(0, leafTopY, 0);
+            leftPivot.add(makeLeaf(1.3, 0.68, 0.2, 0x9bcf3f));
+            leftPivot.rotation.set(0, 2.5, 0.78);
+            seedling.add(leftPivot);
+
+            const rightPivot = new THREE.Group();
+            rightPivot.position.set(0, leafTopY, 0);
+            rightPivot.add(makeLeaf(1.05, 0.56, 0.18, 0xaed957));
+            rightPivot.rotation.set(0, -0.5, 0.98);
+            seedling.add(rightPivot);
+
+            scene.add(seedling);
         }
 
         // ============================================
@@ -1586,41 +2166,8 @@
         }
 
         function createSpringElements() {
-            // Apples (clickable projects)
-            const applePositions = [
-                { x: 3, y: 14, z: 2 },
-                { x: -3, y: 13, z: 3 },
-                { x: 4, y: 12, z: -2 },
-                { x: -2, y: 15, z: -2 },
-                { x: 1, y: 13, z: 4 },
-                { x: -4, y: 14, z: -1 },
-                { x: 2, y: 16, z: -3 }
-            ];
-
-            applePositions.forEach((pos, i) => {
-                const appleGeom = new THREE.SphereGeometry(0.45, 16, 12);
-                const appleMat = new THREE.MeshStandardMaterial({
-                    color: 0xff4444,
-                    roughness: 0.3,
-                    metalness: 0.1
-                });
-                const apple = new THREE.Mesh(appleGeom, appleMat);
-                apple.position.set(pos.x, pos.y, pos.z);
-                apple.userData.type = 'spring';
-                apple.userData.projectId = i;
-                apple.userData.originalScale = 1;
-                apple.castShadow = true;
-                
-                // Add stem
-                const stemGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 6);
-                const stemMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
-                const stem = new THREE.Mesh(stemGeom, stemMat);
-                stem.position.y = 0.5;
-                apple.add(stem);
-                
-                tree.add(apple);
-                interactiveObjects.push(apple);
-            });
+            // Apples are created by the procedural tree (buildTreeMeshes) so they bind to real
+            // branch positions and fruit late. Here we only scatter the ground flowers.
 
             // Flowers around the tree
             for (let i = 0; i < 40; i++) {
@@ -3132,55 +3679,55 @@
         let seasonChangeCooldown = false;
 
         function onKeyDown(e) {
-            if (seasonChangeCooldown) return;
-            
-            if (e.code === 'Space' || e.code === 'ArrowRight') {
-                e.preventDefault();
-                if (currentSeason < 2) {
-                    changeSeason(1);
+            if (!hasGrown) {
+                // Keyboard alternative to scrolling: grow / shrink the sprout
+                if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'PageUp') {
+                    e.preventDefault();
+                    growthTarget = clamp01(growthTarget + 0.08);
+                } else if (e.code === 'ArrowDown' || e.code === 'PageDown') {
+                    e.preventDefault();
+                    growthTarget = clamp01(growthTarget - 0.08);
                 }
+                return;
+            }
+            // After grown: left/right arrows switch seasons
+            if (seasonChangeCooldown) return;
+            if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                if (currentSeason < 2) changeSeason(1);
             } else if (e.code === 'ArrowLeft') {
                 e.preventDefault();
-                if (currentSeason > 0) {
-                    changeSeason(-1);
-                }
+                if (currentSeason > 0) changeSeason(-1);
             }
         }
 
         let touchStartSingleX = 0;
         let touchStartSingleY = 0;
         let touchStartTime = 0;
+        let lastTouchY = 0;
 
         function onTouchStart(e) {
             if (e.touches.length === 1) {
                 touchStartSingleX = e.touches[0].clientX;
                 touchStartSingleY = e.touches[0].clientY;
+                lastTouchY = e.touches[0].clientY;
                 touchStartTime = Date.now();
-            }
-            if (e.touches.length === 2) {
-                touchStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-                isSwiping = true;
             }
         }
 
         function onTouchMove(e) {
-            if (!isSwiping || e.touches.length !== 2 || seasonChangeCooldown) return;
-            const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-            const deltaX = currentX - touchStartX;
-            if (Math.abs(deltaX) > 80) {
-                if (deltaX < 0 && currentSeason < 2) {
-                    changeSeason(1);
-                } else if (deltaX > 0 && currentSeason > 0) {
-                    changeSeason(-1);
-                }
-                isSwiping = false;
-            }
+            // Before grown: a one-finger vertical swipe drives growth (swipe up = grow).
+            // After grown: let OrbitControls handle touch (orbit / pinch).
+            if (hasGrown || e.touches.length !== 1) return;
+            e.preventDefault();
+            const y = e.touches[0].clientY;
+            growthTarget = clamp01(growthTarget + (lastTouchY - y) * 0.0016);
+            lastTouchY = y;
         }
 
         function onTouchEnd(e) {
-            isSwiping = false;
-
-            // Single tap: detect short-duration, low-movement touch and raycast for project objects
+            // Tap to open a project — only once the tree is grown and apples are interactive
+            if (!hasGrown) return;
             if (e.changedTouches.length === 1) {
                 const touch = e.changedTouches[0];
                 const dx = touch.clientX - touchStartSingleX;
@@ -3210,17 +3757,12 @@
         }
 
         function onWheel(e) {
-            if (seasonChangeCooldown) return;
-            
-            // Detect horizontal swipe (two finger on trackpad)
-            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
-                e.preventDefault();
-                if (e.deltaX > 0 && currentSeason < 2) {
-                    changeSeason(1);
-                } else if (e.deltaX < 0 && currentSeason > 0) {
-                    changeSeason(-1);
-                }
-            }
+            // Before grown: vertical scroll / two-finger swipe up grows the tree.
+            // After grown: hand the wheel back to OrbitControls (zoom).
+            if (hasGrown) return;
+            e.preventDefault();
+            const d = Math.max(-0.08, Math.min(0.08, e.deltaY * 0.0012));
+            growthTarget = clamp01(growthTarget + d);
         }
 
         function changeSeason(direction) {
@@ -3472,10 +4014,8 @@
             scene.background = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
             scene.fog.color = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
 
-            // Update leaves color
-            leaves.forEach(leaf => {
-                leaf.material.color.setHex(colors.leaves);
-            });
+            // Update procedural leaf color (instanced; preserves each leaf's variation)
+            setTreeLeafSeasonColor(colors.leaves);
 
             // Toggle seasonal elements
             // Spring elements
@@ -3563,6 +4103,8 @@
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            if (!hasGrown) return;   // no hover/interaction during the growth journey
 
             // 如果正在拖拽动物
             if (isDragging && draggedAnimal) {
@@ -3670,7 +4212,8 @@
 
         function onMouseDown(event) {
             if (event.button !== 0) return; // 只响应左键
-            
+            if (!hasGrown) return;
+
             dragStartTime = Date.now();
             dragStartPos.set(event.clientX, event.clientY);
             
@@ -3685,6 +4228,7 @@
         }
 
         function onMouseUp(event) {
+            if (!hasGrown) return;
             const dragDuration = Date.now() - dragStartTime;
             const dragDistance = Math.sqrt(
                 Math.pow(event.clientX - dragStartPos.x, 2) + 
@@ -3710,6 +4254,7 @@
         }
 
         function onClick(event) {
+            if (!hasGrown) return;
             // 作为备用：如果 mouseUp 没有处理，这里也尝试打开项目
             if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
                 // 只有在没有拖拽的情况下才处理
@@ -3751,26 +4296,135 @@
             document.getElementById('projectModal').classList.remove('active');
         }
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // Use the VISUAL viewport so the canvas always fills the screen exactly — fixes the
+        // bottom "black bar" and the squished/distorted look in iOS Safari & in-app browsers
+        // (Instagram/WeChat) where window.innerHeight lags the real visible height.
+        function getViewportSize() {
+            const vv = window.visualViewport;
+            return {
+                w: Math.max(1, Math.round(vv ? vv.width : window.innerWidth)),
+                h: Math.max(1, Math.round(vv ? vv.height : window.innerHeight))
+            };
         }
 
-        function simulateLoading() {
-            let progress = 0;
-            const progressBar = document.getElementById('loadingProgress');
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                    }, 500);
+        function onWindowResize() {
+            const { w, h } = getViewportSize();
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+
+        // ============================================
+        // Growth journey: sprout -> tree, driven by scroll / swipe
+        // ============================================
+        function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+        function smoothstep(edge0, edge1, x) {
+            const t = clamp01((x - edge0) / (edge1 - edge0));
+            return t * t * (3 - 2 * t);
+        }
+        function smootherstep(x) {
+            const t = clamp01(x);
+            return t * t * t * (t * (t * 6 - 15) + 10);
+        }
+        // Slight overshoot, settling to 1 — gives leaves/fruit an organic "pop" as they unfurl.
+        function easeOutBack(x) {
+            const t = clamp01(x);
+            const c1 = 1.70158, c3 = c1 + 1;
+            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        }
+
+        // Scale the tree (and the meadow) by growth progress; reveal leaves, then apples, last.
+        function applyGrowth(g) {
+            // PURE function of g — every element composed from precomputed final data + g, no
+            // accumulation, fully reversible. The tree is NOT scaled; its size is formed by branch
+            // segments appearing one after another (base -> tip, child after parent's fork point).
+            //   g 0.00–0.18  sprout phase: seedling only (cotyledons + stem stretch)
+            //   g 0.14–0.22  crossfade: seedling fades, trunk begins to emerge
+            //   g 0.22–0.82  branches grow out (each child after parent's fork)
+            //   g 0.55–0.90  canopy waves: upper→outer→interior leaves unfurl in clusters
+            //   g 0.84–1.00  fruit ripens
+
+            // --- Sprout phase: seedling visible g 0→0.22, fading to zero by g=0.22 ---
+            if (seedling) {
+                const seedShow = 1 - smoothstep(0.08, 0.22, g);
+                const visible = seedShow > 0.01;
+                seedling.visible = visible;
+                if (visible) {
+                    // Stem stretches gently upward as g rises through 0→0.18
+                    const stretch = 0.38 + 0.62 * smoothstep(0, 0.18, g);
+                    seedling.scale.setScalar(0.48 * stretch);
+                    seedling.traverse(o => { if (o.material) o.material.opacity = seedShow; });
                 }
-                progressBar.style.width = progress + '%';
-            }, 100);
+            }
+
+            // --- Buds swell at attachment points just before each branch emerges ---
+            updateBuds(g);
+
+            // --- Branch segments grow out a→b (length first, girth lagging) ---
+            updateTreeBranches(g);
+
+            // --- Fruit ripens last (birthG >= 0.84) ---
+            updateTreeApples(g);
+
+            // --- Meadow grows in alongside the tree ---
+            const groundReveal = smoothstep(0.18, 0.65, g);
+            for (let i = 0; i < grassMeshes.length; i++) grassMeshes[i].scale.setScalar(groundReveal);
+            for (let i = 0; i < flowers.length; i++) flowers[i].scale.setScalar(groundReveal);
+        }
+
+        // Orbit + rise + dolly-out as a pure function of growth: circle the sprout up close,
+        // then settle on the full tree. Ends EXACTLY at the original (0,10,30) -> (0,10,0) view.
+        function driveGrowthCamera(g) {
+            // The trunk shoots up fast (full height by g~0.22), so the dolly-out + rise must reach
+            // framing early (by g~0.42) to keep it in shot; the azimuth keeps a slow full orbit.
+            const e = smootherstep(g);
+            const frame = smoothstep(0.05, 0.42, g);
+            const az = -Math.PI * 1.4 * (1 - e);     // ~250deg sweep, settling at azimuth 0
+            const radius = 7.5 + (22 - 7.5) * frame; // start close on the sprout, pull back to frame the tree
+            const camY = 2.4 + (7 - 2.4) * frame;
+            const targetY = 0.45 + (6.5 - 0.45) * frame;
+            camera.position.set(Math.sin(az) * radius, camY, Math.cos(az) * radius);
+            camera.up.set(0, 1, 0);
+            camera.lookAt(0, targetY, 0);
+            controls.target.set(0, targetY, 0);     // keep controls synced for a seamless hand-off
+        }
+
+        function updateGrowthUI() {
+            const fill = document.getElementById('growProgressFill');
+            if (fill) fill.style.height = (growthCurrent * 100).toFixed(1) + '%';
+            const hint = document.getElementById('growHint');
+            if (hint) hint.style.opacity = Math.max(0, 1 - growthCurrent * 2.2).toFixed(2);
+        }
+
+        function updateGrowth(dt) {
+            if (hasGrown) return;
+            growthCurrent += (growthTarget - growthCurrent) * Math.min(1, dt * 3.2);
+            if (growthTarget >= 0.999 && growthCurrent >= 0.997) {
+                enterInteractive();
+                return;
+            }
+            applyGrowth(growthCurrent);
+            driveGrowthCamera(growthCurrent);
+            updateGrowthUI();
+        }
+
+        // Latch into the fully-grown, freely explorable state; hand the camera to OrbitControls.
+        function enterInteractive() {
+            hasGrown = true;
+            growthCurrent = growthTarget = 1;
+            applyGrowth(1);
+            updateTreeLeaves(1, windTime);
+            updateGrowthUI();
+            camera.position.set(0, 7, 22);   // matches driveGrowthCamera(1)
+            camera.lookAt(0, 6.5, 0);
+            controls.target.set(0, 6.5, 0);
+            controls.enabled = true;
+            controls.enableZoom = true;
+            controls.update();
+            document.body.classList.remove('growing');
+            const hintEl = document.getElementById('hintText');
+            if (hintEl) hintEl.textContent = hintTexts[currentSeason] || hintTexts[0];
         }
 
         let lastTime = 0;
@@ -3783,6 +4437,13 @@
             lastTime = currentTime;
 
             windTime += 0.01;
+
+            // Advance the sprout -> tree growth (drives the camera itself until grown)
+            updateGrowth(deltaTime);
+
+            // Leaves are composed every frame from (growthCurrent, windTime): unfold by growth,
+            // then sway in the wind once open. (Pure in g; wind is a pure function of time.)
+            updateTreeLeaves(growthCurrent, windTime);
 
             // === 河流动画 (UV滚动，不是顶点位移) ===
             updateRiverAnimation(deltaTime);
@@ -3885,16 +4546,18 @@
                 }
             });
 
-            controls.update();
+            // While growing, the camera is scripted by driveGrowthCamera(); OrbitControls would
+            // fight it (damping rewrites camera each update), so only run it once grown.
+            if (hasGrown) controls.update();
             renderer.render(scene, camera);
         }
 
         // Initialize
         init();
         
-        // 创建积雪壳 (必须在树创建后)
-        createSnowShells();
-        
+        // 积雪壳依赖旧的 trunkMesh/branchMeshes（程序化树未使用）— 冬季不可达，跳过
+        if (trunkMesh) createSnowShells();
+
         transitionSeason();
     </script>
 </body>
