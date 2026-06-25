@@ -1,0 +1,12 @@
+{
+  "name": "jane-personal-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Jane Zhang's personal website (static) + Twilio contact API, deployed on Vercel",
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "twilio": "^5.3.5"
+  }
+}

@@ -6,8 +6,7 @@ Live at **[imjane.top](https://imjane.top)**
 
 | View | Description |
 |---|---|
-| **Tree Portfolio** (`index.html`) | Interactive 3D tree with seasons (Spring → Summer → Autumn). Click the apples/animals/leaves to explore projects. |
-| **Classic View** (`index-classic.html`) | Standard portfolio layout with project cards, contact, and social links. |
+| **Tree Portfolio** (`index.html`) | Interactive 3D tree with seasons (Spring → Summer → Autumn). Click the apples/animals/leaves to explore projects. Fully mobile-optimized with consistent framing across in-app browsers (Instagram, etc.) and mobile browsers. |
 
 ## Project Pages
 
@@ -19,7 +18,6 @@ Live at **[imjane.top](https://imjane.top)**
 
 ```
 ├── index.html              # Tree portfolio (main entry)
-├── index-classic.html      # Classic portfolio view
 ├── gensync.html
 ├── suab.html
 ├── traller.html
