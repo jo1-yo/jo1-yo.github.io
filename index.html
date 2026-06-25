@@ -2,53 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Jane Zhang — Portfolio | Four Seasons</title>
-
-    <!-- SEO -->
-    <meta name="description" content="Jane Zhang's portfolio — an interactive 3D 'four seasons' tree where every apple is a project. Explore work across AI, web development, and research.">
-    <meta name="author" content="Jane Zhang">
-    <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#f3eef0">
-    <link rel="canonical" href="https://imjane.top/">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="apple-touch-icon" href="/favicon.ico">
-
-    <!-- Open Graph -->
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Jane Zhang">
-    <meta property="og:title" content="Jane Zhang — Portfolio">
-    <meta property="og:description" content="An interactive 3D 'four seasons' tree where every apple is a project. Explore Jane Zhang's work across AI, web development, and research.">
-    <meta property="og:url" content="https://imjane.top/">
-    <meta property="og:image" content="https://imjane.top/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="An interactive 3D tree representing Jane Zhang's portfolio.">
-    <meta property="og:locale" content="en_US">
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Jane Zhang — Portfolio">
-    <meta name="twitter:description" content="An interactive 3D 'four seasons' tree where every apple is a project. Explore Jane Zhang's work across AI, web development, and research.">
-    <meta name="twitter:image" content="https://imjane.top/og-image.jpg">
-    <meta name="twitter:image:alt" content="An interactive 3D tree representing Jane Zhang's portfolio.">
-
-    <!-- Structured data -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "name": "Jane Zhang",
-      "url": "https://imjane.top/",
-      "image": "https://imjane.top/og-image.jpg",
-      "sameAs": [
-        "https://linkedin.com/in/jane-z-439910293",
-        "https://github.com/jo1-yo"
-      ],
-      "email": "mailto:janezhang2033@163.com"
-    }
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jane's Portfolio | Four Seasons</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
     <style>
         * {
@@ -58,18 +13,22 @@
         }
 
         html, body {
+            width: 100%;
             height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: #1a1a1a;
         }
 
         body {
-            overflow: hidden;
+            position: fixed;
+            inset: 0;
             font-family: 'Cormorant Garamond', serif;
-            /* Light tone matching the scene so any transient viewport gap never reads as a black bar */
-            background: #f1ebee;
-        }
-
-        canvas {
-            display: block;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
         }
 
         #canvas-container {
@@ -78,6 +37,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            height: 100dvh;
             z-index: 1;
         }
 
@@ -316,82 +276,46 @@
             opacity: 1;
         }
 
-        /* ============================================
-           Growth journey UI (sprout -> tree)
-           ============================================ */
-        .grow-hint {
+        .loading-screen {
             position: fixed;
-            bottom: 56px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 120;
-            color: #6b5b66;
-            font-size: 1rem;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .grow-arrow {
-            display: inline-block;
-            font-size: 1.3rem;
-            line-height: 1;
-            animation: growBounce 1.6s ease-in-out infinite;
-        }
-
-        @keyframes growBounce {
-            0%, 100% { transform: translateY(3px); opacity: 0.45; }
-            50% { transform: translateY(-5px); opacity: 1; }
-        }
-
-        .grow-progress {
-            position: fixed;
-            right: 34px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 160px;
-            background: rgba(120,100,110,0.16);
-            border-radius: 3px;
-            overflow: hidden;
-            z-index: 120;
-            opacity: 0;
-            transition: opacity 0.6s ease;
-            pointer-events: none;
-            display: flex;
-            align-items: flex-end;
-        }
-
-        .grow-progress-fill {
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 0%;
-            background: linear-gradient(to top, #7cb342, #c8e6a0);
-            border-radius: 3px;
-            transition: height 0.12s linear;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease;
         }
 
-        body.growing .grow-hint,
-        body.growing .grow-progress {
-            opacity: 1;
-        }
-
-        body.growing .season-indicator,
-        body.growing .scroll-indicator,
-        body.growing .season-nav-btn,
-        body.growing .hint-text {
-            opacity: 0 !important;
+        .loading-screen.hidden {
+            opacity: 0;
             pointer-events: none;
         }
 
-        @media (max-width: 768px) {
-            .grow-progress { right: 16px; height: 120px; }
-            .grow-hint { font-size: 0.8rem; letter-spacing: 0.12em; bottom: 44px; }
+        .loading-text {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            letter-spacing: 0.3em;
+            margin-bottom: 30px;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(255,255,255,0.2);
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            width: 0%;
+            height: 100%;
+            background: #fff;
+            transition: width 0.3s ease;
         }
 
         .name-title {
@@ -429,45 +353,6 @@
             color: #fff;
         }
 
-        .switch-view-btn {
-            position: fixed;
-            top: 40px;
-            right: 40px;
-            z-index: 500;
-            padding: 12px 24px;
-            background: rgba(180, 180, 180, 0.4);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 30px;
-            color: #333;
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            pointer-events: auto;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        }
-
-        .switch-view-btn:hover {
-            background: rgba(160, 160, 160, 0.5);
-            border-color: rgba(255,255,255,0.8);
-            color: #222;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .switch-view-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: #555;
-        }
-
         @media (max-width: 768px) {
             .season-name {
                 font-size: 2.4rem;
@@ -486,13 +371,6 @@
 
             .social-link {
                 font-size: 0.75rem;
-            }
-
-            .switch-view-btn {
-                top: 16px;
-                right: 16px;
-                padding: 9px 16px;
-                font-size: 0.85rem;
             }
 
             .hint-text {
@@ -528,13 +406,6 @@
             .season-name {
                 font-size: 1.8rem;
                 letter-spacing: 0.1em;
-            }
-
-            .switch-view-btn {
-                top: 12px;
-                right: 12px;
-                padding: 8px 14px;
-                font-size: 0.8rem;
             }
 
             .social-links {
@@ -576,9 +447,113 @@
                 display: flex;
             }
         }
+
+        /* ===== 宇宙之旅: 穿越闪光 + 一维个人网站 ===== */
+        /* 二维像素坍塌层 (定格帧 → 方块 → 倒塌) */
+        #pixelCanvas {
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            z-index: 1900; display: none; pointer-events: none;
+        }
+        #cosmosFlash {
+            position: fixed; inset: 0; z-index: 2500;
+            background: #15140f; opacity: 0; pointer-events: none;
+        }
+        /* 地球图标: 作品集页右上角, 点击倒带回 3D 宇宙 */
+        #fpHome {
+            position: fixed; top: 22px; right: 24px; z-index: 3200;
+            width: 50px; height: 50px; padding: 0; border: none; border-radius: 50%;
+            background: none; cursor: pointer; opacity: 0; visibility: hidden;
+            -webkit-tap-highlight-color: transparent;
+            transition: opacity .9s ease .3s, visibility .9s ease .3s, transform .2s ease;
+        }
+        #fpHome img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 2px 7px rgba(0,0,0,.45)); }
+        #fpHome:hover { transform: scale(1.09); }
+        #oneDSite.active ~ #fpHome, #oneDSite.active #fpHome { opacity: 1; visibility: visible; }
+        /* "Message" 连接按钮 (与其它 connect 链接同款) */
+        .fp-msg-btn { background: none; border: none; padding: 0; margin: 0; color: #cbc4b4; font-size: .98rem; font-family: inherit; width: max-content; cursor: pointer; text-align: left; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
+        .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
+        /* 留言弹窗: 深炭黑 + 暖米白 + 金强调, 与作品集页一致 */
+        #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(8,7,5,.62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+        #msgModal.open { display: flex; }
+        .msg-box { position: relative; width: 100%; max-width: 440px; background: #1b1a15; border: 1px solid rgba(231,225,211,.12); border-radius: 14px; padding: 30px 28px 26px; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+        .msg-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #8c8676; font-size: 1.5rem; line-height: 1; cursor: pointer; transition: color .2s; }
+        .msg-close:hover { color: #e7c87e; }
+        .msg-box h3 { font-size: 1.25rem; font-weight: 600; color: #f4efe3; }
+        .msg-sub { margin-top: 8px; font-size: .9rem; color: #8c8676; line-height: 1.5; }
+        #msgForm { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+        #msgForm input, #msgForm textarea { width: 100%; box-sizing: border-box; background: #131210; border: 1px solid rgba(231,225,211,.14); border-radius: 8px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s; }
+        #msgForm textarea { resize: vertical; min-height: 92px; }
+        #msgForm input:focus, #msgForm textarea:focus { outline: none; border-color: #c6a662; }
+        #msgForm input::placeholder, #msgForm textarea::placeholder { color: #6b6557; }
+        #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+        .msg-send { background: #e7c87e; color: #1b1a15; border: none; border-radius: 8px; padding: 12px; font-size: .98rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s, opacity .2s; }
+        .msg-send:hover { background: #f0d796; }
+        .msg-send:disabled { opacity: .6; cursor: default; }
+        .msg-status { font-size: .9rem; min-height: 1.1em; line-height: 1.4; }
+        .msg-status.ok { color: #9bc48a; }
+        .msg-status.err { color: #d98a6a; }
+        /* 坍塌后的软件工程作品集: 深炭黑 + 暖米白 + 克制金 + 现代无衬线 */
+        #oneDSite {
+            position: fixed; inset: 0; z-index: 3000;
+            background: radial-gradient(118% 78% at 26% -6%, #1d1b13 0%, #15140f 50%, #110f09 100%);
+            color: #e7e1d3; opacity: 0; visibility: hidden;
+            transition: opacity 1.1s ease, visibility 1.1s ease;
+            overflow-y: auto; overflow-x: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        #oneDSite.active { opacity: 1; visibility: visible; }
+        /* 入场: 内容自下而上、分层淡入 (高级感) */
+        .fp-side, .fp-hero, .fp-lede, .fp-projects { opacity: 0; transform: translateY(18px); transition: opacity .85s ease, transform .85s cubic-bezier(.22,.61,.36,1); }
+        #oneDSite.active .fp-side { opacity: 1; transform: none; transition-delay: .08s; }
+        #oneDSite.active .fp-hero { opacity: 1; transform: none; transition-delay: .18s; }
+        #oneDSite.active .fp-lede { opacity: 1; transform: none; transition-delay: .30s; }
+        #oneDSite.active .fp-projects { opacity: 1; transform: none; transition-delay: .44s; }
+        #oneDSite.active .fp-projects + .fp-projects { transition-delay: .56s; }
+        @media (prefers-reduced-motion: reduce) {
+            .fp-side, .fp-hero, .fp-lede, .fp-projects { transition: opacity .4s ease; transform: none; }
+        }
+        .fp-wrap { max-width: 1120px; margin: 0 auto; padding: 13vh 8vw 16vh; display: grid; grid-template-columns: 240px 1fr; gap: 7vw; }
+        .fp-side { position: sticky; top: 13vh; align-self: start; }
+        .fp-name { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
+        .fp-role { margin-top: 10px; font-size: .73rem; letter-spacing: .12em; text-transform: uppercase; color: #c6a662; line-height: 1.7; }
+        .fp-side-label { margin-top: 40px; font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; color: #6b6557; }
+        .fp-connect { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .fp-connect a { color: #cbc4b4; text-decoration: none; font-size: .98rem; width: max-content; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
+        .fp-connect a:hover { color: #e7c87e; border-color: #e7c87e; }
+        .fp-main { min-width: 0; }
+        .fp-hero { font-size: clamp(2.3rem, 4.6vw, 3.4rem); font-weight: 700; letter-spacing: -.02em; line-height: 1.08; color: #f6f1e5; min-height: 1.08em; }
+        .fp-hero.typing::after { content: '|'; display: inline-block; margin-left: .04em; color: #e7c87e; font-weight: 300; transform: translateY(-.02em); animation: heroCaret .53s steps(1) infinite; }
+        @keyframes heroCaret { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+        .fp-lede { margin-top: 26px; max-width: 40em; }
+        .fp-lede p { font-size: 1.08rem; line-height: 1.75; color: #aaa394; margin-bottom: 16px; }
+        .fp-lede p b { color: #e7e1d3; font-weight: 600; }
+        .fp-seek b { color: #e7c87e; }
+        .fp-projects { margin-top: 54px; }
+        .fp-h2 { font-size: .7rem; letter-spacing: .24em; text-transform: uppercase; color: #7d7665; padding-bottom: 12px; border-bottom: 1px solid rgba(231,225,211,.10); }
+        .fp-proj { display: block; padding: 18px 6px 17px; border-bottom: 1px solid rgba(231,225,211,.07); text-decoration: none; color: inherit; box-shadow: inset 2px 0 0 transparent; transition: background .25s ease, padding .25s ease, box-shadow .25s ease; border-radius: 6px; }
+        .fp-proj:hover { background: rgba(231,200,126,.05); padding-left: 16px; box-shadow: inset 2px 0 0 #e7c87e; }
+        .fp-proj-head { display: flex; align-items: baseline; gap: 14px; }
+        .fp-proj-i { font-size: .76rem; color: #6f6857; font-variant-numeric: tabular-nums; min-width: 18px; }
+        .fp-proj-t { flex: 1; font-size: 1.18rem; font-weight: 600; color: #ece6d8; transition: color .2s; }
+        .fp-proj:hover .fp-proj-t { color: #e7c87e; }
+        .fp-proj-arrow { color: #c6a662; font-size: 1rem; opacity: 0; transform: translateX(-5px); transition: opacity .2s, transform .2s; }
+        .fp-proj:hover .fp-proj-arrow { opacity: 1; transform: translateX(0); }
+        .fp-proj-d { margin-top: 5px; margin-left: 32px; font-size: .95rem; color: #8c8676; line-height: 1.5; }
+        @media (max-width: 760px) {
+            .fp-wrap { grid-template-columns: 1fr; gap: 32px; padding: 8vh 8vw 16vh; }
+            .fp-side { position: static; }
+        }
     </style>
 </head>
-<body class="growing">
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">ENTERING JANE'S INNER WORLD</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
+
     <div id="canvas-container"></div>
 
     <div class="season-indicator">
@@ -595,15 +570,6 @@
         <div class="scroll-dot" data-season="2"></div>
     </div>
 
-    <div class="grow-hint" id="growHint">
-        <span class="grow-arrow">&#8963;</span>
-        <span>Scroll to grow the tree</span>
-    </div>
-
-    <div class="grow-progress" id="growProgress">
-        <div class="grow-progress-fill" id="growProgressFill"></div>
-    </div>
-
     <button class="season-nav-btn season-prev" id="seasonPrev" onclick="changeSeason(-1)">&#8249;</button>
     <button class="season-nav-btn season-next" id="seasonNext" onclick="changeSeason(1)">&#8250;</button>
 
@@ -612,9 +578,9 @@
     <div class="name-title">Jane's Portfolio</div>
 
     <div class="social-links">
-        <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" class="social-link">LinkedIn</a>
-        <a href="https://github.com/jo1-yo" target="_blank" class="social-link">GitHub</a>
-        <a href="mailto:janezhang2033@163.com" class="social-link">Email</a>
+        <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
+        <a href="https://github.com/jo1-yo" target="_blank" rel="noopener noreferrer" class="social-link">GitHub</a>
+        <a href="#" class="social-link" id="treeMsgBtn">Message</a>
     </div>
 
     <div class="project-modal" id="projectModal">
@@ -626,6 +592,30 @@
             <div class="modal-links" id="modalLinks"></div>
             <button class="modal-close" onclick="closeModal()">Close</button>
         </div>
+    </div>
+
+    <div id="msgModal" aria-hidden="true">
+        <div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
+            <button class="msg-close" id="msgClose" type="button" aria-label="Close">&times;</button>
+            <h3 id="msgTitle">Send me a message</h3>
+            <p class="msg-sub">It reaches me directly — leave a way to reach you back if you'd like a reply.</p>
+            <form id="msgForm">
+                <input type="text" name="from_name" placeholder="Your name (optional)" autocomplete="name">
+                <input type="text" name="reply_to" placeholder="Email or @ to reach you (optional)">
+                <textarea name="message" rows="4" placeholder="Your message…" required maxlength="600"></textarea>
+                <input type="checkbox" name="botcheck" class="msg-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+                <button type="submit" class="msg-send" id="msgSend">Send</button>
+                <div class="msg-status" id="msgStatus" role="status" aria-live="polite"></div>
+            </form>
+        </div>
+    </div>
+    <canvas id="pixelCanvas"></canvas>
+    <div id="cosmosFlash"></div>
+    <div id="oneDSite">
+        <div class="fp-wrap" id="fpWrap"></div>
+        <button id="fpHome" title="Back to the universe" aria-label="Back to the universe">
+            <img src="images/jane-avatar.png" alt="Jane — back to the universe">
+        </button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -780,13 +770,6 @@
         let raycaster = new THREE.Raycaster();
         let hoveredObject = null;
 
-        // === Growth journey state (sprout -> tree, scroll-driven) ===
-        let growthTarget = 0;       // 0..1, accumulated from scroll / swipe input
-        let growthCurrent = 0;      // smoothed value chasing growthTarget
-        let hasGrown = false;       // latched true once fully grown; hands control to OrbitControls
-        let appleMarkers = [];      // project apples (children of `tree`, revealed late in growth)
-        const GROWTH_MIN = 0.05;    // tree scale at growth = 0 (a tiny sprout)
-
         // Season colors
         const seasonColors = {
             spring: {
@@ -830,7 +813,7 @@
             camera.lookAt(0, 10, 0);
 
             // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
@@ -849,21 +832,16 @@
             controls.maxPolarAngle = Math.PI / 1.8;
             controls.minPolarAngle = Math.PI / 4;
             controls.enablePan = false;
-            controls.enableZoom = false;   // wheel is reserved for growth until the tree is grown
-            controls.enabled = false;      // OrbitControls take over only after growth completes
+            controls.enableZoom = false; // 缩放由 journey 接管 (宇宙之旅)
 
             // Lighting
             setupLighting();
 
-            // Build the procedural tree skeleton (deterministic) + instanced meshes
-            buildTree(20260618);
-            buildTreeMeshes();
+            // Create tree
+            createTree();
 
             // Create ground
             createGround();
-
-            // Create the opening seedling (sprout)
-            createSeedling();
 
             // Create seasonal elements
             createSpringElements();
@@ -874,12 +852,15 @@
             // Create river for autumn
             createRiver();
 
+            // 宇宙缩放之旅 (星球 / 黑洞 / 一维网站)
+            createCosmos();
+
             // Events
             window.addEventListener('resize', onWindowResize);
-            window.addEventListener('orientationchange', onWindowResize);
+            window.addEventListener('orientationchange', () => setTimeout(onWindowResize, 200));
+            // App 内置浏览器（如 Instagram）/移动端地址栏伸缩时，用 visualViewport 校正
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', onWindowResize);
-                window.visualViewport.addEventListener('scroll', onWindowResize);
             }
             window.addEventListener('wheel', onWheel, { passive: false });
             window.addEventListener('mousemove', onMouseMove);
@@ -894,10 +875,12 @@
             // 添加季节点击切换
             setupSeasonDotClicks();
 
-            // Size the renderer to the true visible viewport, then plant the sprout (growth = 0)
+            // Loading simulation
+            simulateLoading();
+
+            // 初始构图，并在地址栏/内置浏览器 UI 稳定后再校正一次
             onWindowResize();
-            applyGrowth(0);
-            driveGrowthCamera(0);
+            setTimeout(onWindowResize, 300);
 
             // Start animation
             animate();
@@ -912,8 +895,10 @@
             const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.5);
             sunLight.position.set(30, 50, 20);
             sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 2048;
-            sunLight.shadow.mapSize.height = 2048;
+            // 小屏（手机）降低阴影分辨率以保证流畅，构图与画质观感不变
+            const shadowRes = Math.min(window.innerWidth, window.innerHeight) < 700 ? 1024 : 2048;
+            sunLight.shadow.mapSize.width = shadowRes;
+            sunLight.shadow.mapSize.height = shadowRes;
             sunLight.shadow.camera.near = 10;
             sunLight.shadow.camera.far = 100;
             sunLight.shadow.camera.left = -30;
@@ -957,388 +942,6 @@
         // 主树干 mesh 引用 (用于冬季积雪)
         let trunkMesh = null;
         let branchMeshes = [];
-
-        // ============================================================
-        // PROCEDURAL TREE — deterministic skeleton + scroll-scrubbable growth.
-        // buildTree(seed) runs ONCE. applyGrowth(g) composes every instance matrix
-        // PURELY from precomputed final data + current g (fully reversible, no
-        // accumulation). The tree's world size is formed by branch SEGMENTS appearing
-        // one after another — never by scaling a finished tree.
-        // ============================================================
-        let treeBranches = [];   // Branch[]
-        let treeSegments = [];   // BranchSegment[] (compiled)
-        let leafBuds = [];       // LeafBud[]
-        let appleBuds = [];      // AppleBud[]
-        let branchInst = null;   // InstancedMesh — branch segments
-        let leafInst = null;     // InstancedMesh — leaves
-        let budInst = null;      // InstancedMesh — pre-branch buds
-        let budData = [];        // [{position, startG, peakScale}]
-
-        // Deterministic PRNG (mulberry32) — used ONLY in buildTree, never in applyGrowth.
-        function makeRng(seed) {
-            let s = seed >>> 0;
-            return function () {
-                s = (s + 0x6D2B79F5) | 0;
-                let t = Math.imul(s ^ (s >>> 15), 1 | s);
-                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-            };
-        }
-        // 3-edge smootherstep (radius easing)
-        function smootherstepE(e0, e1, x) {
-            const t = clamp01((x - e0) / (e1 - e0));
-            return t * t * t * (t * (t * 6 - 15) + 10);
-        }
-
-        const TREE_CFG = { trunkHeight: 8.5, trunkRadius: 0.5, leafSize: 0.5, appleCount: 7 };
-
-        // point + tangent at u in [0,1] along a branch polyline
-        function branchPointAt(branch, u) {
-            const pts = branch.points;
-            const f = clamp01(u) * (pts.length - 1);
-            const i = Math.min(pts.length - 2, Math.floor(f));
-            const t = f - i;
-            const p = pts[i].clone().lerp(pts[i + 1], t);
-            const tan = pts[i + 1].clone().sub(pts[i]).normalize();
-            return { p, tan };
-        }
-
-        function buildTree(seed) {
-            const rng = makeRng(seed);
-            treeBranches = []; leafBuds = []; appleBuds = [];
-            let nextId = 0;
-
-            function makeBranch(parentId, order, attachU, start, dir, length, startG, endG, rBase, rTip) {
-                const segN = order === 0 ? 6 : (order === 1 ? 4 : 3);
-                const points = [start.clone()];
-                const up = new THREE.Vector3(0, 1, 0);
-                let pos = start.clone();
-                let d = dir.clone().normalize();
-                const step = length / segN;
-                for (let i = 0; i < segN; i++) {
-                    // Order-weighted curvature: trunk is nearly straight, higher orders curve/search more
-                    const upPull = order === 0 ? 0.01 : (order === 1 ? 0.04 : (order === 2 ? 0.07 : 0.11));
-                    const jitter = order === 0 ? 0.04 : (order === 1 ? 0.09 : (order === 2 ? 0.15 : 0.22));
-                    d.lerp(up, upPull).normalize();
-                    d.x += (rng() - 0.5) * jitter; d.z += (rng() - 0.5) * jitter; d.normalize();
-                    pos = pos.clone().add(d.clone().multiplyScalar(step));
-                    points.push(pos.clone());
-                }
-                const branch = { id: nextId++, parentId, order, attachU, points, length, startG, endG, radiusBase: rBase, radiusTip: rTip };
-                treeBranches.push(branch);
-                return branch;
-            }
-
-            // Trunk (order 0): extends over g 0 -> 0.22
-            const trunk = makeBranch(-1, 0, 0,
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3((rng() - 0.5) * 0.12, 1, (rng() - 0.5) * 0.12),
-                TREE_CFG.trunkHeight, 0.0, 0.22, TREE_CFG.trunkRadius, TREE_CFG.trunkRadius * 0.5);
-
-            // Children: child.startG depends on parent.attachU, so a sub-branch only appears
-            // after the parent has grown past its fork point.
-            function addChildren(parent, order) {
-                if (order > 3) return;
-                const count = order === 0 ? 6 : (order === 1 ? 3 : 2);
-                const uMin = order === 0 ? 0.42 : 0.35;
-                for (let i = 0; i < count; i++) {
-                    const attachU = uMin + (0.95 - uMin) * ((i + rng() * 0.8) / count);
-                    const { p, tan } = branchPointAt(parent, attachU);
-                    const ang = rng() * Math.PI * 2;
-                    const outward = new THREE.Vector3(Math.cos(ang), 0, Math.sin(ang));
-                    const upMix = order === 0 ? 0.8 : (order === 1 ? 0.55 : 0.4);
-                    const dir = tan.clone().multiplyScalar(0.3).add(outward.multiplyScalar(1.0)).add(new THREE.Vector3(0, upMix, 0)).normalize();
-                    const length = (order === 0 ? 4.0 : order === 1 ? 2.5 : 1.5) * (0.7 + rng() * 0.5);
-                    const delay = 0.03 + rng() * 0.03;
-                    const startG = parent.startG + (parent.endG - parent.startG) * attachU + delay;
-                    if (startG > 0.78) continue;             // too late to matter
-                    const dur = order === 0 ? 0.2 : order === 1 ? 0.16 : 0.13;
-                    const endG = Math.min(0.9, startG + dur);
-                    const rBase = Math.max(0.06, parent.radiusTip * (0.8 + rng() * 0.2));
-                    const child = makeBranch(parent.id, order + 1, attachU, p.clone(), dir, length, startG, endG, rBase, Math.max(0.03, rBase * 0.5));
-                    addChildren(child, order + 1);
-                }
-            }
-            addChildren(trunk, 0);
-
-            // Leaves: cluster-based. Each twig gets 3-5 clusters of 5-10 leaves distributed
-            // around a common attachment point — this creates full-looking canopy without
-            // increasing branch count. Upper/outer clusters are born first (canopy wave).
-            const upY = new THREE.Vector3(0, 1, 0);
-            const canopyCenter = new THREE.Vector3(0, 11, 0);
-            treeBranches.forEach(branch => {
-                if (branch.order < 2) return;
-                const nClusters = branch.order === 2 ? 3 : 5;
-                for (let c = 0; c < nClusters; c++) {
-                    const u = clamp01(0.22 + 0.66 * (c / nClusters) + (rng() - 0.5) * 0.08);
-                    const { p, tan } = branchPointAt(branch, u);
-                    const clusterSize = 5 + Math.floor(rng() * 6); // 5–10 per cluster
-                    const baseBirthG = clamp01(branch.startG + (branch.endG - branch.startG) * u + 0.04);
-                    for (let j = 0; j < clusterSize; j++) {
-                        const spread = TREE_CFG.leafSize * (0.3 + rng() * 0.8);
-                        const ang = rng() * Math.PI * 2;
-                        const phi = rng() * Math.PI * 0.55;
-                        const side = new THREE.Vector3(
-                            Math.sin(phi) * Math.cos(ang),
-                            Math.abs(Math.cos(phi)) * 0.5 + 0.18,
-                            Math.sin(phi) * Math.sin(ang)
-                        ).normalize();
-                        const finalPosition = p.clone().add(side.clone().multiplyScalar(spread));
-                        const finalQuat = new THREE.Quaternion().setFromUnitVectors(upY, side);
-                        const foldDir = tan.clone().multiplyScalar(-1).lerp(new THREE.Vector3(0, -1, 0), 0.5).normalize();
-                        const foldQuat = new THREE.Quaternion().setFromUnitVectors(upY, foldDir);
-                        // Canopy waves: upper + outer leaves lead, interior fills last
-                        const heightBias = (1 - clamp01((finalPosition.y - 5) / 13)) * 0.07;
-                        const distBias = (1 - clamp01(finalPosition.distanceTo(canopyCenter) / 10)) * 0.04;
-                        const birthG = clamp01(baseBirthG - heightBias - distBias + (rng() - 0.5) * 0.035);
-                        leafBuds.push({
-                            finalPosition, finalQuat, foldQuat,
-                            finalScale: TREE_CFG.leafSize * (0.58 + rng() * 0.52),
-                            birthG, phase: rng() * Math.PI * 2,
-                            shade: { h: (rng() - 0.5) * 0.05, s: (rng() - 0.5) * 0.18, l: (rng() - 0.5) * 0.14 },
-                        });
-                    }
-                }
-            });
-
-            // Apples: on mature order-2 branches near the tips, fruiting only late (birthG >= 0.84).
-            const ripeBranches = treeBranches.filter(b => b.order === 2 && b.endG < 0.72);
-            for (let i = 0; i < TREE_CFG.appleCount; i++) {
-                const branch = ripeBranches.length ? ripeBranches[Math.floor(rng() * ripeBranches.length)] : treeBranches[treeBranches.length - 1];
-                const u = 0.65 + rng() * 0.3;
-                const { p } = branchPointAt(branch, u);
-                appleBuds.push({ finalPosition: p.clone().add(new THREE.Vector3(0, -0.18, 0)), projectId: i, birthG: 0.84 + rng() * 0.08 });
-            }
-
-            compileBranchSegments();
-        }
-
-        // Cut every branch curve into short segments, each with its own g0/g1 (from the
-        // branch's startG/endG and the segment's local u along the curve).
-        function compileBranchSegments() {
-            treeSegments = [];
-            const upY = new THREE.Vector3(0, 1, 0);
-            treeBranches.forEach(branch => {
-                const pts = branch.points;
-                const n = pts.length - 1;
-                for (let s = 0; s < n; s++) {
-                    const a = pts[s], b = pts[s + 1];
-                    const dir = b.clone().sub(a);
-                    const len = dir.length();
-                    if (len < 1e-4) continue;
-                    dir.normalize();
-                    const localU0 = s / n, localU1 = (s + 1) / n;
-                    treeSegments.push({
-                        a: a.clone(), dir, len,
-                        g0: branch.startG + (branch.endG - branch.startG) * localU0,
-                        g1: branch.startG + (branch.endG - branch.startG) * localU1,
-                        radius: branch.radiusBase + (branch.radiusTip - branch.radiusBase) * ((localU0 + localU1) * 0.5),
-                        quat: new THREE.Quaternion().setFromUnitVectors(upY, dir),
-                    });
-                }
-            });
-        }
-
-        function buildTreeMeshes() {
-            tree = new THREE.Group();   // container only — NEVER scaled for growth
-
-            // --- branch segments (InstancedMesh) ---
-            // 16 radial segments (vs 8) eliminates visible cylinder faceting on the trunk.
-            const cylGeo = new THREE.CylinderGeometry(1, 1, 1, 16, 1, false);
-            cylGeo.translate(0, 0.5, 0);    // base at y=0, tip at y=1 → scaling y grows from the base
-            branchInst = new THREE.InstancedMesh(cylGeo, sharedBarkMaterial, treeSegments.length);
-            branchInst.castShadow = true;
-            branchInst.receiveShadow = true;
-            branchInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-            // Prime instanceColor so setColorAt() works every frame
-            branchInst.setColorAt(0, new THREE.Color(0x4a3728));
-            if (branchInst.instanceColor) branchInst.instanceColor.needsUpdate = true;
-            tree.add(branchInst);
-
-            // --- pre-branch buds (InstancedMesh) ---
-            // Small green spheres that swell at branch attachment points before the branch emerges.
-            // Each bud is hidden until the parent branch has actually grown to that point.
-            budData = [];
-            treeBranches.forEach(branch => {
-                if (branch.order === 0) return; // trunk has no bud
-                const parentBranch = treeBranches.find(b => b.id === branch.parentId);
-                // g value when parent branch tip reaches the attachment point
-                const parentReachG = parentBranch
-                    ? parentBranch.startG + (parentBranch.endG - parentBranch.startG) * branch.attachU
-                    : 0;
-                budData.push({
-                    position: branch.points[0].clone(),
-                    startG: branch.startG,
-                    parentReachG,
-                    peakScale: Math.max(0.045, branch.radiusBase * 2.2),
-                });
-            });
-            const budGeo = new THREE.SphereGeometry(1, 8, 6);
-            const budMat = new THREE.MeshStandardMaterial({ color: 0x7ab330, roughness: 0.45, metalness: 0 });
-            budInst = new THREE.InstancedMesh(budGeo, budMat, Math.max(1, budData.length));
-            budInst.castShadow = true;
-            budInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-            tree.add(budInst);
-
-            // --- leaves (InstancedMesh) ---
-            const leafGeo = new THREE.SphereGeometry(0.5, 5, 4);
-            leafGeo.scale(1.0, 0.4, 1.5);   // flattened, elongated → leaf-ish
-            const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.85, metalness: 0 });
-            leafInst = new THREE.InstancedMesh(leafGeo, leafMat, Math.max(1, leafBuds.length));
-            leafInst.castShadow = true;
-            leafInst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-            tree.add(leafInst);
-            setTreeLeafSeasonColor(seasonColors.spring.leaves);
-
-            // --- apples (individual meshes — clickable projects) ---
-            appleMarkers = [];
-            appleBuds.forEach(bud => {
-                const apple = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.42, 14, 10),
-                    new THREE.MeshStandardMaterial({ color: 0xff4444, roughness: 0.3, metalness: 0.1 })
-                );
-                apple.position.copy(bud.finalPosition);
-                apple.userData.type = 'spring';
-                apple.userData.projectId = bud.projectId;
-                apple.userData.originalScale = 1;
-                apple.userData.birthG = bud.birthG;
-                apple.castShadow = true;
-                apple.scale.setScalar(0);
-                const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.15, 5), new THREE.MeshStandardMaterial({ color: 0x4a3728 }));
-                stem.position.y = 0.45;
-                apple.add(stem);
-                tree.add(apple);
-                interactiveObjects.push(apple);
-                appleMarkers.push(apple);
-            });
-
-            scene.add(tree);
-            applyGrowth(0);   // seed the initial (empty) state
-        }
-
-        // Per-season leaf tint (instanceColor), preserving each leaf's stored variation.
-        function setTreeLeafSeasonColor(baseHex) {
-            if (!leafInst) return;
-            const c = new THREE.Color();
-            const hsl = { h: 0, s: 0, l: 0 };
-            for (let i = 0; i < leafBuds.length; i++) {
-                c.set(baseHex); c.getHSL(hsl);
-                const j = leafBuds[i].shade;
-                c.setHSL((hsl.h + j.h + 1) % 1, clamp01(hsl.s + j.s), clamp01(hsl.l + j.l));
-                leafInst.setColorAt(i, c);
-            }
-            if (leafInst.instanceColor) leafInst.instanceColor.needsUpdate = true;
-        }
-
-        // --- per-frame pure compose (reused temporaries; no allocation, no accumulation) ---
-        const _tmpM = new THREE.Matrix4();
-        const _tmpP = new THREE.Vector3();
-        const _tmpS = new THREE.Vector3();
-        const _tmpQ = new THREE.Quaternion();
-        const _zeroM = new THREE.Matrix4().makeScale(0, 0, 0);
-        const _identQ = new THREE.Quaternion();          // stays identity
-        const _droopQ = new THREE.Quaternion();          // leaf droop rotation
-        const _droopAxis = new THREE.Vector3(1, 0, 0);  // droop axis (leaf's local x)
-        // Apical color palette — reused each frame, no heap allocation
-        const _branchC = new THREE.Color();
-        const _youngShoot = new THREE.Color(0x78b52a); // fresh green tip
-        const _youngWood  = new THREE.Color(0x6b5230); // young brown wood
-        const _matureBark = new THREE.Color(0x4a3728); // fully mature bark
-
-        function updateTreeBranches(g) {
-            if (!branchInst) return;
-            // Sprout-to-trunk crossfade: tree mesh fades in while seedling fades out
-            const treeFadeIn = smoothstep(0.14, 0.22, g);
-            const hasColors = !!branchInst.instanceColor;
-            for (let i = 0; i < treeSegments.length; i++) {
-                const seg = treeSegments[i];
-                const lenT = clamp01((g - seg.g0) / Math.max(1e-4, seg.g1 - seg.g0));
-                const visibleLen = seg.len * lenT * 1.14;       // grows a → b (slight overlap hides seams)
-                const radius = seg.radius * smootherstepE(seg.g0, seg.g1 + 0.12, g) * treeFadeIn; // girth lags length
-                if (visibleLen <= 1e-4 || radius <= 1e-4) {
-                    branchInst.setMatrixAt(i, _zeroM);
-                } else {
-                    _tmpP.copy(seg.a);
-                    _tmpS.set(radius, visibleLen, radius);
-                    _tmpM.compose(_tmpP, seg.quat, _tmpS);
-                    branchInst.setMatrixAt(i, _tmpM);
-                }
-                // Apical color: growing tip is green, matures to bark over ~0.25 of g
-                if (hasColors) {
-                    const age = clamp01((g - seg.g1) / 0.25); // 0=just emerged, 1=mature
-                    if (age < 0.4) _branchC.lerpColors(_youngShoot, _youngWood, age / 0.4);
-                    else           _branchC.lerpColors(_youngWood, _matureBark, (age - 0.4) / 0.6);
-                    branchInst.setColorAt(i, _branchC);
-                }
-            }
-            branchInst.instanceMatrix.needsUpdate = true;
-            if (hasColors && branchInst.instanceColor) branchInst.instanceColor.needsUpdate = true;
-        }
-
-        function updateTreeLeaves(g, windTime) {
-            if (!leafInst) return;
-            for (let i = 0; i < leafBuds.length; i++) {
-                const b = leafBuds[i];
-                const dur = Math.min(0.12, 1 - b.birthG + 1e-3);
-                const lifeT = clamp01((g - b.birthG) / Math.max(1e-4, dur));
-                if (lifeT <= 0) { leafInst.setMatrixAt(i, _zeroM); continue; }
-                const sc = b.finalScale * easeOutBack(lifeT);
-                // Unfurl: fold→open with a brief droop (hangs down before stiffening)
-                const unfurlT = smoothstep(0, 1, lifeT);
-                _tmpQ.copy(b.foldQuat).slerp(b.finalQuat, unfurlT);
-                const droopAmt = Math.max(0, 1 - lifeT * 2.4) * 0.55; // peaks early, gone by lifeT≈0.42
-                if (droopAmt > 0.001) {
-                    _droopQ.setFromAxisAngle(_droopAxis, droopAmt);
-                    _tmpQ.multiply(_droopQ);
-                }
-                _tmpP.copy(b.finalPosition);
-                // Sway scales in with lifeT so fresh leaves tremble gently; older leaves sway more
-                const sway = lifeT * 0.13;
-                _tmpP.x += Math.sin(windTime * 1.4 + b.phase) * sway;
-                _tmpP.y += Math.sin(windTime + b.phase) * 0.04 * lifeT;
-                _tmpS.set(sc, sc, sc);
-                _tmpM.compose(_tmpP, _tmpQ, _tmpS);
-                leafInst.setMatrixAt(i, _tmpM);
-            }
-            leafInst.instanceMatrix.needsUpdate = true;
-        }
-
-        function updateTreeApples(g) {
-            for (let i = 0; i < appleMarkers.length; i++) {
-                const ap = appleMarkers[i];
-                const bg = ap.userData.birthG || 0.85;
-                const dur = Math.min(0.12, 1 - bg + 1e-3);
-                const lifeT = clamp01((g - bg) / Math.max(1e-4, dur));
-                ap.scale.setScalar(easeOutBack(lifeT));
-            }
-        }
-
-        // Buds: small green spheres that swell at each branch attachment point just before the
-        // branch emerges, then dissolve as the branch base grows out of them.
-        // A bud is invisible until the parent branch has actually grown to its position.
-        function updateBuds(g) {
-            if (!budInst || budData.length === 0) return;
-            for (let i = 0; i < budData.length; i++) {
-                const bud = budData[i];
-                // Hide until parent bark has reached this attachment point
-                if (g < bud.parentReachG) { budInst.setMatrixAt(i, _zeroM); continue; }
-                const sg = bud.startG;
-                // Swell window: [parentReachG … sg], fade window: [sg … sg+0.035]
-                const swellDur = Math.max(0.01, sg - bud.parentReachG);
-                const swellT = clamp01((g - bud.parentReachG) / swellDur);
-                const fadeT  = clamp01((g - sg) / 0.035);
-                const sc = bud.peakScale * smoothstep(0, 1, swellT) * (1 - fadeT);
-                if (sc < 0.001) {
-                    budInst.setMatrixAt(i, _zeroM);
-                } else {
-                    _tmpP.copy(bud.position);
-                    _tmpS.set(sc, sc, sc);
-                    _tmpM.compose(_tmpP, _identQ, _tmpS);
-                    budInst.setMatrixAt(i, _tmpM);
-                }
-            }
-            budInst.instanceMatrix.needsUpdate = true;
-        }
 
         function createTree() {
             tree = new THREE.Group();
@@ -1780,7 +1383,7 @@
 
         function createFoliage(parent) {
             const leafPositions = [];
-            const leafCount = 1100;
+            const leafCount = 1000;
 
             for (let i = 0; i < leafCount; i++) {
                 const theta = Math.random() * Math.PI * 2;
@@ -1794,17 +1397,15 @@
                 leafPositions.push({ x, y, z });
             }
 
-            // Create leaf clusters with per-leaf color/size variation for a richer, less uniform canopy
-            leafPositions.forEach((pos) => {
-                const size = 0.2 + Math.random() * 0.26;
-                const leafGeom = new THREE.SphereGeometry(size, 7, 5);
+            // Create leaf clusters
+            leafPositions.forEach((pos, i) => {
+                const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.2, 6, 4);
                 const leafMat = new THREE.MeshStandardMaterial({
                     color: 0x7cb342,
-                    roughness: 0.85,
-                    metalness: 0,
+                    roughness: 0.8,
+                    metalness: 0.1,
                     transparent: true,
-                    opacity: 0.95,
-                    flatShading: false
+                    opacity: 0.9
                 });
                 const leaf = new THREE.Mesh(leafGeom, leafMat);
                 leaf.position.set(pos.x, pos.y, pos.z);
@@ -1812,100 +1413,9 @@
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
                 leaf.userData.phase = Math.random() * Math.PI * 2;
-                // Normalized canopy height (+ jitter) drives the base->tip growth front
-                leaf.userData.heightNorm = THREE.MathUtils.clamp(
-                    (pos.y - 12) / 10 + (Math.random() - 0.5) * 0.18,
-                    0, 1
-                );
-                // ~35% of the canopy is "mature only" — held back for extra stage-3 lushness, while
-                // the other ~65% fills early so the young tree's branches are never bare.
-                leaf.userData.matureOnly = Math.random() < 0.35;
-
-                // Higher/outer leaves catch more light; add subtle hue + lightness jitter for depth
-                const heightFactor = THREE.MathUtils.clamp((pos.y - 12) / 9, 0, 1);
-                leaf.userData.leafShade = {
-                    h: (Math.random() - 0.5) * 0.05,
-                    s: (Math.random() - 0.5) * 0.18,
-                    l: (Math.random() - 0.5) * 0.14 + heightFactor * 0.1
-                };
-                applyLeafColor(leaf, 0x7cb342);
-
                 leaves.push(leaf);
                 parent.add(leaf);
             });
-        }
-
-        // Apply a season's base leaf color with each leaf's stored variation, so the canopy
-        // keeps its natural depth across season changes instead of going flat.
-        function applyLeafColor(leaf, baseHex) {
-            const c = new THREE.Color(baseHex);
-            const hsl = { h: 0, s: 0, l: 0 };
-            c.getHSL(hsl);
-            const j = leaf.userData.leafShade || { h: 0, s: 0, l: 0 };
-            c.setHSL(
-                (hsl.h + j.h + 1) % 1,
-                THREE.MathUtils.clamp(hsl.s + j.s, 0, 1),
-                THREE.MathUtils.clamp(hsl.l + j.l, 0.08, 0.95)
-            );
-            leaf.material.color.copy(c);
-        }
-
-        // ============================================
-        // 嫩芽 Seedling — soil mound + green stem + two cotyledon leaves.
-        // This is what the visitor sees first; it shrinks away as the trunk emerges.
-        // ============================================
-        let seedling = null;
-
-        function createSeedling() {
-            seedling = new THREE.Group();
-
-            // Soil mound (flattened brown dome)
-            const moundGeo = new THREE.SphereGeometry(1.15, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.5);
-            moundGeo.scale(1, 0.62, 1);
-            const moundMat = new THREE.MeshStandardMaterial({ color: 0x97603a, roughness: 0.6, metalness: 0, transparent: true });
-            const mound = new THREE.Mesh(moundGeo, moundMat);
-            mound.castShadow = true;
-            mound.receiveShadow = true;
-            seedling.add(mound);
-
-            // Stem (gently curved green tube)
-            const stemCurve = new THREE.QuadraticBezierCurve3(
-                new THREE.Vector3(0, 0.4, 0),
-                new THREE.Vector3(0.06, 1.0, 0.04),
-                new THREE.Vector3(0, 1.6, 0)
-            );
-            const stemGeo = new THREE.TubeGeometry(stemCurve, 24, 0.085, 12, false);
-            const stemMat = new THREE.MeshStandardMaterial({ color: 0x8bc34a, roughness: 0.32, metalness: 0, transparent: true });
-            const stem = new THREE.Mesh(stemGeo, stemMat);
-            stem.castShadow = true;
-            seedling.add(stem);
-
-            // A puffy cotyledon leaf: an ellipsoid whose base end sits at the pivot origin
-            function makeLeaf(len, wid, thick, colorHex) {
-                const g = new THREE.SphereGeometry(0.5, 24, 16);
-                g.scale(len, thick, wid);
-                g.translate(len * 0.5, 0, 0);
-                const m = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0, transparent: true });
-                const leaf = new THREE.Mesh(g, m);
-                leaf.castShadow = true;
-                return leaf;
-            }
-
-            const leafTopY = 1.55;
-
-            const leftPivot = new THREE.Group();
-            leftPivot.position.set(0, leafTopY, 0);
-            leftPivot.add(makeLeaf(1.3, 0.68, 0.2, 0x9bcf3f));
-            leftPivot.rotation.set(0, 2.5, 0.78);
-            seedling.add(leftPivot);
-
-            const rightPivot = new THREE.Group();
-            rightPivot.position.set(0, leafTopY, 0);
-            rightPivot.add(makeLeaf(1.05, 0.56, 0.18, 0xaed957));
-            rightPivot.rotation.set(0, -0.5, 0.98);
-            seedling.add(rightPivot);
-
-            scene.add(seedling);
         }
 
         // ============================================
@@ -2166,8 +1676,41 @@
         }
 
         function createSpringElements() {
-            // Apples are created by the procedural tree (buildTreeMeshes) so they bind to real
-            // branch positions and fruit late. Here we only scatter the ground flowers.
+            // Apples (clickable projects)
+            const applePositions = [
+                { x: 3, y: 14, z: 2 },
+                { x: -3, y: 13, z: 3 },
+                { x: 4, y: 12, z: -2 },
+                { x: -2, y: 15, z: -2 },
+                { x: 1, y: 13, z: 4 },
+                { x: -4, y: 14, z: -1 },
+                { x: 2, y: 16, z: -3 }
+            ];
+
+            applePositions.forEach((pos, i) => {
+                const appleGeom = new THREE.SphereGeometry(0.45, 16, 12);
+                const appleMat = new THREE.MeshStandardMaterial({
+                    color: 0xff4444,
+                    roughness: 0.3,
+                    metalness: 0.1
+                });
+                const apple = new THREE.Mesh(appleGeom, appleMat);
+                apple.position.set(pos.x, pos.y, pos.z);
+                apple.userData.type = 'spring';
+                apple.userData.projectId = i;
+                apple.userData.originalScale = 1;
+                apple.castShadow = true;
+                
+                // Add stem
+                const stemGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.15, 6);
+                const stemMat = new THREE.MeshStandardMaterial({ color: 0x4a3728 });
+                const stem = new THREE.Mesh(stemGeom, stemMat);
+                stem.position.y = 0.5;
+                apple.add(stem);
+                
+                tree.add(apple);
+                interactiveObjects.push(apple);
+            });
 
             // Flowers around the tree
             for (let i = 0; i < 40; i++) {
@@ -2226,12 +1769,9 @@
         function createSummerElements() {
             // Animals (clickable projects)
             const animalConfigs = [
-                { type: 'squirrel', pos: { x: 4, y: 10, z: 2 } },
-                { type: 'bird', pos: { x: -3, y: 15, z: 2 } },
                 { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
                 { type: 'rabbit', pos: { x: -5, y: 0.5, z: 4 } },
-                { type: 'deer', pos: { x: 6, y: 1.5, z: -4 } },
-                { type: 'owl', pos: { x: 0, y: 17, z: 0 } }
+                { type: 'fox', pos: { x: 6, y: 0.15, z: -4 } }
             ];
 
             animalConfigs.forEach((config, i) => {
@@ -2329,149 +1869,130 @@
                     group.add(bodyS, headS, noseS, eyeS1, eyeS2, tailS, earS1, earS2);
                     break;
 
-                case 'bird':
-                    color = 0x4169e1;
-                    const matB = createFurMaterial(color, -0.2);
-                    const matBLight = createFurMaterial(0x87ceeb, -0.15);
-                    
-                    // 身体
+                case 'bird': {
+                    const matB = createFurMaterial(0x4a90e2, -0.2);
+                    const matBLight = createFurMaterial(0xdff1ff, -0.15);
+                    const beakMat = new THREE.MeshStandardMaterial({ color: 0xffb13b, roughness: 0.4 });
+                    const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 });
+                    const eyeDarkMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.2 });
+
+                    // 身体（蛋形，圆胖）
                     const bodyB = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.32, cfg.segmentsHigh, cfg.segmentsMed),
-                        matB
-                    );
-                    bodyB.scale.set(1.2, 1, 0.9);
-                    bodyB.castShadow = true;
-                    bodyB.receiveShadow = true;
-                    
-                    // 胸部 (浅色)
-                    const chestB = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.2, cfg.segmentsMed, 8),
-                        matBLight
-                    );
-                    chestB.position.set(0.15, -0.05, 0);
-                    
+                        new THREE.SphereGeometry(0.34, cfg.segmentsHigh, cfg.segmentsMed), matB);
+                    bodyB.scale.set(1, 1.15, 1);
+                    bodyB.castShadow = true; bodyB.receiveShadow = true;
+
+                    // 腹部（浅色）
+                    const bellyB = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.27, cfg.segmentsMed, 8), matBLight);
+                    bellyB.scale.set(0.78, 1, 0.85);
+                    bellyB.position.set(0.13, -0.05, 0);
+
                     // 头
                     const headB = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.22, cfg.segmentsHigh, cfg.segmentsMed),
-                        matB
-                    );
-                    headB.position.set(0.35, 0.18, 0);
+                        new THREE.SphereGeometry(0.25, cfg.segmentsHigh, cfg.segmentsMed), matB);
+                    headB.position.set(0.16, 0.42, 0);
                     headB.castShadow = true;
-                    
-                    // 喙
-                    const beakB = new THREE.Mesh(
-                        new THREE.ConeGeometry(0.06, 0.25, 8),
-                        new THREE.MeshStandardMaterial({ color: 0xffa500, roughness: 0.4 })
-                    );
-                    beakB.rotation.z = -Math.PI / 2;
-                    beakB.position.set(0.58, 0.15, 0);
-                    
-                    // 眼睛
-                    const eyeB = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.04, 8, 6),
-                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 })
-                    );
-                    eyeB.position.set(0.45, 0.25, 0.15);
-                    const eyeB2 = eyeB.clone();
-                    eyeB2.position.z = -0.15;
-                    
-                    // 翅膀
-                    const wingGeoB = new THREE.SphereGeometry(0.25, 8, 6);
-                    wingGeoB.scale(0.3, 1, 0.8);
-                    const wingB1 = new THREE.Mesh(wingGeoB, matB);
-                    wingB1.position.set(-0.1, 0.05, 0.25);
-                    wingB1.rotation.x = 0.3;
-                    const wingB2 = wingB1.clone();
-                    wingB2.position.z = -0.25;
-                    wingB2.rotation.x = -0.3;
-                    
-                    // 尾巴
-                    const tailB = new THREE.Mesh(
-                        new THREE.ConeGeometry(0.15, 0.4, 6),
-                        matB
-                    );
-                    tailB.rotation.z = Math.PI / 2 + 0.3;
-                    tailB.position.set(-0.4, 0.1, 0);
-                    
-                    group.add(bodyB, chestB, headB, beakB, eyeB, eyeB2, wingB1, wingB2, tailB);
-                    break;
 
-                case 'butterfly':
-                    // 身体
+                    // 喙（朝前 +X）
+                    const beakB = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 8), beakMat);
+                    beakB.rotation.z = -Math.PI / 2;
+                    beakB.position.set(0.44, 0.39, 0);
+
+                    // 两只眼睛：都在脸的前方、左右对称，确保两只都能看到
+                    const makeEyeB = (zside) => {
+                        const g = new THREE.Group();
+                        const w = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 10), eyeWhiteMat);
+                        const p = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), eyeDarkMat);
+                        p.position.set(0.045, 0.01, 0.015);
+                        g.add(w, p);
+                        g.position.set(0.33, 0.5, zside * 0.12);
+                        g.rotation.y = zside * -0.45;
+                        return g;
+                    };
+                    const eyeB = makeEyeB(1);
+                    const eyeB2 = makeEyeB(-1);
+
+                    // 翅膀（贴在身体两侧）
+                    const wingGeoB = new THREE.SphereGeometry(0.2, 10, 8);
+                    wingGeoB.scale(0.34, 1, 0.7);
+                    const wingB1 = new THREE.Mesh(wingGeoB, matB);
+                    wingB1.position.set(-0.02, 0.02, 0.27);
+                    wingB1.rotation.x = 0.35;
+                    const wingB2 = new THREE.Mesh(wingGeoB.clone(), matB);
+                    wingB2.position.set(-0.02, 0.02, -0.27);
+                    wingB2.rotation.x = -0.35;
+
+                    // 尾巴：短且上翘，远离树干 / 树枝，避免穿模
+                    const tailB = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.42, 6), matB);
+                    tailB.scale.set(1, 1, 0.45);
+                    tailB.position.set(-0.32, 0.16, 0);
+                    tailB.rotation.z = 1.15;
+                    tailB.castShadow = true;
+
+                    // 小脚（停栖感）
+                    const footMat = new THREE.MeshStandardMaterial({ color: 0xffb13b, roughness: 0.5 });
+                    const footB1 = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.14, 6), footMat);
+                    footB1.position.set(0.08, -0.36, 0.09);
+                    const footB2 = footB1.clone();
+                    footB2.position.z = -0.09;
+
+                    group.add(bodyB, bellyB, headB, beakB, eyeB, eyeB2, wingB1, wingB2, tailB, footB1, footB2);
+                    group.userData.wings = [wingB1, wingB2];
+                    break;
+                }
+
+                case 'butterfly': {
+                    const darkMat = new THREE.MeshStandardMaterial({ color: 0x2a2118, roughness: 0.6 });
+
+                    // 身体（细长，竖直）
                     const bodyBu = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.04, 0.06, 0.5, 12),
-                        new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 })
-                    );
+                        new THREE.CylinderGeometry(0.035, 0.055, 0.5, 12), darkMat);
                     bodyBu.castShadow = true;
-                    
+
                     // 头
-                    const headBu = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.08, 12, 8),
-                        new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6 })
-                    );
+                    const headBu = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 8), darkMat);
                     headBu.position.y = 0.3;
-                    
-                    // 触角
+
+                    // 触角（带小球尖）
                     const antennaMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-                    const ant1 = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.2, 6), antennaMat);
-                    ant1.position.set(0.03, 0.4, 0);
-                    ant1.rotation.z = -0.3;
-                    const ant2 = ant1.clone();
-                    ant2.position.x = -0.03;
-                    ant2.rotation.z = 0.3;
-                    
-                    // 翅膀 - 渐变色
-                    const wingColors = [0xff69b4, 0xff1493, 0xda70d6];
+                    const ant1 = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.22, 6), antennaMat);
+                    ant1.position.set(0.04, 0.42, 0); ant1.rotation.z = -0.45;
+                    const tip1 = new THREE.Mesh(new THREE.SphereGeometry(0.022, 6, 6), antennaMat);
+                    tip1.position.set(0.11, 0.52, 0);
+                    const ant2 = ant1.clone(); ant2.position.x = -0.04; ant2.rotation.z = 0.45;
+                    const tip2 = tip1.clone(); tip2.position.x = -0.11;
+
+                    // 翅膀：恢复以前的"圆形上翅 + 下翅 + 白斑"造型；
+                    // 但连接方式用现在的 —— pivot 在身体轴 (x=0)，内缘紧贴身体，
+                    // 绕身体轴对称扇动 (圆盘整体外移到 +X，使内缘落在身体上)。
+                    const wingMat = (c, op) => new THREE.MeshStandardMaterial({
+                        color: c, side: THREE.DoubleSide, transparent: true, opacity: op, roughness: 0.5
+                    });
                     const createWing = (isLeft) => {
                         const wingGroup = new THREE.Group();
-                        // 主翅
-                        const mainWing = new THREE.Mesh(
-                            new THREE.CircleGeometry(0.35, 16),
-                            new THREE.MeshStandardMaterial({
-                                color: wingColors[0],
-                                side: THREE.DoubleSide,
-                                transparent: true,
-                                opacity: 0.85,
-                                roughness: 0.5
-                            })
-                        );
-                        // 下翅
-                        const lowerWing = new THREE.Mesh(
-                            new THREE.CircleGeometry(0.25, 12),
-                            new THREE.MeshStandardMaterial({
-                                color: wingColors[1],
-                                side: THREE.DoubleSide,
-                                transparent: true,
-                                opacity: 0.8,
-                                roughness: 0.5
-                            })
-                        );
-                        lowerWing.position.y = -0.2;
-                        
-                        // 翅膀斑点
-                        const spot = new THREE.Mesh(
-                            new THREE.CircleGeometry(0.08, 8),
-                            new THREE.MeshStandardMaterial({
-                                color: 0xffffff,
-                                side: THREE.DoubleSide,
-                                transparent: true,
-                                opacity: 0.7
-                            })
-                        );
-                        spot.position.set(0.1, 0.1, 0.01);
-                        
+                        // 主翅 (大圆)
+                        const mainWing = new THREE.Mesh(new THREE.CircleGeometry(0.35, 16), wingMat(0xff69b4, 0.85));
+                        mainWing.position.set(0.33, 0.08, 0);
+                        // 下翅 (小圆)
+                        const lowerWing = new THREE.Mesh(new THREE.CircleGeometry(0.25, 12), wingMat(0xff1493, 0.8));
+                        lowerWing.position.set(0.24, -0.18, 0);
+                        // 白色斑点
+                        const spot = new THREE.Mesh(new THREE.CircleGeometry(0.08, 8), wingMat(0xffffff, 0.7));
+                        spot.position.set(0.42, 0.16, 0.01);
                         wingGroup.add(mainWing, lowerWing, spot);
-                        wingGroup.position.set(isLeft ? 0.25 : -0.25, 0.1, 0);
-                        wingGroup.rotation.y = isLeft ? 0.4 : -0.4;
+                        // 连接方式 (新): pivot 在身体轴 x=0, 内缘贴身体; 翻转得到左翅
+                        wingGroup.position.set(0, 0.05, 0);
+                        if (isLeft) wingGroup.scale.x = -1;
                         return wingGroup;
                     };
-                    
-                    const wing1Bu = createWing(true);
-                    const wing2Bu = createWing(false);
-                    
-                    group.add(bodyBu, headBu, ant1, ant2, wing1Bu, wing2Bu);
-                    group.userData.wings = [wing1Bu, wing2Bu]; // 保存翅膀引用用于动画
+                    const wing1Bu = createWing(false); // 右翅
+                    const wing2Bu = createWing(true);  // 左翅
+
+                    group.add(bodyBu, headBu, ant1, tip1, ant2, tip2, wing1Bu, wing2Bu);
+                    group.userData.wings = [wing1Bu, wing2Bu]; // [右, 左]，绕身体轴扇动
                     break;
+                }
 
                 case 'rabbit':
                     color = 0xf5f5dc;
@@ -2540,101 +2061,102 @@
                     group.add(bodyR, headR, noseR, eyeR, eyeR2, ear1R, ear2R, innerEar1, innerEar2, tailR);
                     break;
 
-                case 'deer':
-                    color = 0xcd853f;
-                    const matD = createFurMaterial(color);
-                    const matDLight = createFurMaterial(0xdeb887);
-                    
-                    // 身体
-                    const bodyD = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.42, 0.45, 1.4, cfg.segmentsHigh),
-                        matD
-                    );
-                    bodyD.rotation.z = Math.PI / 2;
-                    bodyD.castShadow = true;
-                    bodyD.receiveShadow = true;
-                    
-                    // 颈部
-                    const neckD = new THREE.Mesh(
-                        new THREE.CylinderGeometry(0.15, 0.25, 0.6, 12),
-                        matD
-                    );
-                    neckD.position.set(0.6, 0.4, 0);
-                    neckD.rotation.z = -0.4;
-                    neckD.castShadow = true;
-                    
+                case 'fox': {
+                    // 坐姿狐狸：圆润、清晰、两只眼睛朝前
+                    const orange = createFurMaterial(0xe0742e);
+                    const white = createFurMaterial(0xf3ead9, -0.05);
+                    const darkFur = createFurMaterial(0x3a2418, 0.05);
+                    const noseMat = new THREE.MeshStandardMaterial({ color: 0x241712, roughness: 0.5 });
+                    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.2 });
+
+                    // 身体（坐姿蛋形）
+                    const bodyF = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.5, cfg.segmentsHigh, cfg.segmentsMed), orange);
+                    bodyF.scale.set(0.82, 1.0, 0.78);
+                    bodyF.position.set(0, 0.5, 0);
+                    bodyF.castShadow = true; bodyF.receiveShadow = true;
+
+                    // 胸口白毛
+                    const chestF = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.3, cfg.segmentsMed, 8), white);
+                    chestF.scale.set(0.58, 0.95, 0.5);
+                    chestF.position.set(0.3, 0.42, 0);
+
                     // 头
-                    const headD = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.28, cfg.segmentsHigh, cfg.segmentsMed),
-                        matD
-                    );
-                    headD.scale.set(1.3, 1, 0.9);
-                    headD.position.set(0.85, 0.7, 0);
-                    headD.castShadow = true;
-                    
-                    // 鼻子
-                    const noseD = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.08, 8, 6),
-                        new THREE.MeshStandardMaterial({ color: 0x2a1a0a, roughness: 0.5 })
-                    );
-                    noseD.position.set(1.1, 0.65, 0);
-                    
-                    // 眼睛
-                    const eyeD = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.05, 8, 6),
-                        new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2 })
-                    );
-                    eyeD.position.set(0.95, 0.8, 0.18);
-                    const eyeD2 = eyeD.clone();
-                    eyeD2.position.z = -0.18;
-                    
-                    // 鹿角
-                    const antlerMat = new THREE.MeshStandardMaterial({ color: 0x4a3520, roughness: 0.7 });
-                    const createAntler = (side) => {
-                        const antler = new THREE.Group();
-                        const main = new THREE.Mesh(
-                            new THREE.CylinderGeometry(0.03, 0.05, 0.5, 8),
-                            antlerMat
-                        );
-                        main.rotation.z = side * 0.4;
-                        const branch1 = new THREE.Mesh(
-                            new THREE.CylinderGeometry(0.02, 0.03, 0.25, 6),
-                            antlerMat
-                        );
-                        branch1.position.set(side * 0.1, 0.15, 0);
-                        branch1.rotation.z = side * 0.8;
-                        antler.add(main, branch1);
-                        antler.position.set(0.75, 1.0, side * 0.15);
-                        return antler;
+                    const headF = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.34, cfg.segmentsHigh, cfg.segmentsMed), orange);
+                    headF.scale.set(0.96, 0.96, 1.0);
+                    headF.position.set(0.16, 1.02, 0);
+                    headF.castShadow = true;
+
+                    // 白色吻部（朝前 +X）
+                    const muzzleF = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.36, 14), white);
+                    muzzleF.rotation.z = -Math.PI / 2;
+                    muzzleF.position.set(0.5, 0.95, 0);
+
+                    // 鼻头
+                    const noseF = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), noseMat);
+                    noseF.position.set(0.69, 0.97, 0);
+
+                    // 耳朵（橙色三角 + 深色内耳）两只
+                    const makeEar = (zside) => {
+                        const ear = new THREE.Group();
+                        const outer = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.36, 4), orange);
+                        const inner = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.26, 4), darkFur);
+                        inner.position.set(0.04, 0.02, 0);
+                        ear.add(outer, inner);
+                        ear.position.set(0.04, 1.34, zside * 0.18);
+                        ear.rotation.x = zside * -0.18;
+                        ear.rotation.z = -0.12;
+                        return ear;
                     };
-                    const antler1 = createAntler(1);
-                    const antler2 = createAntler(-1);
-                    
-                    // 腿
-                    const legGeoD = new THREE.CylinderGeometry(0.05, 0.07, 0.9, 10);
-                    const legMats = [matD, matDLight];
-                    const legs = [];
-                    const legPositions = [
-                        [0.35, -0.45, 0.22], [-0.35, -0.45, 0.22],
-                        [0.35, -0.45, -0.22], [-0.35, -0.45, -0.22]
-                    ];
-                    legPositions.forEach((pos, i) => {
-                        const leg = new THREE.Mesh(legGeoD, matD);
-                        leg.position.set(...pos);
+                    const ear1 = makeEar(1);
+                    const ear2 = makeEar(-1);
+
+                    // 眼睛（脸前方两只，确保都可见）
+                    const makeEyeF = (zside) => {
+                        const e = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 8), eyeMat);
+                        e.position.set(0.42, 1.08, zside * 0.14);
+                        return e;
+                    };
+                    const eye1 = makeEyeF(1);
+                    const eye2 = makeEyeF(-1);
+
+                    // 前腿（坐姿前伸）+ 深色爪
+                    const makeFrontLeg = (zside) => {
+                        const g = new THREE.Group();
+                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.5, 10), orange);
+                        leg.position.set(0.3, 0.2, zside * 0.18);
                         leg.castShadow = true;
-                        legs.push(leg);
-                    });
-                    
-                    // 尾巴
-                    const tailD = new THREE.Mesh(
-                        new THREE.ConeGeometry(0.08, 0.2, 8),
-                        matDLight
-                    );
-                    tailD.position.set(-0.7, 0.1, 0);
-                    tailD.rotation.z = Math.PI / 2 + 0.3;
-                    
-                    group.add(bodyD, neckD, headD, noseD, eyeD, eyeD2, antler1, antler2, tailD, ...legs);
+                        const paw = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 8), darkFur);
+                        paw.scale.set(1.1, 0.6, 1);
+                        paw.position.set(0.36, 0.0, zside * 0.18);
+                        g.add(leg, paw);
+                        return g;
+                    };
+                    const fl1 = makeFrontLeg(1);
+                    const fl2 = makeFrontLeg(-1);
+
+                    // 蓬松大尾巴（白尖）：主体与白尖共用同一根轴线放置并重叠，
+                    // 保证从任何角度（含侧面）都连在一起，不脱节。
+                    const tailGroup = new THREE.Group();
+                    const tailF = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.2, cfg.segmentsMed, 8), orange);
+                    tailF.scale.set(2.3, 0.85, 0.85);     // 沿 x 拉长成蓬松尾巴
+                    tailF.position.set(-0.42, 0, 0);
+                    tailF.castShadow = true;
+                    const tailTip = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.18, cfg.segmentsMed, 8), white);
+                    tailTip.scale.set(1.0, 0.9, 0.9);
+                    tailTip.position.set(-0.84, 0, 0);     // 紧接主体末端并与之重叠
+                    tailTip.castShadow = true;
+                    tailGroup.add(tailF, tailTip);
+                    tailGroup.position.set(-0.34, 0.42, 0); // 接到身体后部
+                    tailGroup.rotation.z = -0.9;            // 向上翘成蓬松狐狸尾
+
+                    group.add(bodyF, chestF, headF, muzzleF, noseF, ear1, ear2, eye1, eye2, fl1, fl2, tailGroup);
                     break;
+                }
 
                 case 'owl':
                     color = 0x8b4513;
@@ -2772,10 +2294,13 @@
             });
             const leaf = new THREE.Mesh(geom, mat);
 
+            // 从树冠内部生成 —— 落叶应从树上飘落, 而非从天上掉下
+            const fAngle = Math.random() * Math.PI * 2;
+            const fRadius = 2 + Math.random() * 7;     // 距树干轴 2..9, 落在冠层范围内
             leaf.position.set(
-                (Math.random() - 0.5) * 20,
-                15 + Math.random() * 10,
-                (Math.random() - 0.5) * 20
+                Math.cos(fAngle) * fRadius,
+                12 + Math.random() * 6,                 // 冠层高度 12..18
+                Math.sin(fAngle) * fRadius
             );
             leaf.rotation.set(
                 Math.random() * Math.PI,
@@ -3679,55 +3204,68 @@
         let seasonChangeCooldown = false;
 
         function onKeyDown(e) {
-            if (!hasGrown) {
-                // Keyboard alternative to scrolling: grow / shrink the sprout
-                if (e.code === 'ArrowUp' || e.code === 'Space' || e.code === 'PageUp') {
-                    e.preventDefault();
-                    growthTarget = clamp01(growthTarget + 0.08);
-                } else if (e.code === 'ArrowDown' || e.code === 'PageDown') {
-                    e.preventDefault();
-                    growthTarget = clamp01(growthTarget - 0.08);
-                }
-                return;
-            }
-            // After grown: left/right arrows switch seasons
             if (seasonChangeCooldown) return;
-            if (e.code === 'ArrowRight') {
+            
+            if (e.code === 'Space' || e.code === 'ArrowRight') {
                 e.preventDefault();
-                if (currentSeason < 2) changeSeason(1);
+                if (currentSeason < 2) {
+                    changeSeason(1);
+                }
             } else if (e.code === 'ArrowLeft') {
                 e.preventDefault();
-                if (currentSeason > 0) changeSeason(-1);
+                if (currentSeason > 0) {
+                    changeSeason(-1);
+                }
             }
         }
 
         let touchStartSingleX = 0;
         let touchStartSingleY = 0;
         let touchStartTime = 0;
-        let lastTouchY = 0;
+        let touchLastDist = 0;
+
+        function pinchDist(e) { const a = e.touches[0], b = e.touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
 
         function onTouchStart(e) {
             if (e.touches.length === 1) {
                 touchStartSingleX = e.touches[0].clientX;
                 touchStartSingleY = e.touches[0].clientY;
-                lastTouchY = e.touches[0].clientY;
                 touchStartTime = Date.now();
+            }
+            if (e.touches.length === 2) {
+                touchStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                touchLastDist = pinchDist(e);
+                isSwiping = true;
             }
         }
 
         function onTouchMove(e) {
-            // Before grown: a one-finger vertical swipe drives growth (swipe up = grow).
-            // After grown: let OrbitControls handle touch (orbit / pinch).
-            if (hasGrown || e.touches.length !== 1) return;
-            e.preventDefault();
-            const y = e.touches[0].clientY;
-            growthTarget = clamp01(growthTarget + (lastTouchY - y) * 0.0016);
-            lastTouchY = y;
+            // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
+            if (oneDActive) return;
+            if (e.touches.length !== 2) return;
+            const dist = pinchDist(e);
+            const dDist = dist - touchLastDist;
+            const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const deltaX = currentX - touchStartX;
+            // 双指捏合 → 宇宙缩放 (捏小 = 缩小 = journey↑)
+            if (Math.abs(dDist) > Math.abs(deltaX) * 0.6) {
+                e.preventDefault();
+                journeyTarget = clampN(journeyTarget - dDist * 0.0028, 0, 1);
+                touchLastDist = dist;
+                return;
+            }
+            // 双指横向平移 → 季节 (仅靠近树时)
+            if (isSwiping && journey < 0.08 && !seasonChangeCooldown && Math.abs(deltaX) > 80) {
+                if (deltaX < 0 && currentSeason < 2) changeSeason(1);
+                else if (deltaX > 0 && currentSeason > 0) changeSeason(-1);
+                isSwiping = false;
+            }
         }
 
         function onTouchEnd(e) {
-            // Tap to open a project — only once the tree is grown and apples are interactive
-            if (!hasGrown) return;
+            isSwiping = false;
+
+            // Single tap: detect short-duration, low-movement touch and raycast for project objects
             if (e.changedTouches.length === 1) {
                 const touch = e.changedTouches[0];
                 const dx = touch.clientX - touchStartSingleX;
@@ -3757,12 +3295,20 @@
         }
 
         function onWheel(e) {
-            // Before grown: vertical scroll / two-finger swipe up grows the tree.
-            // After grown: hand the wheel back to OrbitControls (zoom).
-            if (hasGrown) return;
+            // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
+            if (oneDActive) return;
+            // 靠近树时, 横向滑动切换季节
+            if (journey < 0.08 && Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
+                if (!seasonChangeCooldown) {
+                    e.preventDefault();
+                    if (e.deltaX > 0 && currentSeason < 2) changeSeason(1);
+                    else if (e.deltaX < 0 && currentSeason > 0) changeSeason(-1);
+                }
+                return;
+            }
+            // 垂直滚轮 → 宇宙缩放之旅 (灵敏度调低, 需要拉久一点)
             e.preventDefault();
-            const d = Math.max(-0.08, Math.min(0.08, e.deltaY * 0.0012));
-            growthTarget = clamp01(growthTarget + d);
+            journeyTarget = clampN(journeyTarget + e.deltaY * 0.00055, 0, 1);
         }
 
         function changeSeason(direction) {
@@ -4014,8 +3560,10 @@
             scene.background = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
             scene.fog.color = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
 
-            // Update procedural leaf color (instanced; preserves each leaf's variation)
-            setTreeLeafSeasonColor(colors.leaves);
+            // Update leaves color
+            leaves.forEach(leaf => {
+                leaf.material.color.setHex(colors.leaves);
+            });
 
             // Toggle seasonal elements
             // Spring elements
@@ -4103,8 +3651,6 @@
         function onMouseMove(event) {
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            if (!hasGrown) return;   // no hover/interaction during the growth journey
 
             // 如果正在拖拽动物
             if (isDragging && draggedAnimal) {
@@ -4212,8 +3758,7 @@
 
         function onMouseDown(event) {
             if (event.button !== 0) return; // 只响应左键
-            if (!hasGrown) return;
-
+            
             dragStartTime = Date.now();
             dragStartPos.set(event.clientX, event.clientY);
             
@@ -4228,7 +3773,6 @@
         }
 
         function onMouseUp(event) {
-            if (!hasGrown) return;
             const dragDuration = Date.now() - dragStartTime;
             const dragDistance = Math.sqrt(
                 Math.pow(event.clientX - dragStartPos.x, 2) + 
@@ -4254,7 +3798,6 @@
         }
 
         function onClick(event) {
-            if (!hasGrown) return;
             // 作为备用：如果 mouseUp 没有处理，这里也尝试打开项目
             if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
                 // 只有在没有拖拽的情况下才处理
@@ -4296,139 +3839,567 @@
             document.getElementById('projectModal').classList.remove('active');
         }
 
-        // Use the VISUAL viewport so the canvas always fills the screen exactly — fixes the
-        // bottom "black bar" and the squished/distorted look in iOS Safari & in-app browsers
-        // (Instagram/WeChat) where window.innerHeight lags the real visible height.
-        function getViewportSize() {
-            const vv = window.visualViewport;
-            return {
-                w: Math.max(1, Math.round(vv ? vv.width : window.innerWidth)),
-                h: Math.max(1, Math.round(vv ? vv.height : window.innerHeight))
-            };
+        // ============================================
+        // 自适应取景 — 关键：让画面"比例"在任何设备/浏览器下都一致
+        // 以树为中心，按"较窄的一侧"自适应垂直 FOV，使树木在任意宽高比下
+        // 都被框住且横向尺寸恒定。这样无论是从 Instagram 等 App 内置浏览器
+        // 直接点进来，还是用手机浏览器打开，构图都完全一致；地址栏伸缩
+        // 导致高度变化时，树不会忽大忽小、不跳动。
+        // ============================================
+        const FRAME_HALF_EXTENT = 11; // 需要始终框住的树木世界半尺寸
+        const BASE_FOV = 60;          // 桌面端基准 FOV（保持原构图不收紧）
+
+        function applyResponsiveFraming() {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            if (!w || !h) return;
+
+            camera.aspect = w / h;
+
+            const dist = camera.position.distanceTo(controls.target) || 30;
+            // 让高度和宽度都能容纳目标范围，取较大的 FOV（即按较窄一侧适配）
+            const fovForHeight = 2 * Math.atan(FRAME_HALF_EXTENT / dist);
+            const fovForWidth  = 2 * Math.atan(FRAME_HALF_EXTENT / (dist * camera.aspect));
+            let fovDeg = THREE.MathUtils.radToDeg(Math.max(fovForHeight, fovForWidth));
+            // 桌面/横屏不小于基准（保持原观感），竖屏放宽以容纳整棵树，并限制上限避免畸变
+            fovDeg = Math.min(Math.max(fovDeg, BASE_FOV), 95);
+            camera.fov = fovDeg;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(w, h);
         }
 
         function onWindowResize() {
-            const { w, h } = getViewportSize();
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-            renderer.setSize(w, h);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            applyResponsiveFraming();
         }
 
-        // ============================================
-        // Growth journey: sprout -> tree, driven by scroll / swipe
-        // ============================================
-        function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
-        function smoothstep(edge0, edge1, x) {
-            const t = clamp01((x - edge0) / (edge1 - edge0));
-            return t * t * (3 - 2 * t);
-        }
-        function smootherstep(x) {
-            const t = clamp01(x);
-            return t * t * t * (t * (t * 6 - 15) + 10);
-        }
-        // Slight overshoot, settling to 1 — gives leaves/fruit an organic "pop" as they unfurl.
-        function easeOutBack(x) {
-            const t = clamp01(x);
-            const c1 = 1.70158, c3 = c1 + 1;
-            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+        function simulateLoading() {
+            let progress = 0;
+            const progressBar = document.getElementById('loadingProgress');
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                    }, 500);
+                }
+                progressBar.style.width = progress + '%';
+            }, 100);
         }
 
-        // Scale the tree (and the meadow) by growth progress; reveal leaves, then apples, last.
-        function applyGrowth(g) {
-            // PURE function of g — every element composed from precomputed final data + g, no
-            // accumulation, fully reversible. The tree is NOT scaled; its size is formed by branch
-            // segments appearing one after another (base -> tip, child after parent's fork point).
-            //   g 0.00–0.18  sprout phase: seedling only (cotyledons + stem stretch)
-            //   g 0.14–0.22  crossfade: seedling fades, trunk begins to emerge
-            //   g 0.22–0.82  branches grow out (each child after parent's fork)
-            //   g 0.55–0.90  canopy waves: upper→outer→interior leaves unfurl in clusters
-            //   g 0.84–1.00  fruit ripens
+        // ============================================================
+        // 宇宙缩放之旅: 树 → 星球(单棵树) → 黑洞 → 一维个人网站
+        // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
+        // ============================================================
+        let journey = 0, journeyTarget = 0;
+        let cosmosInited = false, cosmicWorld = null;
+        let planetMesh = null, planetAtmo = null, starField = null;
+        let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
+        let pixCanvas = null, pixCtx = null, pixSrc = null, pixTmp = null, pixCells = null, pixCaptured = false, pixNeedsCapture = false;
+        const PIX_BLOCK = 20;
+        let planetTexSeason = -1;
+        const seasonBgColor = new THREE.Color(0.95, 0.92, 0.93);
+        let oneDActive = false, sitePos = 0, siteMax = 0;
+        const TREE_TARGET = new THREE.Vector3(0, 10, 0);
+        const PLANET_TARGET = new THREE.Vector3(0, -14, 0);
+        const BH_CENTER = new THREE.Vector3(0, -14, 0);
+        const PLANET_R = 24;
 
-            // --- Sprout phase: seedling visible g 0→0.22, fading to zero by g=0.22 ---
-            if (seedling) {
-                const seedShow = 1 - smoothstep(0.08, 0.22, g);
-                const visible = seedShow > 0.01;
-                seedling.visible = visible;
-                if (visible) {
-                    // Stem stretches gently upward as g rises through 0→0.18
-                    const stretch = 0.38 + 0.62 * smoothstep(0, 0.18, g);
-                    seedling.scale.setScalar(0.48 * stretch);
-                    seedling.traverse(o => { if (o.material) o.material.opacity = seedShow; });
+        const lerpN = THREE.MathUtils.lerp;
+        const clampN = THREE.MathUtils.clamp;
+        function seg(j, a, b) { return clampN((j - a) / (b - a), 0, 1); }
+        function smooth(x) { return x * x * (3 - 2 * x); }
+
+        function makePlanetTexture(season) {
+            // 统一漂亮蓝海; 陆地按季节微调(不刺眼); 极地用草地色与地面无缝衔接
+            const ocean = '#3d83b8';
+            const meadow = '#4a7c3f';                                  // = 地面草色
+            const land = ['#6fa84d', '#4f9440', '#9aa24a'][season] || '#6fa84d'; // 春/夏/秋(金绿,不刺橙)
+            const W = 1024, H = 512;
+            const c = document.createElement('canvas'); c.width = W; c.height = H;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = ocean; ctx.fillRect(0, 0, W, H);
+            // 平滑圆润、互不重叠的大陆 (低频起伏闭合曲线)
+            const continent = (cx, cy, rw, rh, color, seed) => {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                const steps = 40;
+                for (let i = 0; i <= steps; i++) {
+                    const a = (i / steps) * Math.PI * 2;
+                    const wob = 0.80 + 0.12 * Math.sin(a * 3 + seed) + 0.06 * Math.sin(a * 5 + seed * 2);
+                    const px = cx + Math.cos(a) * rw * wob;
+                    const py = cy + Math.sin(a) * rh * wob;
+                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                }
+                ctx.closePath(); ctx.fill();
+            };
+            // 极地陆地 (树在陆地上; 北极 = 顶行; 用草地色 → 卷成星球时无缝)
+            ctx.fillStyle = meadow; ctx.fillRect(0, 0, W, 50);
+            continent(W * 0.5, 46, 150, 50, meadow, 1.0);
+            // 分离放置的大陆 (互不重叠)
+            const spots = [[0.16, 0.40], [0.44, 0.60], [0.74, 0.36], [0.30, 0.82], [0.64, 0.84], [0.90, 0.62]];
+            spots.forEach((s, i) => continent(W * s[0], H * s[1], 92 + (i % 3) * 20, 66 + (i % 2) * 18, (i % 2) ? land : meadow, i + 2));
+            const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
+        }
+
+        function refreshPlanetSeason() {
+            if (!planetMesh || planetTexSeason === currentSeason) return;
+            planetTexSeason = currentSeason;
+            const t = makePlanetTexture(currentSeason);
+            if (planetMesh.material.map) planetMesh.material.map.dispose();
+            planetMesh.material.map = t; planetMesh.material.needsUpdate = true;
+            const atmoCols = [0xbfe0ff, 0xa8e6c0, 0xffd2a0];
+            if (planetAtmo) planetAtmo.material.color.setHex(atmoCols[currentSeason] || 0xbfe0ff);
+        }
+
+        // ── 2D 像素坍塌 ──────────────────────────────────────────────
+        // 不再用 3D 体素。做法: 把"用户最后那一帧"(3D 画面)整屏定格 → 截取像素 →
+        // 全屏变成由方块组成的二维像素画 → 方块像倒塌的墙一样从左上逐个掉落 → 作品集页。
+        function setupPixelCanvas() {
+            pixCanvas = document.getElementById('pixelCanvas');
+            if (pixCanvas) pixCtx = pixCanvas.getContext('2d');
+            pixSrc = document.createElement('canvas');
+            pixTmp = document.createElement('canvas');
+        }
+
+        // 定格当前 WebGL 帧 → 采样成 PIX_BLOCK 网格的方块 (颜色/位置/坍塌延迟)
+        function capturePixelFrame() {
+            if (!pixCanvas || !renderer) return;
+            const W = window.innerWidth, H = window.innerHeight;
+            pixSrc.width = W; pixSrc.height = H;
+            pixSrc.getContext('2d').drawImage(renderer.domElement, 0, 0, W, H);
+            pixCanvas.width = W; pixCanvas.height = H;
+            const cols = Math.max(1, Math.ceil(W / PIX_BLOCK)), rows = Math.max(1, Math.ceil(H / PIX_BLOCK));
+            pixTmp.width = cols; pixTmp.height = rows;
+            const tctx = pixTmp.getContext('2d');
+            tctx.drawImage(pixSrc, 0, 0, cols, rows);
+            const data = tctx.getImageData(0, 0, cols, rows).data;
+            const cells = [];
+            for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+                const i = (r * cols + c) * 4;
+                cells.push({
+                    x: c * PIX_BLOCK, y: r * PIX_BLOCK,
+                    color: `rgb(${data[i]},${data[i + 1]},${data[i + 2]})`,
+                    delay: ((c / cols) + (r / rows)) / 2   // 左上(0,0)最先 → 右下最后
+                });
+            }
+            pixCells = { cells, W, H };
+            pixCaptured = true;
+        }
+
+        // appearT 0→1: 由清晰逐渐像素化(整屏一起); collapseP 0→1: 方块逐个掉落
+        function drawPixels(appearT, collapseP) {
+            if (!pixCtx || !pixSrc || !pixSrc.width) return;
+            const W = pixCanvas.width, H = pixCanvas.height;
+            pixCtx.imageSmoothingEnabled = false;
+            if (collapseP <= 0.0001) {
+                // 渐进像素化: 方块尺寸 2 → PIX_BLOCK (越来越像素, 丝滑)
+                const bs = Math.max(2, lerpN(2, PIX_BLOCK, appearT));
+                const cols = Math.max(1, Math.round(W / bs)), rows = Math.max(1, Math.round(H / bs));
+                pixTmp.width = cols; pixTmp.height = rows;
+                pixTmp.getContext('2d').drawImage(pixSrc, 0, 0, cols, rows);
+                pixCtx.clearRect(0, 0, W, H);
+                pixCtx.drawImage(pixTmp, 0, 0, cols, rows, 0, 0, W, H);
+            } else if (pixCells) {
+                // 坍塌: 每块保持原大小, 左上先塌, 重力加速下落
+                pixCtx.clearRect(0, 0, W, H);
+                for (const cell of pixCells.cells) {
+                    const lt = clampN((collapseP - cell.delay * 0.55) / 0.45, 0, 1);
+                    const fall = lt * lt * H * 1.3;
+                    pixCtx.fillStyle = cell.color;
+                    pixCtx.fillRect(cell.x, cell.y + fall, PIX_BLOCK + 1, PIX_BLOCK + 1);
                 }
             }
-
-            // --- Buds swell at attachment points just before each branch emerges ---
-            updateBuds(g);
-
-            // --- Branch segments grow out a→b (length first, girth lagging) ---
-            updateTreeBranches(g);
-
-            // --- Fruit ripens last (birthG >= 0.84) ---
-            updateTreeApples(g);
-
-            // --- Meadow grows in alongside the tree ---
-            const groundReveal = smoothstep(0.18, 0.65, g);
-            for (let i = 0; i < grassMeshes.length; i++) grassMeshes[i].scale.setScalar(groundReveal);
-            for (let i = 0; i < flowers.length; i++) flowers[i].scale.setScalar(groundReveal);
         }
 
-        // Orbit + rise + dolly-out as a pure function of growth: circle the sprout up close,
-        // then settle on the full tree. Ends EXACTLY at the original (0,10,30) -> (0,10,0) view.
-        function driveGrowthCamera(g) {
-            // The trunk shoots up fast (full height by g~0.22), so the dolly-out + rise must reach
-            // framing early (by g~0.42) to keep it in shot; the azimuth keeps a slow full orbit.
-            const e = smootherstep(g);
-            const frame = smoothstep(0.05, 0.42, g);
-            const az = -Math.PI * 1.4 * (1 - e);     // ~250deg sweep, settling at azimuth 0
-            const radius = 7.5 + (22 - 7.5) * frame; // start close on the sprout, pull back to frame the tree
-            const camY = 2.4 + (7 - 2.4) * frame;
-            const targetY = 0.45 + (6.5 - 0.45) * frame;
-            camera.position.set(Math.sin(az) * radius, camY, Math.cos(az) * radius);
-            camera.up.set(0, 1, 0);
-            camera.lookAt(0, targetY, 0);
-            controls.target.set(0, targetY, 0);     // keep controls synced for a seamless hand-off
-        }
-
-        function updateGrowthUI() {
-            const fill = document.getElementById('growProgressFill');
-            if (fill) fill.style.height = (growthCurrent * 100).toFixed(1) + '%';
-            const hint = document.getElementById('growHint');
-            if (hint) hint.style.opacity = Math.max(0, 1 - growthCurrent * 2.2).toFixed(2);
-        }
-
-        function updateGrowth(dt) {
-            if (hasGrown) return;
-            growthCurrent += (growthTarget - growthCurrent) * Math.min(1, dt * 3.2);
-            if (growthTarget >= 0.999 && growthCurrent >= 0.997) {
-                enterInteractive();
-                return;
+        // 黑洞软光带: RingGeometry + 顶点色, 亮度在带中间最高、内外边缘渐隐(sin 剖面)
+        // → 是"发散的光圈", 没有贴着黑球的尖锐细环 (看起来更真实)
+        function makeAccretionDisk(inner, outer) {
+            const g = new THREE.RingGeometry(inner, outer, 140, 10);
+            const pos = g.attributes.position;
+            const colors = [];
+            const hot = new THREE.Color(0xffe7bb), warm = new THREE.Color(0xd9742a);
+            const tmp = new THREE.Color();
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i), y = pos.getY(i);
+                const r = Math.sqrt(x * x + y * y);
+                const t = clampN((r - inner) / (outer - inner), 0, 1);
+                const band = Math.sin(t * Math.PI);   // 0 在内外边缘, 1 在中间 → 无硬内环
+                const a = band * band;                 // 更柔
+                tmp.copy(hot).lerp(warm, t);
+                const ang = Math.atan2(y, x);
+                const flick = 0.8 + 0.2 * Math.sin(ang * 5.0);
+                colors.push(tmp.r * a * flick, tmp.g * a * flick, tmp.b * a * flick);
             }
-            applyGrowth(growthCurrent);
-            driveGrowthCamera(growthCurrent);
-            updateGrowthUI();
+            g.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            const m = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+            return new THREE.Mesh(g, m);
         }
 
-        // Latch into the fully-grown, freely explorable state; hand the camera to OrbitControls.
-        function enterInteractive() {
-            hasGrown = true;
-            growthCurrent = growthTarget = 1;
-            applyGrowth(1);
-            updateTreeLeaves(1, windTime);
-            updateGrowthUI();
-            camera.position.set(0, 7, 22);   // matches driveGrowthCamera(1)
-            camera.lookAt(0, 6.5, 0);
-            controls.target.set(0, 6.5, 0);
-            controls.enabled = true;
-            controls.enableZoom = true;
-            controls.update();
-            document.body.classList.remove('growing');
-            const hintEl = document.getElementById('hintText');
-            if (hintEl) hintEl.textContent = hintTexts[currentSeason] || hintTexts[0];
+        function createCosmos() {
+            if (cosmosInited) return; cosmosInited = true;
+
+            // 把树放进 cosmicWorld, 让星球+树作为一个小世界一起缩放/被吞入黑洞
+            cosmicWorld = new THREE.Group();
+            scene.add(cosmicWorld);
+            if (tree && tree.parent) tree.parent.remove(tree);
+            cosmicWorld.add(tree);
+
+            // 星空
+            const starCount = 1800;
+            const sg = new THREE.BufferGeometry();
+            const sp = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount; i++) {
+                const u = Math.random(), v = Math.random();
+                const th = u * Math.PI * 2, ph = Math.acos(2 * v - 1);
+                const r = 300 + Math.random() * 250;
+                sp[i * 3] = r * Math.sin(ph) * Math.cos(th);
+                sp[i * 3 + 1] = r * Math.cos(ph);
+                sp[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+            }
+            sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+            starField = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false }));
+            starField.visible = false;
+            scene.add(starField);
+
+            // 星球 (北极对齐树根 y=0)
+            planetMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(PLANET_R, 48, 36),
+                new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0.0, transparent: true, opacity: 1 })
+            );
+            planetMesh.position.set(0, -PLANET_R, 0);
+            planetMesh.receiveShadow = false; planetMesh.visible = false; // 不接收树的大投影(避免丑陋阴影)
+            cosmicWorld.add(planetMesh);
+            planetAtmo = new THREE.Mesh(
+                new THREE.SphereGeometry(PLANET_R * 1.07, 48, 36),
+                new THREE.MeshBasicMaterial({ color: 0xbfe0ff, transparent: true, opacity: 0, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
+            );
+            planetAtmo.position.copy(planetMesh.position);
+            planetAtmo.visible = false;
+            cosmicWorld.add(planetAtmo);
+
+            // 黑洞
+            const BH_R = 14;
+            bhGroup = new THREE.Group();
+            bhGroup.position.copy(BH_CENTER);
+            bhGroup.visible = false; bhGroup.scale.setScalar(0.001);
+            scene.add(bhGroup);
+            bhHorizon = new THREE.Mesh(new THREE.SphereGeometry(BH_R, 64, 48), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+            bhGroup.add(bhHorizon);
+            // 倾斜吸积盘 (软光带, 无尖锐细环)
+            bhDisk = makeAccretionDisk(BH_R * 1.0, BH_R * 3.8);
+            bhDisk.rotation.x = Math.PI / 2 - 0.42;
+            bhGroup.add(bhDisk);
+            // 竖直发散光环 (软, 过顶/过底) — 用户要的"竖着的发散的大圈"
+            bhHalo = makeAccretionDisk(BH_R * 1.0, BH_R * 3.4);
+            bhHalo.rotation.x = 0;            // XY 平面, 竖直, 面向相机
+            bhGroup.add(bhHalo);
+            // 柔和外发光圈
+            bhGlow = new THREE.Mesh(new THREE.SphereGeometry(BH_R * 1.55, 32, 24), new THREE.MeshBasicMaterial({ color: 0xff9636, transparent: true, opacity: 0, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+            bhGroup.add(bhGlow);
+
+            setupPixelCanvas();
+            buildOneDSite();
+            // 头像点击 → 直接硬切回最初的树 (无倒带/特效)
+            const home = document.getElementById('fpHome');
+            if (home) home.addEventListener('click', () => {
+                const site = document.getElementById('oneDSite');
+                if (site) site.style.transition = 'none';                 // 作品集页瞬间收起, 不淡出
+                // 背景先复位到季节色, 否则 j<0.05 的快照会把天空染成太空黑
+                if (scene.background && scene.background.isColor) scene.background.copy(seasonBgColor);
+                journey = 0; journeyTarget = 0;                            // 直接定位到树
+                updateJourney(0);                                         // 本帧立即复位整个场景
+                if (site) requestAnimationFrame(() => { site.style.transition = ''; });
+            });
+        }
+
+        function setSurfaceOpacity(o) {
+            const vis = o > 0.01;
+            const ap = (m) => { if (m) { m.transparent = true; m.opacity = o; } };
+            if (typeof groundMesh !== 'undefined' && groundMesh) { ap(groundMesh.material); groundMesh.visible = vis; }
+            if (typeof grassMeshes !== 'undefined') grassMeshes.forEach(g => { ap(g.material); g.visible = vis; });
+            if (typeof flowers !== 'undefined') flowers.forEach(f => { if (f.material) ap(f.material); f.visible = vis; });
+            // 河流单独在 updateJourney 平滑处理 (只在秋天有)
+        }
+
+        function setTreeUIOpacity(o) {
+            ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
+                document.querySelectorAll(s).forEach(el => {
+                    el.style.opacity = o;
+                    el.style.pointerEvents = o < 0.5 ? 'none' : '';
+                    el.style.animation = o < 0.99 ? 'none' : ''; // 关闭 pulse 等动画, 否则会覆盖透明度
+                });
+            });
+        }
+
+        function setOneDActive(active) {
+            if (active === oneDActive) return;
+            oneDActive = active;
+            const site = document.getElementById('oneDSite');
+            if (!site) return;
+            if (active) { site.classList.add('active'); site.scrollTop = 0; setTimeout(typeHero, 320); }
+            else { site.classList.remove('active'); }
+        }
+
+        // "Hey, I'm Jane." 打字机效果 (每次进入作品集页时重新打出)
+        function typeHero() {
+            const el = document.querySelector('.fp-hero');
+            if (!el) return;
+            const full = el.dataset.full || el.textContent;
+            el.dataset.full = full;
+            clearInterval(el._typeTimer);
+            clearTimeout(el._typeDone);
+            el.textContent = '';
+            el.classList.add('typing');
+            let i = 0;
+            el._typeTimer = setInterval(() => {
+                i++;
+                el.textContent = full.slice(0, i);
+                if (i >= full.length) {
+                    clearInterval(el._typeTimer);
+                    el._typeDone = setTimeout(() => el.classList.remove('typing'), 1500); // 打完后光标再闪几下
+                }
+            }, 80);
+        }
+
+        function updateJourney(dt) {
+            if (!cosmosInited) return;
+            // 平滑趋近目标 (丝滑)
+            journey += (journeyTarget - journey) * Math.min(1, dt * 3.2);
+            const j = journey;
+            if (j < 0.05 && scene.background && scene.background.isColor) seasonBgColor.copy(scene.background);
+
+            if (bhDisk) bhDisk.rotation.z += dt * 0.18;
+
+            // 相机: 0–0.30 拉远看更多地面; 0.30–0.66 地面卷成星球; 0.66+ 停留观看像素化与坍塌
+            const tgt = new THREE.Vector3().lerpVectors(TREE_TARGET, PLANET_TARGET, smooth(seg(j, 0.30, 0.66)));
+            controls.target.copy(tgt);
+            let dist;
+            if (j < 0.30) dist = lerpN(30, 56, smooth(seg(j, 0.0, 0.30)));
+            else if (j < 0.66) dist = lerpN(56, 95, smooth(seg(j, 0.30, 0.66)));
+            else dist = 95;
+            controls.minDistance = controls.maxDistance = dist;
+
+            // 背景/雾/星空: 地面卷起时天空渐暗进入太空
+            const space = smooth(seg(j, 0.42, 0.64));
+            const bg = new THREE.Color().lerpColors(seasonBgColor, new THREE.Color(0x06070d), space);
+            if (scene.background && scene.background.isColor) scene.background.copy(bg); else scene.background = bg.clone();
+            if (scene.fog) { scene.fog.color.copy(bg); scene.fog.far = lerpN(80, 100000, smooth(seg(j, 0.30, 0.50))); }
+            if (starField) { const so = smooth(seg(j, 0.46, 0.66)); starField.material.opacity = so; starField.visible = so > 0.01; }
+
+            // 地面淡出 (0.26→0.40); 大星球已铺在下方(草地色无缝) → 无灰平地中间态
+            setSurfaceOpacity(1 - smooth(seg(j, 0.26, 0.40)));
+            // 河流系统(只秋季): 早期平滑收起整组(水面/河床/河岸), 旅程中彻底隐藏
+            // → 进入太空/黑洞后绝不出现河 (修复绿色河带 bug)
+            {
+                const rs = 1 - smooth(seg(j, 0.10, 0.26));
+                const vis = (currentSeason === 2) && rs > 0.02;
+                const setRiv = (m) => { if (m) { m.visible = vis; m.scale.setScalar(Math.max(0.02, rs)); } };
+                setRiv(riverMesh); setRiv(riverbedMesh);
+                if (typeof riverBanks !== 'undefined') riverBanks.forEach(setRiv);
+                if (j > 0.06) {
+                    if (typeof jumpingFishes !== 'undefined') jumpingFishes.forEach(f => f.visible = false);
+                    if (typeof splashParticles !== 'undefined') splashParticles.forEach(s => s.visible = false);
+                }
+            }
+            if (j > 0.26) { animals.forEach(a => a.visible = false); fallingLeaves.forEach(l => l.visible = false); }
+
+            // 星球: 0.28 起以超大半径出现(看似平地, 草地色), 0.38→0.68 半径缩小 → 地面"卷"成星球
+            const morph = smooth(seg(j, 0.38, 0.68));
+            if (planetMesh) {
+                refreshPlanetSeason();
+                const pscale = lerpN(20, 1, morph);
+                planetMesh.visible = j > 0.28;
+                planetMesh.scale.setScalar(pscale);
+                planetMesh.position.y = -PLANET_R * pscale; // 北极始终落在 y=0 (树根处)
+                planetMesh.material.opacity = 1;
+                if (planetAtmo) {
+                    const ao = smooth(seg(j, 0.60, 0.72));
+                    planetAtmo.visible = ao > 0.01;
+                    planetAtmo.scale.setScalar(pscale);
+                    planetAtmo.position.y = planetMesh.position.y;
+                    planetAtmo.material.opacity = 0.28 * ao;
+                }
+            }
+            // 树与星球同步、同缓动缩小 → 比例平滑变化, 不突兀
+            if (tree) tree.scale.setScalar(lerpN(1, 0.5, morph));
+
+            // 宇宙坍塌: 把"用户最后那一帧"3D 画面整屏定格 → 全屏变成二维像素方块 →
+            // 像倒塌的墙一样从左上逐个掉落 → 作品集页 (不再是 3D 立体方块)
+            if (bhGroup) bhGroup.visible = false;
+            const pix = j > 0.71;
+            if (pix) {
+                if (!pixCaptured) {
+                    pixNeedsCapture = true;          // 本帧 3D 照常渲染, 渲染后再定格(见 animate)
+                } else {
+                    // 该帧已定格成像素 → 隐藏全部 3D, 只显示二维像素层
+                    if (planetMesh) planetMesh.visible = false;
+                    if (planetAtmo) planetAtmo.visible = false;
+                    if (tree) tree.visible = false;
+                    if (starField) starField.visible = false;   // 天空/星星已一并变成方块
+                    if (pixCanvas) { pixCanvas.style.display = 'block'; pixCanvas.style.opacity = '1'; }
+                    const appearT = smooth(seg(j, 0.71, 0.79));  // 清晰 → 像素方块
+                    const collapseP = seg(j, 0.80, 0.96);        // 方块逐个掉落
+                    drawPixels(appearT, collapseP);
+                }
+            } else {
+                pixCaptured = false; pixNeedsCapture = false;    // 倒带回去: 复原 3D
+                if (pixCanvas) pixCanvas.style.display = 'none';
+                if (tree) tree.visible = true;
+            }
+
+            // 树场景 UI 淡出
+            setTreeUIOpacity(1 - smooth(seg(j, 0.04, 0.18)));
+
+            // 塌完 → 暖炭微光 → 作品集页
+            const flash = document.getElementById('cosmosFlash');
+            if (flash) flash.style.opacity = smooth(seg(j, 0.93, 0.97)) * (1 - smooth(seg(j, 0.985, 1.0)));
+            const canvasC = document.getElementById('canvas-container');
+            if (canvasC) canvasC.style.opacity = pixCaptured ? '0' : '1';
+            setOneDActive(j >= 0.97);
+        }
+
+        // 构建坍塌后的白色个人网站 (极简高级)
+        function buildOneDSite() {
+            const track = document.getElementById('fpWrap');
+            if (!track) return;
+            const links = [
+                ['LinkedIn', 'https://linkedin.com/in/jane-z-439910293'],
+                ['GitHub', 'https://github.com/jo1-yo']
+            ];
+            const selected = [
+                ['Martini Learn', 'Learning and documentation platform for an AI video creation tool', 'https://martini.film'],
+                ['Traller', 'AI-powered people search', 'https://imjane.top/traller.html'],
+                ['Pawse', 'AI desk companion for stress relief, study planning, and task support', 'https://imjane.top/Pawse_demo/'],
+                ['Spatial Cognition Lab', 'Research platform for egocentric and allocentric navigation training', 'https://navigationresearch.vercel.app/'],
+                ['Gensync', 'Bilingual platform connecting older and younger generations', 'https://imjane.top/gensync.html'],
+                ['SUAB', 'Youth-led anti-bullying organization and web platform', 'https://imjane.top/suab.html'],
+                ['Choosely', 'Weighted decision-making tool', 'https://imjane.top/choosely']
+            ];
+            const other = [
+                ["Jane's Blog", 'Automated GitHub logging and personal writing system', 'https://github.com/jo1-yo/learning-log']
+            ];
+            const row = (it, i) => `<a class="fp-proj" href="${it[2]}" target="_blank" rel="noopener noreferrer">
+                <div class="fp-proj-head"><span class="fp-proj-i">${i != null ? String(i + 1).padStart(2, '0') : '·'}</span><span class="fp-proj-t">${it[0]}</span><span class="fp-proj-arrow">↗</span></div>
+                <div class="fp-proj-d">${it[1]}</div></a>`;
+            track.innerHTML = `
+                <aside class="fp-side">
+                    <div class="fp-name">Jane Zhang</div>
+                    <div class="fp-role">Software Engineering · ML · AI Products</div>
+                    <div class="fp-side-label">Connect</div>
+                    <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}<button type="button" class="fp-msg-btn" id="fpMsgBtn">Message</button></div>
+                </aside>
+                <main class="fp-main">
+                    <h1 class="fp-hero">Hey, I'm Jane.</h1>
+                    <div class="fp-lede">
+                        <p>I'm a sophomore at Columbia University studying Computer Science and Cognitive Science.</p>
+                        <p>I build web products, research tools, and AI-native applications — with a focus on software engineering and a growing interest in machine learning.</p>
+                        <p>I'm a <b>fast shipper</b> and a <b>creative thinker</b> — I care about, and think about, everything in the world.</p>
+                        <p>I'm currently interning at <b>Martini</b>, a YC-backed AI video startup, where I work across product, documentation, education, and AI creation workflows.</p>
+                        <p class="fp-seek">I'm looking for <b>software engineering internships</b>, especially roles related to AI products, applied ML, developer tools, or human-centered computing.</p>
+                    </div>
+                    <section class="fp-projects">
+                        <div class="fp-h2">Selected Work</div>
+                        ${selected.map((it, i) => row(it, i)).join('')}
+                    </section>
+                    <section class="fp-projects">
+                        <div class="fp-h2">Other Projects</div>
+                        ${other.map(it => row(it, null)).join('')}
+                    </section>
+                </main>`;
+            wireMessageModal();
+        }
+
+        // ── "Message" 表单 → 后端 /api/message (Vercel + Twilio) ──────────────
+        // 表单只把 {name, contact, message} POST 到 /api/message。你的手机号与所有
+        // Twilio 凭据只存在 Vercel 环境变量里 (服务端), 永远不出现在前端/HTML/DevTools。
+        // 见同目录 api/message.js 与 .env.example。
+
+        function wireMessageModal() {
+            const btn = document.getElementById('fpMsgBtn');
+            const modal = document.getElementById('msgModal');
+            if (!modal || modal.dataset.wired) return;
+            modal.dataset.wired = '1';
+            const ta = modal.querySelector('textarea');
+            const box = modal.querySelector('.msg-box');
+            const bg = document.getElementById('oneDSite');     // 背景内容, 弹窗开时设为 inert
+            let lastFocus = null;                                 // 记住触发元素, 关闭时还焦点
+            const open = (e) => {
+                if (e) e.preventDefault();
+                lastFocus = (e && e.currentTarget) || document.activeElement;
+                modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+                if (bg) { bg.setAttribute('aria-hidden', 'true'); bg.inert = true; }
+                if (ta) setTimeout(() => ta.focus(), 60);
+            };
+            const close = () => {
+                if (modal.contains(document.activeElement)) document.activeElement.blur(); // 先移焦, 再 aria-hidden
+                modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
+                if (bg) { bg.removeAttribute('aria-hidden'); bg.inert = false; }
+                if (lastFocus && lastFocus.focus) lastFocus.focus();                       // 还焦点给触发按钮
+            };
+            if (btn) btn.addEventListener('click', open);
+            const treeBtn = document.getElementById('treeMsgBtn');
+            if (treeBtn) treeBtn.addEventListener('click', open);
+            document.getElementById('msgClose').addEventListener('click', close);
+            modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+            // 键盘: Esc 关闭; Tab/Shift+Tab 在弹窗内循环 (焦点陷阱)
+            modal.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { close(); return; }
+                if (e.key !== 'Tab') return;
+                const f = box.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
+                const focusable = [...f].filter(el => !el.disabled && el.offsetParent !== null);
+                if (!focusable.length) return;
+                const first = focusable[0], last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+            });
+            document.getElementById('msgForm').addEventListener('submit', sendMessage);
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const form = e.target;
+            const status = document.getElementById('msgStatus');
+            const sendBtn = document.getElementById('msgSend');
+            status.className = 'msg-status';
+            const fd = new FormData(form);
+            // 蜜罐: 机器人填了就静默"成功"丢弃
+            if (fd.get('botcheck')) { form.reset(); status.textContent = 'Sent — thank you!'; status.className = 'msg-status ok'; return; }
+            const payload = {
+                name: (fd.get('from_name') || '').toString().trim(),
+                contact: (fd.get('reply_to') || '').toString().trim(),
+                message: (fd.get('message') || '').toString().trim()
+            };
+            if (!payload.message) { status.textContent = 'Please write a message first.'; status.className = 'msg-status err'; return; }
+            sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+            status.textContent = '';
+            try {
+                const res = await fetch('/api/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json().catch(() => ({}));
+                if (res.ok && json.success) {
+                    status.textContent = 'Sent — thank you! I’ll get back to you.';
+                    status.className = 'msg-status ok';
+                    form.reset();
+                } else {
+                    status.textContent = (json && json.message) || "That didn’t send — please try again.";
+                    status.className = 'msg-status err';
+                }
+            } catch (err) {
+                status.textContent = 'Network error — please try again.';
+                status.className = 'msg-status err';
+            } finally {
+                sendBtn.disabled = false; sendBtn.textContent = 'Send';
+            }
         }
 
         let lastTime = 0;
-        
+
         function animate(currentTime) {
             requestAnimationFrame(animate);
             
@@ -4437,13 +4408,6 @@
             lastTime = currentTime;
 
             windTime += 0.01;
-
-            // Advance the sprout -> tree growth (drives the camera itself until grown)
-            updateGrowth(deltaTime);
-
-            // Leaves are composed every frame from (growthCurrent, windTime): unfold by growth,
-            // then sway in the wind once open. (Pure in g; wind is a pure function of time.)
-            updateTreeLeaves(growthCurrent, windTime);
 
             // === 河流动画 (UV滚动，不是顶点位移) ===
             updateRiverAnimation(deltaTime);
@@ -4469,10 +4433,11 @@
                     if (type === 'butterfly') {
                         animal.position.y += Math.sin(windTime * 3 + i) * 0.02;
                         animal.position.x += Math.sin(windTime * 2 + i) * 0.01;
-                        // 蝴蝶翅膀动画 - 使用保存的翅膀引用
+                        // 蝴蝶扇翅：两翅绕身体轴对称开合（内缘始终贴着身体）
                         if (animal.userData.wings) {
-                            animal.userData.wings[0].rotation.y = Math.sin(windTime * 10) * 0.6 + 0.4;
-                            animal.userData.wings[1].rotation.y = -Math.sin(windTime * 10) * 0.6 - 0.4;
+                            const flap = Math.sin(windTime * 12) * 0.6 + 0.6; // 0 .. 1.2
+                            animal.userData.wings[0].rotation.y = flap;   // 右翅
+                            animal.userData.wings[1].rotation.y = -flap;  // 左翅
                         }
                     } else if (type === 'bird') {
                         animal.position.y += Math.sin(windTime * 2 + i) * 0.01;
@@ -4484,8 +4449,8 @@
                     } else if (type === 'rabbit') {
                         // 兔子轻微跳动
                         animal.position.y += Math.abs(Math.sin(windTime * 3 + i)) * 0.015;
-                    } else if (type === 'deer') {
-                        // 鹿轻微晃动
+                    } else if (type === 'fox') {
+                        // 狐狸轻微晃动
                         animal.rotation.y = Math.sin(windTime * 0.3) * 0.05;
                     } else if (type === 'owl') {
                         // 猫头鹰转头
@@ -4507,8 +4472,12 @@
                     leaf.rotation.y += 0.02;
 
                     if (leaf.position.y < 0) {
+                        // 回收时仍从树冠范围内重新飘落
+                        const a = Math.random() * Math.PI * 2;
+                        const r = 2 + Math.random() * 7;
+                        leaf.position.x = Math.cos(a) * r;
+                        leaf.position.z = Math.sin(a) * r;
                         leaf.position.y = leaf.userData.startY;
-                        leaf.position.x = (Math.random() - 0.5) * 20;
                         leaf.userData.startX = leaf.position.x;
                     }
                 }
@@ -4546,18 +4515,20 @@
                 }
             });
 
-            // While growing, the camera is scripted by driveGrowthCamera(); OrbitControls would
-            // fight it (damping rewrites camera each update), so only run it once grown.
-            if (hasGrown) controls.update();
+            updateJourney(deltaTime);
+
+            controls.update();
             renderer.render(scene, camera);
+            // 渲染后定格当前帧 → 二维像素方块 (preserveDrawingBuffer 保证可读取)
+            if (pixNeedsCapture && !pixCaptured) { capturePixelFrame(); pixNeedsCapture = false; }
         }
 
         // Initialize
         init();
         
-        // 积雪壳依赖旧的 trunkMesh/branchMeshes（程序化树未使用）— 冬季不可达，跳过
-        if (trunkMesh) createSnowShells();
-
+        // 创建积雪壳 (必须在树创建后)
+        createSnowShells();
+        
         transitionSeason();
     </script>
 </body>

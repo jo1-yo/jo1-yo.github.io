@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# local env / secrets — NEVER commit these (the phone number + Twilio creds live here)
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# claude code local config
+.claude/
+
+# os
+.DS_Store
