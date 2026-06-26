@@ -71,10 +71,10 @@
             transition: opacity 0.5s ease;
         }
 
-        .season-name.spring { color: #b56b82; }   /* 深玫瑰 — 在浅粉天空上清晰、雅致 */
-        .season-name.summer { color: #4f964f; }   /* 深叶绿 */
-        .season-name.autumn { color: #bd762c; }   /* 深琥珀 */
-        .season-name.winter { color: #6b93c2; }   /* 雾蓝灰 */
+        .season-name.spring { color: #ef9bb9; }   /* 浅粉 */
+        .season-name.summer { color: #7ec77e; }   /* 浅浅绿 */
+        .season-name.autumn { color: #eaa75c; }   /* 浅琥珀 — 比秋树橙色更淡 */
+        .season-name.winter { color: #9cbae0; }   /* 浅雾蓝 */
 
         .season-name.active {
             animation: seasonFadeInOut 3s ease forwards;
@@ -434,13 +434,28 @@
         /* "Message" 连接按钮 (与其它 connect 链接同款) */
         .fp-msg-btn { background: none; border: none; padding: 0; margin: 0; color: #cbc4b4; font-size: .98rem; font-family: inherit; width: max-content; cursor: pointer; text-align: left; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
         .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
+        /* "Hire Me" — Connect 里 GitHub 下方的高端内联表单框 (提交 → 直达手机) */
+        .fp-hirebox { margin-top: 28px; padding: 20px 20px 22px; border: 1px solid rgba(231,225,211,.12); border-radius: 16px; background: rgba(255,255,255,.025); display: flex; flex-direction: column; gap: 12px; max-width: 340px; }
+        .fp-hirebox-h { font-size: 1.16rem; font-weight: 700; letter-spacing: -.01em; color: #f4efe3; }
+        .fp-hirebox-sub { margin: -3px 0 5px; font-size: .84rem; line-height: 1.55; color: #9b9484; }
+        .fp-hirebox-sub b { color: #ddd5c5; font-weight: 600; }
+        .fp-hirebox input, .fp-hirebox textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04); border: 1px solid rgba(231,225,211,.13); border-radius: 10px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s, background .2s; }
+        .fp-hirebox textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
+        .fp-hirebox textarea.is-template { color: #6b6557; }   /* 默认模板淡色; 聚焦后(去掉此类)变亮可改 */
+        .fp-hirebox input:focus, .fp-hirebox textarea:focus { outline: none; border-color: rgba(231,200,126,.55); background: rgba(255,255,255,.06); }
+        .fp-hirebox input::placeholder, .fp-hirebox textarea::placeholder { color: #6b6557; }
+        .fp-hirebox .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+        .fp-hirebox-send { margin-top: 4px; background: #ece6d8; color: #1a1813; border: none; border-radius: 10px; padding: 12px; font-size: .96rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s, opacity .2s; }
+        .fp-hirebox-send:hover { background: #f6f1e5; }
+        .fp-hirebox-send:disabled { opacity: .6; cursor: default; }
+        .fp-hirebox-status { font-size: .8rem; line-height: 1.4; min-height: 1em; }
         /* 留言弹窗: 深炭黑 + 暖米白 + 金强调, 与作品集页一致 */
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(8,7,5,.62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
         .msg-box { position: relative; width: 100%; max-width: 440px; background: #1b1a15; border: 1px solid rgba(231,225,211,.12); border-radius: 14px; padding: 30px 28px 26px; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
         .msg-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: #8c8676; font-size: 1.5rem; line-height: 1; cursor: pointer; transition: color .2s; }
         .msg-close:hover { color: #e7c87e; }
-        .msg-box h3 { font-size: 1.25rem; font-weight: 600; color: #f4efe3; }
+        .msg-box h3 { font-size: 1.6rem; font-weight: 700; letter-spacing: -.01em; color: #f6f1e5; }
         .msg-sub { margin-top: 8px; font-size: .9rem; color: #8c8676; line-height: 1.5; }
         #msgForm { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
         #msgForm input, #msgForm textarea { width: 100%; box-sizing: border-box; background: #131210; border: 1px solid rgba(231,225,211,.14); border-radius: 8px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s; }
@@ -471,11 +486,11 @@
         #oneDSite.active .fp-hero { opacity: 1; transform: none; transition-delay: .18s; }
         #oneDSite.active .fp-lede { opacity: 1; transform: none; transition-delay: .30s; }
         #oneDSite.active .fp-projects { opacity: 1; transform: none; transition-delay: .44s; }
-        #oneDSite.active .fp-projects + .fp-projects { transition-delay: .56s; }
+        #oneDSite.active .fp-projects + .fp-projects { transition-delay: .54s; }
         @media (prefers-reduced-motion: reduce) {
             .fp-side, .fp-hero, .fp-lede, .fp-projects { transition: opacity .4s ease; transform: none; }
         }
-        .fp-wrap { max-width: 1120px; margin: 0 auto; padding: 13vh 8vw 16vh; display: grid; grid-template-columns: 240px 1fr; gap: 7vw; }
+        .fp-wrap { max-width: 1240px; margin: 0 auto; padding: 13vh 7vw 16vh; display: grid; grid-template-columns: 300px 1fr; gap: 9vw; }
         .fp-side { position: sticky; top: 13vh; align-self: start; }
         .fp-name { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
         .fp-role { margin-top: 10px; font-size: .73rem; letter-spacing: .12em; text-transform: uppercase; color: #c6a662; line-height: 1.7; }
@@ -490,21 +505,25 @@
         .fp-lede { margin-top: 26px; max-width: 40em; }
         .fp-lede p { font-size: 1.08rem; line-height: 1.75; color: #aaa394; margin-bottom: 16px; }
         .fp-lede p b { color: #e7e1d3; font-weight: 600; }
-        .fp-seek b { color: #e7c87e; }
         .fp-projects { margin-top: 54px; }
         .fp-h2 { font-size: .7rem; letter-spacing: .24em; text-transform: uppercase; color: #7d7665; padding-bottom: 12px; border-bottom: 1px solid rgba(231,225,211,.10); }
-        .fp-proj { display: block; padding: 18px 6px 17px; border-bottom: 1px solid rgba(231,225,211,.07); text-decoration: none; color: inherit; box-shadow: inset 2px 0 0 transparent; transition: background .25s ease, padding .25s ease, box-shadow .25s ease; border-radius: 6px; }
-        .fp-proj:hover { background: rgba(231,200,126,.05); padding-left: 16px; box-shadow: inset 2px 0 0 #e7c87e; }
-        .fp-proj-head { display: flex; align-items: baseline; gap: 14px; }
-        .fp-proj-i { font-size: .76rem; color: #6f6857; font-variant-numeric: tabular-nums; min-width: 18px; }
-        .fp-proj-t { flex: 1; font-size: 1.18rem; font-weight: 600; color: #ece6d8; transition: color .2s; }
+        .fp-proj { display: block; padding: 22px 22px 21px; margin: 2px 0; border-bottom: 1px solid rgba(231,225,211,.07); text-decoration: none; color: inherit; box-shadow: inset 2px 0 0 transparent; transition: background .28s ease, padding .28s ease, box-shadow .28s ease; border-radius: 12px; }
+        .fp-proj:hover { background: rgba(231,200,126,.055); padding-left: 28px; box-shadow: inset 2px 0 0 #e7c87e; }
+        .fp-proj-head { display: flex; align-items: baseline; gap: 18px; max-width: 40em; }
+        .fp-proj-i { font-size: .72rem; color: #6f6857; font-variant-numeric: tabular-nums; min-width: 20px; letter-spacing: .06em; }
+        .fp-proj-t { flex: 1; font-size: 1.16rem; font-weight: 600; letter-spacing: -.01em; color: #ece6d8; transition: color .2s; }
         .fp-proj:hover .fp-proj-t { color: #e7c87e; }
-        .fp-proj-arrow { color: #c6a662; font-size: 1rem; opacity: 0; transform: translateX(-5px); transition: opacity .2s, transform .2s; }
+        .fp-proj-arrow { color: #c6a662; font-size: .95rem; opacity: 0; transform: translateX(-6px); transition: opacity .25s, transform .25s; }
         .fp-proj:hover .fp-proj-arrow { opacity: 1; transform: translateX(0); }
-        .fp-proj-d { margin-top: 5px; margin-left: 32px; font-size: .95rem; color: #8c8676; line-height: 1.5; }
+        .fp-proj-d { margin-top: 7px; margin-left: 38px; max-width: 33em; font-size: .95rem; color: #8c8676; line-height: 1.55; }
         @media (max-width: 760px) {
-            .fp-wrap { grid-template-columns: 1fr; gap: 32px; padding: 8vh 8vw 16vh; }
+            .fp-wrap { grid-template-columns: 1fr; gap: 30px; padding: 9vh 7vw 13vh; }
             .fp-side { position: static; }
+            .fp-hirebox { max-width: none; }              /* 手机端表单框占满宽度 */
+            .fp-proj { padding: 18px 14px 17px; }
+            .fp-proj:hover { padding-left: 14px; }         /* 触屏无悬停位移 */
+            .fp-proj-head, .fp-proj-d { max-width: none; } /* 窄屏不再额外限宽 */
+            #fpHome { top: 16px; right: 16px; width: 42px; height: 42px; }
         }
     </style>
 </head>
@@ -536,7 +555,7 @@
     <div class="social-links">
         <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
         <a href="https://github.com/jo1-yo" target="_blank" rel="noopener noreferrer" class="social-link">GitHub</a>
-        <a href="#" class="social-link" id="treeMsgBtn">Message</a>
+        <a href="#" class="social-link" id="treeMsgBtn">Hire Me</a>
     </div>
 
     <div class="project-modal" id="projectModal">
@@ -553,12 +572,12 @@
     <div id="msgModal" aria-hidden="true">
         <div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
             <button class="msg-close" id="msgClose" type="button" aria-label="Close">&times;</button>
-            <h3 id="msgTitle">Send me a message</h3>
-            <p class="msg-sub">It reaches me directly — leave a way to reach you back if you'd like a reply.</p>
+            <h3 id="msgTitle">Hire Me</h3>
+            <p class="msg-sub">I'm looking for internships across software engineering, product, and GTM. Tell me about the role — it reaches me directly and I'll get right back to you.</p>
             <form id="msgForm">
-                <input type="text" name="from_name" placeholder="Your name (optional)" autocomplete="name">
-                <input type="text" name="reply_to" placeholder="Email or @ to reach you (optional)">
-                <textarea name="message" rows="4" placeholder="Your message…" required maxlength="600"></textarea>
+                <input type="text" name="from_name" placeholder="Your name" autocomplete="name">
+                <input type="text" name="reply_to" placeholder="Email to reach you back" autocomplete="email">
+                <textarea name="message" rows="4" placeholder="What are you building / hiring for?" required maxlength="600"></textarea>
                 <input type="checkbox" name="botcheck" class="msg-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
                 <button type="submit" class="msg-send" id="msgSend">Send</button>
                 <div class="msg-status" id="msgStatus" role="status" aria-live="polite"></div>
@@ -3196,23 +3215,22 @@
             // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
             if (oneDActive) return;
             if (e.touches.length !== 2) return;
+            e.preventDefault();
             const dist = pinchDist(e);
             const dDist = dist - touchLastDist;
+            touchLastDist = dist;                  // ★ 每帧都更新 → 不会跳变(丝滑关键)
             const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const deltaX = currentX - touchStartX;
-            // 双指捏合 → 宇宙缩放 (捏小 = 缩小 = journey↑)
-            if (Math.abs(dDist) > Math.abs(deltaX) * 0.6) {
-                e.preventDefault();
-                journeyTarget = clampN(journeyTarget - dDist * 0.0028, 0, 1);
-                touchLastDist = dist;
-                return;
-            }
-            // 双指横向平移 → 季节 (仅靠近树时)
-            if (isSwiping && journey < 0.08 && !seasonChangeCooldown && Math.abs(deltaX) > 80) {
+            // 靠近树 + 明显横向(几乎没在捏) → 切季节, 一次手势触发一次
+            if (isSwiping && journey < 0.08 && !seasonChangeCooldown &&
+                Math.abs(deltaX) > 70 && Math.abs(deltaX) > Math.abs(dDist) * 4) {
                 if (deltaX < 0 && currentSeason < 2) changeSeason(1);
                 else if (deltaX > 0 && currentSeason > 0) changeSeason(-1);
                 isSwiping = false;
+                return;
             }
+            // 双指捏合 → 宇宙缩放之旅 (每帧连续平滑驱动; 捏开=放大=journey↓)
+            journeyTarget = clampN(journeyTarget - dDist * 0.0052, 0, 1);
         }
 
         function onTouchEnd(e) {
@@ -3259,9 +3277,11 @@
                 }
                 return;
             }
-            // 垂直滚轮 → 宇宙缩放之旅 (灵敏度调低, 需要拉久一点)
+            // 滚轮/触控板 → 宇宙缩放之旅。触控板双指捏合是 ctrl+wheel 且增量很小 → 给大灵敏度;
+            // 普通双指滚动用基础灵敏度(整体调高, 之前太难拉)
             e.preventDefault();
-            journeyTarget = clampN(journeyTarget + e.deltaY * 0.00055, 0, 1);
+            const zoomSens = e.ctrlKey ? 0.012 : 0.0014;
+            journeyTarget = clampN(journeyTarget + e.deltaY * zoomSens, 0, 1);
         }
 
         function changeSeason(direction) {
@@ -4141,14 +4161,30 @@
 
             // 地面淡出 (0.26→0.40); 大星球已铺在下方(草地色无缝) → 无灰平地中间态
             setSurfaceOpacity(1 - smooth(seg(j, 0.26, 0.40)));
-            // 河流系统(只秋季): 早期平滑收起整组(水面/河床/河岸), 旅程中彻底隐藏
-            // → 进入太空/黑洞后绝不出现河 (修复绿色河带 bug)
+            // 树/星球的缩放比例 (河流共用它 → 河流与树同比例, 不再独立塌缩)
+            const morph = smooth(seg(j, 0.38, 0.68));
+            // 河流系统(只秋季): 与树用同一比例缩放, 并随地面一起淡出(不再独立缩成0) → 自然
+            // → 地面/河流淡完(j≈0.40)远早于进入太空, 仍不会有绿色河带 bug
             {
-                const rs = 1 - smooth(seg(j, 0.10, 0.26));
-                const vis = (currentSeason === 2) && rs > 0.02;
-                const setRiv = (m) => { if (m) { m.visible = vis; m.scale.setScalar(Math.max(0.02, rs)); } };
-                setRiv(riverMesh); setRiv(riverbedMesh);
-                if (typeof riverBanks !== 'undefined') riverBanks.forEach(setRiv);
+                const o = (currentSeason === 2) ? (1 - smooth(seg(j, 0.26, 0.40))) : 0;  // 与地面同步淡出
+                const vis = (currentSeason === 2) && o > 0.01;
+                const treeScale = lerpN(1, 0.5, morph);                                   // 和树相同比例 → 比例不变
+                const fadeRiv = (m, isWater) => {
+                    if (!m) return;
+                    m.visible = vis;
+                    m.scale.setScalar(treeScale);
+                    if (isWater && m.material && m.material.uniforms && m.material.uniforms.uOpacity) {
+                        if (m.userData.baseOpacity === undefined) m.userData.baseOpacity = m.material.uniforms.uOpacity.value;
+                        m.material.uniforms.uOpacity.value = m.userData.baseOpacity * o;
+                    } else if (m.material) {
+                        m.material.transparent = true;
+                        if (m.userData.baseOpacity === undefined) m.userData.baseOpacity = (m.material.opacity != null ? m.material.opacity : 1);
+                        m.material.opacity = m.userData.baseOpacity * o;
+                    }
+                };
+                fadeRiv(riverMesh, true);
+                fadeRiv(riverbedMesh, false);
+                if (typeof riverBanks !== 'undefined') riverBanks.forEach(b => fadeRiv(b, false));
                 if (j > 0.06) {
                     if (typeof jumpingFishes !== 'undefined') jumpingFishes.forEach(f => f.visible = false);
                     if (typeof splashParticles !== 'undefined') splashParticles.forEach(s => s.visible = false);
@@ -4157,7 +4193,6 @@
             if (j > 0.26) { animals.forEach(a => a.visible = false); fallingLeaves.forEach(l => l.visible = false); }
 
             // 星球: 0.28 起以超大半径出现(看似平地, 草地色), 0.38→0.68 半径缩小 → 地面"卷"成星球
-            const morph = smooth(seg(j, 0.38, 0.68));
             if (planetMesh) {
                 refreshPlanetSeason();
                 const pscale = lerpN(20, 1, morph);
@@ -4216,21 +4251,26 @@
         function buildOneDSite() {
             const track = document.getElementById('fpWrap');
             if (!track) return;
+            const HIRE_DEFAULT_MSG = "Hi Jane! I'm [Joey] from [Apple]. I'd love to work together — could we hop on a quick call?";
             const links = [
                 ['LinkedIn', 'https://linkedin.com/in/jane-z-439910293'],
                 ['GitHub', 'https://github.com/jo1-yo']
             ];
-            const selected = [
-                ['Martini Learn', 'Learning and documentation platform for an AI video creation tool', 'https://martini.film'],
-                ['Traller', 'AI-powered people search', 'https://imjane.top/traller.html'],
-                ['Pawse', 'AI desk companion for stress relief, study planning, and task support', 'https://imjane.top/Pawse_demo/'],
-                ['Spatial Cognition Lab', 'Research platform for egocentric and allocentric navigation training', 'https://navigationresearch.vercel.app/'],
-                ['Gensync', 'Bilingual platform connecting older and younger generations', 'https://imjane.top/gensync.html'],
-                ['SUAB', 'Youth-led anti-bullying organization and web platform', 'https://imjane.top/suab.html'],
-                ['Choosely', 'Weighted decision-making tool', 'https://imjane.top/choosely']
+            const workExperience = [
+                ['Martini', 'Creating educational content at a YC-backed film set platform for AI videos', 'https://martini.film']
             ];
-            const other = [
-                ["Jane's Blog", 'Automated GitHub logging and personal writing system', 'https://github.com/jo1-yo/learning-log']
+            const projectOverview = [
+                ['Traller', 'AI-powered people search', 'https://www.youtube.com/watch?v=mQsZdZ9svwM'],
+                ['Pawse', 'AI companion for stress relief and schedule planning', 'https://imjane.top/Pawse_demo/'],
+                ['Gensync', 'Platform bridging older and younger generations', 'https://imjane.top/gensync.html'],
+                ['Choosely', 'Weighted decision-making tool', 'https://imjane.top/choosely'],
+                ["Jane's Blog", 'Diary writing system', 'https://github.com/jo1-yo/learning-log']
+            ];
+            const researchLab = [
+                ['Spatial Cognition Lab', 'Research platform for egocentric and allocentric navigation training', 'https://github.com/jo1-yo/navigation_research']
+            ];
+            const leadership = [
+                ['SUAB', 'President of the Student Union Against Bullying, an NGO registered in Massachusetts, USA, with 2,000+ club members.', 'https://imjane.top/suab.html']
             ];
             const row = (it, i) => `<a class="fp-proj" href="${it[2]}" target="_blank" rel="noopener noreferrer">
                 <div class="fp-proj-head"><span class="fp-proj-i">${i != null ? String(i + 1).padStart(2, '0') : '·'}</span><span class="fp-proj-t">${it[0]}</span><span class="fp-proj-arrow">↗</span></div>
@@ -4238,29 +4278,92 @@
             track.innerHTML = `
                 <aside class="fp-side">
                     <div class="fp-name">Jane Zhang</div>
-                    <div class="fp-role">Software Engineering · ML · AI Products</div>
+                    <div class="fp-role">SWE · ML · AI Products</div>
                     <div class="fp-side-label">Connect</div>
-                    <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}<button type="button" class="fp-msg-btn" id="fpMsgBtn">Message</button></div>
+                    <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}</div>
+                    <form id="hireForm" class="fp-hirebox">
+                        <div class="fp-hirebox-h">Hire Me</div>
+                        <p class="fp-hirebox-sub">I'm interested in internships across <b>software engineering</b>, <b>product</b>, and <b>GTM</b>.</p>
+                        <input type="text" name="name" placeholder="Name" autocomplete="name" maxlength="80">
+                        <input type="text" name="email" placeholder="Email / Phone Number" autocomplete="email" maxlength="120">
+                        <textarea name="message" rows="4" required maxlength="500" class="is-template">${HIRE_DEFAULT_MSG}</textarea>
+                        <input type="checkbox" name="botcheck" class="msg-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+                        <button type="submit" class="fp-hirebox-send" id="hireSend">Send</button>
+                        <div class="fp-hirebox-status msg-status" id="hireStatus" role="status" aria-live="polite"></div>
+                    </form>
                 </aside>
                 <main class="fp-main">
                     <h1 class="fp-hero">Hey, I'm Jane.</h1>
                     <div class="fp-lede">
-                        <p>I'm a sophomore at Columbia University studying Computer Science and Cognitive Science.</p>
-                        <p>I build web products, research tools, and AI native apps — with a focus on software engineering and a growing interest in machine learning.</p>
+                        <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.</p>
+                        <p>I build web products, research tools, and <b>AI native apps</b> — with a focus on software engineering and a growing interest in machine learning.</p>
                         <p>I'm a <b>fast shipper</b> and a <b>creative thinker</b> — I care about, and think about, everything in the world.</p>
-                        <p>I'm currently interning at <b>Martini</b>, a YC-backed AI video startup, where I work across product, documentation, education, and AI creation workflows.</p>
-                        <p class="fp-seek">I'm looking for <b>software engineering internships</b>, especially roles related to AI products, applied ML, developer tools, or human-centered computing.</p>
                     </div>
                     <section class="fp-projects">
-                        <div class="fp-h2">Selected Work</div>
-                        ${selected.map((it, i) => row(it, i)).join('')}
+                        <div class="fp-h2">Work Experience</div>
+                        ${workExperience.map(it => row(it, null)).join('')}
                     </section>
                     <section class="fp-projects">
-                        <div class="fp-h2">Other Projects</div>
-                        ${other.map(it => row(it, null)).join('')}
+                        <div class="fp-h2">Project Overview</div>
+                        ${projectOverview.map((it, i) => row(it, i)).join('')}
+                    </section>
+                    <section class="fp-projects">
+                        <div class="fp-h2">Research Lab</div>
+                        ${researchLab.map(it => row(it, null)).join('')}
+                    </section>
+                    <section class="fp-projects">
+                        <div class="fp-h2">Leadership Showcase</div>
+                        ${leadership.map(it => row(it, null)).join('')}
                     </section>
                 </main>`;
             wireMessageModal();
+            const hireForm = document.getElementById('hireForm');
+            if (hireForm) hireForm.addEventListener('submit', sendHireForm);
+            // 留言框: 默认淡色模板, 点击(聚焦)即变亮可改; 留空或未改 → 恢复淡色模板
+            const hireTa = document.querySelector('#hireForm textarea[name="message"]');
+            if (hireTa) {
+                hireTa.addEventListener('focus', () => hireTa.classList.remove('is-template'));
+                hireTa.addEventListener('blur', () => {
+                    if (!hireTa.value.trim() || hireTa.value === HIRE_DEFAULT_MSG) {
+                        hireTa.value = HIRE_DEFAULT_MSG; hireTa.classList.add('is-template');
+                    }
+                });
+            }
+        }
+
+        // Hire Me 留言 → 存进 Google 表格 (Apps Script, 永久免费)。
+        // 把你部署的 Apps Script Web App /exec 网址粘到下面这个常量里即可。
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL_FQF5F4ObQd1aLx1nwJHrZspTvjC4iaftvmelRH1I3zeVRur0FOqZkeRauk9pVnfIg/exec';
+        // 浏览器→Apps Script 跨域: no-cors + text/plain(简单请求, 不触发预检);
+        // 响应是 opaque(读不到), 只要请求发出去就算成功(联系表单足够)。
+        function postToSheet(payload) {
+            return fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        async function sendHireForm(e) {
+            e.preventDefault();
+            const form = e.target;
+            const status = document.getElementById('hireStatus');
+            const btn = document.getElementById('hireSend');
+            status.className = 'msg-status fp-hirebox-status';
+            const restoreTemplate = () => { form.reset(); const ta = form.querySelector('textarea'); if (ta) ta.classList.add('is-template'); };
+            const fd = new FormData(form);
+            if (fd.get('botcheck')) { restoreTemplate(); status.textContent = 'Sent — thank you!'; status.className = 'msg-status fp-hirebox-status ok'; return; }
+            const payload = {
+                name: (fd.get('name') || '').toString().trim(),
+                contact: (fd.get('email') || '').toString().trim(),
+                message: (fd.get('message') || '').toString().trim()
+            };
+            if (!payload.message) { status.textContent = 'Write a message first.'; status.className = 'msg-status fp-hirebox-status err'; return; }
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.indexOf('PASTE_') === 0) { status.textContent = "Messaging isn't connected yet."; status.className = 'msg-status fp-hirebox-status err'; return; }
+            postToSheet(payload).catch(function () { });   // 后台发送, 不等待(no-cors 本就读不到响应)→ 秒回
+            status.textContent = 'Sent — thank you!';
+            status.className = 'msg-status fp-hirebox-status ok';
+            restoreTemplate();
         }
 
         // ── "Message" 表单 → 后端 /api/message (Vercel + Twilio) ──────────────
@@ -4324,29 +4427,11 @@
                 message: (fd.get('message') || '').toString().trim()
             };
             if (!payload.message) { status.textContent = 'Please write a message first.'; status.className = 'msg-status err'; return; }
-            sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
-            status.textContent = '';
-            try {
-                const res = await fetch('/api/message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const json = await res.json().catch(() => ({}));
-                if (res.ok && json.success) {
-                    status.textContent = 'Sent — thank you! I’ll get back to you.';
-                    status.className = 'msg-status ok';
-                    form.reset();
-                } else {
-                    status.textContent = (json && json.message) || "That didn’t send — please try again.";
-                    status.className = 'msg-status err';
-                }
-            } catch (err) {
-                status.textContent = 'Network error — please try again.';
-                status.className = 'msg-status err';
-            } finally {
-                sendBtn.disabled = false; sendBtn.textContent = 'Send';
-            }
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.indexOf('PASTE_') === 0) { status.textContent = "Messaging isn't connected yet."; status.className = 'msg-status err'; return; }
+            postToSheet(payload).catch(function () { });   // 后台发送, 不等待 → 秒回
+            status.textContent = 'Sent — thank you! I’ll get back to you.';
+            status.className = 'msg-status ok';
+            form.reset();
         }
 
         let lastTime = 0;

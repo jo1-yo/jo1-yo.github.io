@@ -4,520 +4,624 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUAB - Jane Zhang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff69b4;
-            --secondary: #ffb6c1;
-            --accent: #ff1493;
-            --light: #fff0f5;
-            --dark: #4a4a4a;
-            --transition: all 0.3s ease;
+            /* Refined rose palette — sophisticated, not candy */
+            --rose-50:  #fdf4f6;
+            --rose-100: #fbe8ee;
+            --rose-200: #f6d2dd;
+            --rose-300: #ecaec1;
+            --rose-400: #de7d9c;
+            --rose-500: #c9577c;   /* primary accent */
+            --rose-600: #ad3f64;
+            --rose-700: #8c2f4f;
+
+            --primary: var(--rose-500);
+            --accent: var(--rose-600);
+
+            /* Warm neutrals */
+            --cream:    #fffafb;
+            --paper:    #ffffff;
+            --ink:      #2a2026;   /* headings */
+            --body:     #5c5159;   /* body copy */
+            --muted:    #8a7d85;   /* captions */
+            --line:     rgba(42, 32, 38, 0.08);
+
+            --shadow-sm: 0 1px 2px rgba(42,32,38,0.04), 0 4px 12px rgba(140,47,79,0.05);
+            --shadow-md: 0 12px 28px rgba(140,47,79,0.10), 0 4px 10px rgba(42,32,38,0.05);
+            --shadow-lg: 0 28px 60px rgba(140,47,79,0.16), 0 10px 24px rgba(42,32,38,0.07);
+
+            --radius: 18px;
+            --radius-sm: 12px;
+            --maxw: 1180px;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+            --transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-            line-height: 1.6;
-            color: var(--dark);
-            background-color: var(--light);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--body);
+            background-color: var(--cream);
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        
+
+        h1, h2, h3 {
+            font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+            color: var(--ink);
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            line-height: 1.12;
+        }
+
+        a { color: inherit; }
+
         .container {
-            max-width: 1200px;
+            max-width: var(--maxw);
             margin: 0 auto;
             padding: 0 40px;
+            width: 100%;
         }
-        
+
+        /* ---------- Eyebrow / section header ---------- */
+        .eyebrow {
+            display: inline-block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--rose-500);
+            margin-bottom: 1rem;
+        }
+
+        /* ---------- Home link ---------- */
+        .home-link {
+            position: fixed;
+            top: 26px;
+            left: 32px;
+            z-index: 200;
+        }
+
+        .home-link a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: var(--ink);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 0.55rem 1.05rem;
+            border-radius: 100px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .home-link a::before {
+            content: "←";
+            font-size: 1rem;
+            color: var(--rose-500);
+            transition: transform 0.4s var(--ease);
+        }
+
+        .home-link a:hover {
+            color: var(--rose-600);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .home-link a:hover::before {
+            transform: translateX(-3px);
+        }
+
+        /* ---------- Hero ---------- */
         header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 4rem 0 3rem;
-            text-align: center;
             position: relative;
+            text-align: center;
+            padding: 11rem 0 7rem;
             overflow: hidden;
+            background:
+                radial-gradient(1100px 520px at 50% -10%, var(--rose-100) 0%, rgba(251,232,238,0) 70%),
+                radial-gradient(800px 400px at 85% 110%, var(--rose-50) 0%, rgba(253,244,246,0) 70%),
+                var(--cream);
+            border-bottom: 1px solid var(--line);
         }
-        
-        header::before {
+
+        /* soft floating accent orbs */
+        header::before,
+        header::after {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
-            background-size: cover;
+            border-radius: 50%;
+            filter: blur(8px);
+            opacity: 0.5;
+            pointer-events: none;
         }
-        
+        header::before {
+            width: 220px; height: 220px;
+            top: 14%; left: -60px;
+            background: radial-gradient(circle at 30% 30%, var(--rose-200), rgba(246,210,221,0));
+        }
+        header::after {
+            width: 300px; height: 300px;
+            bottom: -90px; right: -70px;
+            background: radial-gradient(circle at 50% 50%, var(--rose-100), rgba(251,232,238,0));
+        }
+
         .header-content {
             position: relative;
             z-index: 1;
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 0 40px;
         }
-        
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        .tagline {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            font-weight: 300;
-        }
-        
-        .section {
-            padding: 5rem 0;
-        }
-        
-        .section.about-section {
-            padding-top: 3rem;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 3.5rem;
-            position: relative;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-        
-        .section-title::after {
-            content: "";
-            display: block;
-            width: 0;
-            height: 3px;
-            background-color: var(--accent);
-            margin: 0.8rem auto 0;
-            transition: width 1s ease 0.3s;
-        }
-        
-        .section-title.animate {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .section-title.animate::after {
-            width: 80px;
-        }
-        
-        .story-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
+
+        .header-badge {
+            display: inline-flex;
             align-items: center;
-            margin-bottom: 4rem;
-            gap: 40px;
+            gap: 0.55rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--rose-600);
+            background: var(--paper);
+            border: 1px solid var(--rose-200);
+            padding: 0.5rem 1.1rem;
+            border-radius: 100px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
         }
-        
-        .story-text {
-            flex: 1;
-            min-width: 300px;
-            padding: 0 20px;
+        .header-badge .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--rose-500);
+            box-shadow: 0 0 0 4px var(--rose-100);
         }
-        
+
+        h1 {
+            font-size: clamp(2.6rem, 6.2vw, 4.6rem);
+            font-weight: 500;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.4rem;
+            color: var(--ink);
+        }
+        h1 .accent { color: var(--rose-500); font-style: italic; font-weight: 400; }
+
+        .tagline {
+            font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+            font-weight: 400;
+            color: var(--muted);
+            max-width: 580px;
+            margin: 0 auto;
+        }
+
+        /* ---------- Sections ---------- */
+        .section {
+            padding: 6.5rem 0;
+        }
+        .section.tinted {
+            background:
+                linear-gradient(180deg, var(--rose-50), var(--cream) 60%);
+        }
+
+        .section-head {
+            text-align: center;
+            max-width: 680px;
+            margin: 0 auto 4rem;
+        }
+        .section-head .eyebrow { margin-bottom: 0.85rem; }
+        .section-title {
+            font-size: clamp(2rem, 4.2vw, 2.9rem);
+            margin: 0 auto;
+        }
+        .section-head .lede {
+            margin-top: 1.1rem;
+            font-size: 1.1rem;
+            color: var(--muted);
+        }
+
+        /* legacy hook used by JS — kept harmless */
+        .section-title { position: relative; }
+
+        /* ---------- Story / split layout ---------- */
+        .story-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 64px;
+        }
+        .story-container.reverse .story-text { order: 2; }
+        .story-container.reverse .story-image { order: 1; }
+
         .story-text p {
-            margin-bottom: 1.5rem;
-            font-size: 1.15rem;
-            line-height: 1.8;
+            margin-bottom: 1.35rem;
+            font-size: 1.12rem;
+            line-height: 1.85;
+            color: var(--body);
         }
-        
-        /* Updated story image container - removed background, border, padding */
+        .story-text p:last-child { margin-bottom: 0; }
+
+        .quote {
+            font-family: 'Fraunces', Georgia, serif;
+            font-style: italic;
+            font-weight: 400;
+            font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+            line-height: 1.4;
+            color: var(--ink);
+            margin: 2.2rem 0;
+            padding: 0.4rem 0 0.4rem 1.6rem;
+            border-left: 3px solid var(--rose-400);
+        }
+
         .story-image {
-            flex: 1;
-            min-width: 300px;
-            height: auto; /* Changed from fixed height to auto */
-            overflow: hidden;
             position: relative;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            aspect-ratio: 4 / 3;
+            background: var(--rose-100);
         }
-        
+        .story-image::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
+            pointer-events: none;
+        }
         .story-image img {
             width: 100%;
-            height: auto; /* Changed from 100% to auto to preserve aspect ratio */
-            object-fit: contain; /* Changed from cover to contain to preserve aspect ratio */
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.9s var(--ease);
+        }
+        .story-image:hover img { transform: scale(1.05); }
+
+        /* ---------- Branches (logo boxes) ---------- */
+        .logo-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        .logo-box {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 2.6rem 2.2rem 2.2rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
             transition: var(--transition);
-            display: block; /* Added to remove any default spacing */
         }
-        
-        .story-image:hover img {
-            transform: scale(1.05);
+        .logo-box:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--rose-200);
         }
-        
-        .quote {
-            font-style: italic;
-            font-size: 1.5rem; /* Increased from 1.3rem */
-            color: var(--primary);
-            margin: 3rem 0; /* Increased from 2.5rem */
-            padding-left: 25px;
-            border-left: 4px solid var(--accent);
+
+        .logo-image {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 1.6rem;
+            border-radius: 50%;
+            background: var(--rose-50);
+            border: 1px solid var(--rose-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            transition: var(--transition);
         }
-        
-        /* Make achievement cards taller but keep 2 columns layout */
+        .logo-box:hover .logo-image {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+        }
+        .logo-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .logo-title {
+            font-size: 1.45rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.85rem;
+        }
+        .logo-box > p {
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+            color: var(--body);
+            font-size: 1rem;
+        }
+
+        .wechat-box {
+            display: inline-block;
+            background: var(--rose-50);
+            border: 1px solid var(--rose-100);
+            padding: 0.85rem 1.4rem;
+            border-radius: var(--radius-sm);
+            margin: 0 auto;
+            transition: var(--transition);
+            font-size: 0.92rem;
+            color: var(--rose-700);
+            text-align: center;
+            line-height: 1.45;
+        }
+        .wechat-box p { margin: 0; }
+        .wechat-box p:first-child { font-weight: 600; color: var(--rose-600); }
+        .wechat-box:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-sm);
+            border-color: var(--rose-200);
+        }
+
+        /* ---------- Achievements grid ---------- */
         .achievements {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Back to 2 columns layout */
-            gap: 30px; /* Slightly reduced from original 40px */
-            margin-top: 3rem;
-            max-width: 1100px;
-            margin-left: auto;
-            margin-right: auto;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: var(--maxw);
+            margin: 0 auto;
         }
-        
+
         .achievement-card {
-            background-color: white;
-            border-radius: 12px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transition: var(--transition);
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, transform 0.3s ease;
-            max-width: 100%; /* Allow cards to fill the column width */
-            margin: 0 auto; /* Center the cards */
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.45s var(--ease);
         }
-        
-        .achievement-card.animate {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
         .achievement-card:hover {
-            transform: translateY(-12px);
-            box-shadow: 0 18px 35px rgba(0,0,0,0.2);
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--rose-200);
         }
-        
-        /* Updated achievement image container */
+
         .achievement-image {
-            height: 350px; /* Keep the increased height for taller cards */
-            width: 100%;
-            overflow: hidden;
             position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            background: var(--rose-100);
         }
-        
+        .achievement-image::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(42,32,38,0) 55%, rgba(42,32,38,0.18));
+            opacity: 0;
+            transition: opacity 0.45s var(--ease);
+        }
+        .achievement-card:hover .achievement-image::after { opacity: 1; }
         .achievement-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 使用 cover 而不是 contain，确保填充整个区域 */
-            transition: var(--transition);
-            display: block; /* Added to remove any default spacing */
+            object-fit: cover;
+            display: block;
+            transition: transform 0.8s var(--ease);
         }
-        
-        .achievement-card:hover .achievement-image img {
-            transform: scale(1.1);
-        }
-        
+        .achievement-card:hover .achievement-image img { transform: scale(1.07); }
+
         .achievement-content {
-            padding: 25px;
+            padding: 1.7rem 1.7rem 1.9rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
         }
-        
         .achievement-title {
             font-size: 1.3rem;
-            margin-bottom: 12px;
-            color: var(--primary);
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.65rem;
         }
-        
+        .achievement-content p {
+            font-size: 0.98rem;
+            line-height: 1.7;
+            color: var(--body);
+            margin: 0;
+        }
+
+        .website-link {
+            color: var(--rose-600);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid var(--rose-200);
+            transition: var(--transition);
+        }
+        .website-link:hover {
+            color: var(--rose-700);
+            border-bottom-color: var(--rose-500);
+        }
+
+        /* ---------- CTA ---------- */
         .cta-section {
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
-            color: white;
-            text-align: center;
-            padding: 5rem 0;
             position: relative;
             overflow: hidden;
+            padding: 6rem 0;
+            text-align: center;
+            background: linear-gradient(135deg, var(--rose-600), var(--rose-500) 60%, var(--rose-400));
+            color: #fff;
         }
-        
         .cta-section::before {
             content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,100 L100,0 L100,100 Z" fill="rgba(255,255,255,0.1)"/></svg>');
-            background-size: cover;
+            inset: 0;
+            background:
+                radial-gradient(600px 300px at 15% 0%, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%),
+                radial-gradient(500px 280px at 90% 100%, rgba(255,255,255,0.14), rgba(255,255,255,0) 70%);
+            pointer-events: none;
         }
-        
         .cta-content {
             position: relative;
             z-index: 1;
-        }
-        
-        .cta-content h2 {
-            font-size: 2.2rem;
-            margin-bottom: 1.2rem;
-        }
-        
-        .cta-content p {
-            font-size: 1.2rem;
-            max-width: 700px;
+            max-width: 720px;
             margin: 0 auto;
         }
-        
+        .cta-content .eyebrow { color: rgba(255,255,255,0.85); }
+        .cta-content h2 {
+            font-size: clamp(2rem, 4.5vw, 2.9rem);
+            color: #fff;
+            margin-bottom: 1.1rem;
+        }
+        .cta-content p {
+            font-size: 1.15rem;
+            line-height: 1.75;
+            color: rgba(255,255,255,0.92);
+            margin: 0 auto;
+        }
+
+        /* ---------- Footer ---------- */
         footer {
-            background-color: var(--dark);
-            color: white;
+            background-color: var(--ink);
+            color: rgba(255,255,255,0.78);
             text-align: center;
-            padding: 3rem 0;
-            font-size: 1rem;
+            padding: 3.5rem 0;
+            font-size: 0.95rem;
         }
-        
-        footer p {
-            margin-bottom: 0.8rem;
+        footer .brand {
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 1.25rem;
+            color: #fff;
+            margin-bottom: 0.6rem;
         }
-        
+        footer p { margin-bottom: 0.5rem; }
+        footer p:last-child { margin-bottom: 0; color: rgba(255,255,255,0.55); }
+
+        /* ---------- Back to top ---------- */
         .back-to-top {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 45px;
-            height: 45px;
-            background-color: var(--primary);
-            color: white;
+            bottom: 26px;
+            right: 26px;
+            width: 48px;
+            height: 48px;
+            background: var(--rose-500);
+            color: #fff;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             text-decoration: none;
-            opacity: 0.8;
-            transition: var(--transition);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-md);
             font-size: 1.2rem;
+            z-index: 150;
+            transition: var(--transition);
         }
-        
         .back-to-top:hover {
-            opacity: 1;
-            transform: translateY(-8px);
+            background: var(--rose-600);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
-        
-        .logo-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 60px;
-            margin: 3rem 0;
-        }
-        
-        .logo-box {
-            text-align: center;
-            max-width: 320px;
+
+        /* ---------- Scroll reveal ---------- */
+        .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-            display: flex;
-            flex-direction: column;
-            height: 100%; /* 确保两个盒子高度一致 */
+            transform: translateY(28px);
+            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+            will-change: opacity, transform;
         }
-        
-        .logo-box.animate {
+        .reveal.animate {
             opacity: 1;
             transform: translateY(0);
         }
-        
-        /* Updated logo image container - removed hover animation */
-        .logo-image {
-            width: 220px;
-            height: auto; /* Changed from fixed height to auto */
-            margin: 0 auto 1.5rem;
-            transition: var(--transition);
-            box-shadow: none; /* Removed shadow */
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+            .reveal { opacity: 1; transform: none; }
         }
-        
-        /* Remove logo hover animation */
-        .logo-box:hover .logo-image {
-            transform: translateY(-8px); /* 恢复悬停时的移动效果 */
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 980px) {
+            .achievements { grid-template-columns: repeat(2, 1fr); }
         }
-        
-        .logo-image img {
-            width: 100%;
-            height: auto; /* Changed from 100% to auto to preserve aspect ratio */
-            object-fit: contain; /* Changed from contain to contain (no change) */
-            display: block; /* Added to remove any default spacing */
-        }
-        
-        .logo-title {
-            font-size: 1.4rem;
-            color: var(--primary);
-            margin-bottom: 0.8rem;
-            min-height: 2.2rem; /* 确保标题区域高度一致 */
-            display: flex;
-            justify-content: center;
-            align-items: center; /* 垂直居中对齐 */
-        }
-        
-        .logo-box p {
-            margin-bottom: 1rem;
-            flex-grow: 1; /* 让描述文本占用可用空间，帮助对齐底部内容 */
-        }
-        
-        /* Updated WeChat box styling with oval shape */
-        .wechat-box {
-            display: inline-block;
-            background-color: white; /* 恢复为白色背景 */
-            padding: 10px 20px; /* 增加水平内边距使其更椭圆 */
-            border-radius: 50px; /* 使用大圆角创建椭圆形 */
-            margin-top: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* 轻微阴影 */
-            transition: var(--transition);
-            font-size: 1rem; /* 恢复正常字体大小 */
-            color: var(--dark); /* 恢复正常文字颜色 */
-            border: 1px solid rgba(0, 0, 0, 0.05); /* 非常淡的边框 */
-            text-align: center; /* 文字居中 */
-        }
-        
-        .wechat-box p {
-            margin: 0; /* 移除段落边距 */
-            line-height: 1.3; /* 减少行高 */
-        }
-        
-        .wechat-box p:first-child {
-            margin-bottom: 3px; /* 两行之间只保留小间距 */
-        }
-        
-        .wechat-box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
-        
-        /* Animation for page load */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .fade-in {
-            animation: fadeIn 1s ease forwards;
-        }
-        
-        .website-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: bold;
-            transition: var(--transition);
-        }
-        
-        .website-link:hover {
-            color: var(--accent);
-            text-decoration: underline;
-        }
-        
-        /* Added aspect ratio utility classes */
-        .aspect-square {
-            aspect-ratio: 1/1;
-        }
-        
-        .aspect-video {
-            aspect-ratio: 16/9;
-        }
-        
-        .aspect-auto {
-            aspect-ratio: auto;
-        }
-        
-        /* Added home link styles */
-        .home-link {
-            position: fixed;
-            top: 30px;
-            left: 40px;
-            z-index: 100;
-        }
-        
-        .home-link a {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-        
-        .home-link a:hover {
-            color: var(--accent);
-        }
-        
+
         @media (max-width: 768px) {
-            .container {
-                padding: 0 25px;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
+            .container { padding: 0 22px; }
+            .home-link { top: 16px; left: 16px; }
+
+            header { padding: 8.5rem 0 5rem; }
+            .header-content { padding: 0 22px; }
+
+            .section { padding: 4.2rem 0; }
+            .section-head { margin-bottom: 2.6rem; }
+
             .story-container {
-                flex-direction: column;
-                gap: 30px;
+                grid-template-columns: 1fr;
+                gap: 34px;
             }
-            
-            .story-image {
-                margin-top: 1rem;
-                width: 100%;
-            }
-            
-            .section {
-                padding: 3rem 0;
-            }
-            
-            .logo-container {
-                gap: 40px;
-            }
-            
-            .achievement-card {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .logo-box {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .section-title {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .section-title::after {
-                width: 60px;
-            }
-            
-            /* Adjust achievement grid for mobile */
-            .achievements {
-                grid-template-columns: repeat(1, 1fr);
-                gap: 30px;
-            }
-            
-            .achievement-card {
-                max-width: 100%;
-            }
+            .story-container.reverse .story-text { order: 1; }
+            .story-container.reverse .story-image { order: 2; }
+            .story-image { aspect-ratio: 16 / 10; }
+
+            .logo-container { grid-template-columns: 1fr; gap: 24px; max-width: 460px; }
+
+            .achievements { grid-template-columns: 1fr; gap: 24px; max-width: 440px; }
+
+            .quote { font-size: 1.3rem; margin: 1.8rem 0; }
+
+            /* show content immediately on mobile to avoid blank flashes */
+            .reveal { opacity: 1; transform: none; transition: none; }
+        }
+
+        @media (max-width: 400px) {
+            .container { padding: 0 18px; }
         }
     </style>
 </head>
 <body>
-    <!-- Added home link -->
+    <!-- Home link back to portfolio -->
     <div class="home-link">
         <a href="index.html">Jane Zhang</a>
     </div>
-    
+
     <header>
-        <div class="container header-content">
-            <h1>Student Union Against Bullying</h1>
+        <div class="header-content">
+            <span class="header-badge"><span class="dot"></span>Youth-led nonprofit</span>
+            <h1>Student Union<br>Against <span class="accent">Bullying</span></h1>
             <p class="tagline">A nonprofit officially registered in Massachusetts</p>
         </div>
     </header>
-    
+
     <section class="section">
         <div class="container">
-            <h2 class="section-title">Our Mission</h2>
-            <div class="story-container">
+            <div class="section-head reveal">
+                <span class="eyebrow">Why we exist</span>
+                <h2 class="section-title">Our Mission</h2>
+            </div>
+            <div class="story-container reveal">
                 <div class="story-text">
-                    <p style="font-size: 1.15rem; line-height: 1.8; margin-bottom: 1.5rem;">Everyone deserves to grow up in a safe and respectful environment. However, I personally experienced the harm and loneliness caused by bullying. Though painful, that experience became the driving force behind founding the Student Union Against Bullying (SUAB).</p>
-                    <p class="quote" style="font-size: 1.5rem; margin: 3rem 0;">When we choose to stand up, it's not just for ourselves, but for those who continue to suffer in silence.</p>
-                    <p style="font-size: 1.15rem; line-height: 1.8; margin-bottom: 1.5rem;">Bullying is not just a personal issue; it's a social problem. Through SUAB, I hope to create a platform where every voice that has been hurt can be heard, and every person who needs help can receive support.</p>
+                    <p>Everyone deserves to grow up in a safe and respectful environment. However, I personally experienced the harm and loneliness caused by bullying. Though painful, that experience became the driving force behind founding the Student Union Against Bullying (SUAB).</p>
+                    <p class="quote">When we choose to stand up, it's not just for ourselves, but for those who continue to suffer in silence.</p>
+                    <p>Bullying is not just a personal issue; it's a social problem. Through SUAB, I hope to create a platform where every voice that has been hurt can be heard, and every person who needs help can receive support.</p>
                 </div>
                 <div class="story-image">
                     <img src="images/mission-illustration.jpg" alt="Anti-bullying concept illustration">
@@ -525,14 +629,17 @@
             </div>
         </div>
     </section>
-    
-    <section class="section about-section" style="background-color: #fff0f5;">
+
+    <section class="section tinted about-section">
         <div class="container">
-            <h2 class="section-title">About SUAB</h2>
-            <p style="text-align: center; margin-bottom: 2.5rem; max-width: 800px; margin-left: auto; margin-right: auto;">SUAB operates with two branches, each with its own focus but united in our mission against bullying.</p>
-            
+            <div class="section-head reveal">
+                <span class="eyebrow">Who we are</span>
+                <h2 class="section-title">About SUAB</h2>
+                <p class="lede">SUAB operates with two branches, each with its own focus but united in our mission against bullying.</p>
+            </div>
+
             <div class="logo-container">
-                <div class="logo-box">
+                <div class="logo-box reveal">
                     <div class="logo-image">
                         <img src="images/suab-main-logo.png" alt="SUAB Main Organization Logo">
                     </div>
@@ -543,8 +650,8 @@
                         <p>ID: KENTSUAB</p>
                     </div>
                 </div>
-                
-                <div class="logo-box">
+
+                <div class="logo-box reveal">
                     <div class="logo-image">
                         <img src="images/suab-beijing-logo.png" alt="SUAB Beijing Branch Logo">
                     </div>
@@ -556,8 +663,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="story-container" style="margin-top: 4rem;">
+
+            <div class="story-container reverse reveal" style="margin-top: 5rem;">
                 <div class="story-text">
                     <p>As the president of both the main SUAB organization and its Beijing branch, I lead teams that conduct a series of activities aimed at raising public awareness about bullying issues, providing support for victims, and fostering a culture of respect and inclusion.</p>
                     <p>We believe that only through collective effort can we create a world without bullying.</p>
@@ -568,64 +675,67 @@
             </div>
         </div>
     </section>
-    
+
     <section class="section">
         <div class="container">
-            <h2 class="section-title">Our Achievements</h2>
+            <div class="section-head reveal">
+                <span class="eyebrow">In action</span>
+                <h2 class="section-title">Our Achievements</h2>
+            </div>
             <div class="achievements">
-                <div class="achievement-card">
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/charity-sales.jpg" alt="Charity sales at schools">
+                        <img src="images/charity-sales.jpg" alt="Charity sales at schools" loading="lazy" decoding="async" width="539" height="561">
                     </div>
                     <div class="achievement-content">
                         <h3 class="achievement-title">Charity Sales</h3>
                         <p>Organized charity sales at various schools in Beijing, successfully raising over 20,000 yuan in donations to support anti-bullying initiatives and victim assistance programs.</p>
                     </div>
                 </div>
-                
-                <div class="achievement-card">
+
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/workshops-drama.jpg" alt="Campus workshops and drama performances">
+                        <img src="images/workshops-drama.jpg" alt="Campus workshops and drama performances" loading="lazy" decoding="async" width="544" height="382">
                     </div>
                     <div class="achievement-content">
-                        <h3 class="achievement-title">Workshops & Drama</h3>
+                        <h3 class="achievement-title">Workshops &amp; Drama</h3>
                         <p>Conducted interactive workshops and drama performances on campuses to educate students about bullying prevention and create empathy through storytelling and role-playing.</p>
                     </div>
                 </div>
-                
-                <div class="achievement-card">
+
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/pink-day.jpg" alt="Pink Day events">
+                        <img src="images/pink-day.jpg" alt="Pink Day events" loading="lazy" decoding="async" width="1200" height="800">
                     </div>
                     <div class="achievement-content">
                         <h3 class="achievement-title">Pink Day Events</h3>
                         <p>Organized Pink Day events with pink-themed decorations to raise awareness about bullying, creating a visual symbol of solidarity and promoting a culture of kindness on campus.</p>
                     </div>
                 </div>
-                
-                <div class="achievement-card">
+
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/digital-avatar.jpg" alt="Anti-bullying website with digital avatar">
+                        <img src="images/digital-avatar.jpg" alt="Anti-bullying website with digital avatar" loading="lazy" decoding="async" width="1200" height="785">
                     </div>
                     <div class="achievement-content">
                         <h3 class="achievement-title">Digital Education Platform</h3>
                         <p>As the president, I developed an anti-bullying website featuring my digital avatar to guide visitors through anti-bullying pamphlets and resources. Visit <a href="https://studentunionagainstbullying.github.io/janepamphlet/" target="_blank" class="website-link">our educational platform</a>.</p>
                     </div>
                 </div>
-                
-                <div class="achievement-card">
+
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/vab.png" alt="Vassar Anti-Bullying Week">
+                        <img src="images/vab.jpg" alt="Vassar Anti-Bullying Week" loading="lazy" decoding="async" width="1000" height="1316">
                     </div>
                     <div class="achievement-content">
                         <h3 class="achievement-title">Vassar Anti-Bullying Week</h3>
                         <p>Vassar Anti-Bullying Week was a campus-wide initiative sponsored by the Engaged Pluralism Office, engaging 300+ participants, with 100+ community members contributing messages of support and kindness on the Empathy Wall.</p>
                     </div>
                 </div>
-                
-                <div class="achievement-card">
+
+                <div class="achievement-card reveal">
                     <div class="achievement-image">
-                        <img src="images/vab2.png" alt="Paint for Care">
+                        <img src="images/vab2.jpg" alt="Paint for Care" loading="lazy" decoding="async" width="1200" height="902">
                     </div>
                     <div class="achievement-content">
                         <h3 class="achievement-title">Paint for Care</h3>
@@ -635,78 +745,52 @@
             </div>
         </div>
     </section>
-    
+
     <section class="cta-section">
-        <div class="container cta-content">
+        <div class="container cta-content reveal">
+            <span class="eyebrow">Get involved</span>
             <h2>Join Us</h2>
             <p>Follow our WeChat public accounts and visit our website to learn more about anti-bullying information and activities. Together, we can create a safer environment for everyone.</p>
         </div>
     </section>
-    
+
     <footer>
         <div class="container">
-            <p> 2025 Student Union Against Bullying. All Rights Reserved.</p>
+            <p class="brand">Student Union Against Bullying</p>
+            <p>© 2025 Student Union Against Bullying. All Rights Reserved.</p>
             <p>An organization dedicated to creating a world without bullying</p>
         </div>
     </footer>
-    
+
     <a href="#" class="back-to-top" aria-label="Back to top">↑</a>
 
     <script>
-        // Animation for section titles and elements on page load and scroll
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initial animations when page loads
-            setTimeout(function() {
-                animateElements();
-            }, 100);
-            
-            // Animate elements as they come into view when scrolling
-            window.addEventListener('scroll', function() {
-                animateElements();
-            });
-            
-            function animateElements() {
-                // Animate section titles
-                document.querySelectorAll('.section-title').forEach(function(title) {
-                    if (isElementInViewport(title) && !title.classList.contains('animate')) {
-                        title.classList.add('animate');
-                    }
-                });
-                
-                // Animate logo boxes
-                document.querySelectorAll('.logo-box').forEach(function(box) {
-                    if (isElementInViewport(box) && !box.classList.contains('animate')) {
-                        box.classList.add('animate');
-                    }
-                });
-                
-                // Animate achievement cards with staggered delay
-                document.querySelectorAll('.achievement-card').forEach(function(card, index) {
-                    if (isElementInViewport(card) && !card.classList.contains('animate')) {
-                        setTimeout(function() {
-                            card.classList.add('animate');
-                        }, index * 150); // Staggered animation
-                    }
+        document.addEventListener('DOMContentLoaded', function () {
+            var reveals = document.querySelectorAll('.reveal');
+
+            if ('IntersectionObserver' in window) {
+                var observer = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('animate');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+                reveals.forEach(function (el) { observer.observe(el); });
+            } else {
+                reveals.forEach(function (el) { el.classList.add('animate'); });
+            }
+
+            // Smooth scroll for back-to-top button
+            var topBtn = document.querySelector('.back-to-top');
+            if (topBtn) {
+                topBtn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             }
-            
-            // Helper function to check if element is in viewport
-            function isElementInViewport(el) {
-                var rect = el.getBoundingClientRect();
-                return (
-                    rect.top <= (window.innerHeight || document.documentElement.clientHeight) * 0.85 &&
-                    rect.bottom >= 0
-                );
-            }
-            
-            // Smooth scroll for back to top button
-            document.querySelector('.back-to-top').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
         });
     </script>
 </body>
