@@ -843,6 +843,7 @@
             window.addEventListener('mousedown', onMouseDown);
             window.addEventListener('mouseup', onMouseUp);
             window.addEventListener('click', onClick);
+            window.addEventListener('contextmenu', onContextMenu);
             window.addEventListener('touchstart', onTouchStart, { passive: false });
             window.addEventListener('touchmove', onTouchMove, { passive: false });
             window.addEventListener('touchend', onTouchEnd);
@@ -3777,6 +3778,34 @@
                 // 只有在没有拖拽的情况下才处理
                 if (!isDragging) {
                 openProject(hoveredObject.userData.projectId);
+                }
+            }
+        }
+
+        // 双指点击(触控板会发成"右键"/contextmenu)在树场景里当作左键：
+        // 阻止浏览器右键菜单，并在点击位置做 raycast 打开苹果项目。
+        // 作品集页(oneDActive)保留正常右键，方便复制文字。
+        function onContextMenu(event) {
+            if (oneDActive) return;
+            event.preventDefault();
+            if (isDragging) return;
+            // 1) 若双指点在 DOM 控件(社交链接 / 季节圆点 / 季节切换按钮)上，转发为点击
+            const domHit = event.target && event.target.closest &&
+                event.target.closest('.social-link, .scroll-dot, .season-nav-btn');
+            if (domHit) { domHit.click(); return; }
+            // 2) 否则在树场景里 raycast，命中苹果就打开项目
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const visibleObjects = interactiveObjects.filter(obj => obj.visible);
+            const intersects = raycaster.intersectObjects(visibleObjects, true);
+            if (intersects.length > 0) {
+                let obj = intersects[0].object;
+                while (obj && obj.userData.projectId === undefined && obj.parent) {
+                    obj = obj.parent;
+                }
+                if (obj && obj.userData.projectId !== undefined) {
+                    openProject(obj.userData.projectId);
                 }
             }
         }
