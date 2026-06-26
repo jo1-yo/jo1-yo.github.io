@@ -58,22 +58,23 @@
 
         .season-name {
             font-family: 'Libre Baskerville', serif;
-            font-size: 4rem;
+            font-size: 2.2rem;
             font-weight: 400;
-            letter-spacing: 0.3em;
+            letter-spacing: 0.5em;
+            text-indent: 0.5em;            /* 抵消末尾字距 → 保持居中 */
             text-transform: uppercase;
             opacity: 0;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 14px rgba(0,0,0,0.22);
             transition: opacity 0.5s ease;
         }
 
-        .season-name.spring { color: #f5b7c5; }
-        .season-name.summer { color: #7dd87d; }
-        .season-name.autumn { color: #e8a649; }
-        .season-name.winter { color: #c5dff5; }
+        .season-name.spring { color: #b56b82; }   /* 深玫瑰 — 在浅粉天空上清晰、雅致 */
+        .season-name.summer { color: #4f964f; }   /* 深叶绿 */
+        .season-name.autumn { color: #bd762c; }   /* 深琥珀 */
+        .season-name.winter { color: #6b93c2; }   /* 雾蓝灰 */
 
         .season-name.active {
             animation: seasonFadeInOut 3s ease forwards;
@@ -276,48 +277,6 @@
             opacity: 1;
         }
 
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
-        }
-
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loading-text {
-            font-family: 'Libre Baskerville', serif;
-            font-size: 1.5rem;
-            color: rgba(255,255,255,0.7);
-            letter-spacing: 0.3em;
-            margin-bottom: 30px;
-        }
-
-        .loading-bar {
-            width: 200px;
-            height: 2px;
-            background: rgba(255,255,255,0.2);
-            overflow: hidden;
-        }
-
-        .loading-progress {
-            width: 0%;
-            height: 100%;
-            background: #fff;
-            transition: width 0.3s ease;
-        }
-
         .name-title {
             position: fixed;
             top: 50%;
@@ -355,8 +314,9 @@
 
         @media (max-width: 768px) {
             .season-name {
-                font-size: 2.4rem;
-                letter-spacing: 0.15em;
+                font-size: 1.7rem;
+                letter-spacing: 0.42em;
+                text-indent: 0.42em;
             }
 
             .name-title {
@@ -404,8 +364,9 @@
 
         @media (max-width: 480px) {
             .season-name {
-                font-size: 1.8rem;
-                letter-spacing: 0.1em;
+                font-size: 1.4rem;
+                letter-spacing: 0.38em;
+                text-indent: 0.38em;
             }
 
             .social-links {
@@ -453,6 +414,7 @@
         #pixelCanvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             z-index: 1900; display: none; pointer-events: none;
+            image-rendering: pixelated; image-rendering: crisp-edges;  /* 最近邻放大 → 清晰方块, 不发虚(修 Retina 模糊) */
         }
         #cosmosFlash {
             position: fixed; inset: 0; z-index: 2500;
@@ -547,12 +509,6 @@
     </style>
 </head>
 <body>
-    <div class="loading-screen" id="loadingScreen">
-        <div class="loading-text">ENTERING JANE'S INNER WORLD</div>
-        <div class="loading-bar">
-            <div class="loading-progress" id="loadingProgress"></div>
-        </div>
-    </div>
 
     <div id="canvas-container"></div>
 
@@ -874,9 +830,6 @@
             
             // 添加季节点击切换
             setupSeasonDotClicks();
-
-            // Loading simulation
-            simulateLoading();
 
             // 初始构图，并在地址栏/内置浏览器 UI 稳定后再校正一次
             onWindowResize();
@@ -3873,22 +3826,6 @@
             applyResponsiveFraming();
         }
 
-        function simulateLoading() {
-            let progress = 0;
-            const progressBar = document.getElementById('loadingProgress');
-            const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                    }, 500);
-                }
-                progressBar.style.width = progress + '%';
-            }, 100);
-        }
-
         // ============================================================
         // 宇宙缩放之旅: 树 → 星球(单棵树) → 黑洞 → 一维个人网站
         // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
@@ -3898,7 +3835,7 @@
         let planetMesh = null, planetAtmo = null, starField = null;
         let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
         let pixCanvas = null, pixCtx = null, pixSrc = null, pixTmp = null, pixCells = null, pixCaptured = false, pixNeedsCapture = false;
-        const PIX_BLOCK = 20;
+        const PIX_BLOCK = 20, PIX_GAP = 5;   // 方块间距 PIX_GAP → 看得出是一颗颗像素
         let planetTexSeason = -1;
         const seasonBgColor = new THREE.Color(0.95, 0.92, 0.93);
         let oneDActive = false, sitePos = 0, siteMax = 0;
@@ -3976,41 +3913,54 @@
             const tctx = pixTmp.getContext('2d');
             tctx.drawImage(pixSrc, 0, 0, cols, rows);
             const data = tctx.getImageData(0, 0, cols, rows).data;
+            const fract = (x) => x - Math.floor(x);
             const cells = [];
             for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
                 const i = (r * cols + c) * 4;
+                // 释放时刻 = 三角分布(两随机均值, 峰值~0.5) → 掉落数量"少→多→少", 像水流
+                const r1 = fract(Math.sin(c * 12.9898 + r * 78.233) * 43758.5453);
+                const r2 = fract(Math.sin(c * 39.346 + r * 11.135 + 4.7) * 24634.6345);
+                const tri = (r1 + r2) * 0.5;
+                const posBias = ((c / cols) + (r / rows)) / 2;                    // 轻微左上→右下倾向(不主导)
                 cells.push({
                     x: c * PIX_BLOCK, y: r * PIX_BLOCK,
                     color: `rgb(${data[i]},${data[i + 1]},${data[i + 2]})`,
-                    delay: ((c / cols) + (r / rows)) / 2   // 左上(0,0)最先 → 右下最后
+                    delay: clampN(tri + (posBias - 0.5) * 0.16, 0, 1)
                 });
             }
             pixCells = { cells, W, H };
             pixCaptured = true;
         }
 
-        // appearT 0→1: 由清晰逐渐像素化(整屏一起); collapseP 0→1: 方块逐个掉落
-        function drawPixels(appearT, collapseP) {
+        // coarsenT 0→1: 清晰画面渐变成粗像素(实心,无缝);
+        // gapT 0→1: 方块之间裂开缝隙 → 看得出是一颗颗像素;
+        // collapseP 0→1: 从左上角开始,一颗颗有节奏地往下掉,直到掉光。
+        function drawPixels(coarsenT, gapT, collapseP) {
             if (!pixCtx || !pixSrc || !pixSrc.width) return;
             const W = pixCanvas.width, H = pixCanvas.height;
             pixCtx.imageSmoothingEnabled = false;
-            if (collapseP <= 0.0001) {
-                // 渐进像素化: 方块尺寸 2 → PIX_BLOCK (越来越像素, 丝滑)
-                const bs = Math.max(2, lerpN(2, PIX_BLOCK, appearT));
+            pixCtx.clearRect(0, 0, W, H);
+            // 阶段1: 清晰 → 粗像素 (实心马赛克, 无缝, 平滑过渡)
+            if (gapT <= 0 && collapseP <= 0) {
+                const bs = Math.max(2, lerpN(4, PIX_BLOCK, coarsenT));
                 const cols = Math.max(1, Math.round(W / bs)), rows = Math.max(1, Math.round(H / bs));
                 pixTmp.width = cols; pixTmp.height = rows;
                 pixTmp.getContext('2d').drawImage(pixSrc, 0, 0, cols, rows);
-                pixCtx.clearRect(0, 0, W, H);
                 pixCtx.drawImage(pixTmp, 0, 0, cols, rows, 0, 0, W, H);
-            } else if (pixCells) {
-                // 坍塌: 每块保持原大小, 左上先塌, 重力加速下落
-                pixCtx.clearRect(0, 0, W, H);
-                for (const cell of pixCells.cells) {
-                    const lt = clampN((collapseP - cell.delay * 0.55) / 0.45, 0, 1);
-                    const fall = lt * lt * H * 1.3;
-                    pixCtx.fillStyle = cell.color;
-                    pixCtx.fillRect(cell.x, cell.y + fall, PIX_BLOCK + 1, PIX_BLOCK + 1);
-                }
+                return;
+            }
+            if (!pixCells) return;
+            // 阶段2: 缝隙张开 (gapT); 阶段3: 从左上逐颗下落 (collapseP)
+            const gap = PIX_GAP * (collapseP > 0 ? 1 : gapT);
+            const inner = PIX_BLOCK - gap, off = gap / 2;
+            const RISE = 0.22;                            // 单颗下落历时; cell.delay = 释放时刻(三角分布)
+            const trigger = collapseP * (1 + RISE);       // 扫过所有释放时刻; 数量自然少→多→少
+            for (const cell of pixCells.cells) {
+                const lt = collapseP > 0 ? clampN((trigger - cell.delay) / RISE, 0, 1) : 0;
+                const fall = lt * lt * H * 1.5;          // 重力加速
+                if (cell.y + fall > H) continue;          // 已掉出屏幕
+                pixCtx.fillStyle = cell.color;
+                pixCtx.fillRect(cell.x + off, cell.y + off + fall, inner, inner);
             }
         }
 
@@ -4240,9 +4190,10 @@
                     if (tree) tree.visible = false;
                     if (starField) starField.visible = false;   // 天空/星星已一并变成方块
                     if (pixCanvas) { pixCanvas.style.display = 'block'; pixCanvas.style.opacity = '1'; }
-                    const appearT = smooth(seg(j, 0.71, 0.79));  // 清晰 → 像素方块
-                    const collapseP = seg(j, 0.80, 0.96);        // 方块逐个掉落
-                    drawPixels(appearT, collapseP);
+                    const coarsenT = smooth(seg(j, 0.71, 0.76));  // 清晰 → 粗像素
+                    const gapT = smooth(seg(j, 0.76, 0.81));      // 裂开缝隙 → 一颗颗像素
+                    const collapseP = seg(j, 0.81, 0.965);        // 从左上逐颗往下掉, 掉光
+                    drawPixels(coarsenT, gapT, collapseP);
                 }
             } else {
                 pixCaptured = false; pixNeedsCapture = false;    // 倒带回去: 复原 3D
@@ -4295,7 +4246,7 @@
                     <h1 class="fp-hero">Hey, I'm Jane.</h1>
                     <div class="fp-lede">
                         <p>I'm a sophomore at Columbia University studying Computer Science and Cognitive Science.</p>
-                        <p>I build web products, research tools, and AI-native applications — with a focus on software engineering and a growing interest in machine learning.</p>
+                        <p>I build web products, research tools, and AI native apps — with a focus on software engineering and a growing interest in machine learning.</p>
                         <p>I'm a <b>fast shipper</b> and a <b>creative thinker</b> — I care about, and think about, everything in the world.</p>
                         <p>I'm currently interning at <b>Martini</b>, a YC-backed AI video startup, where I work across product, documentation, education, and AI creation workflows.</p>
                         <p class="fp-seek">I'm looking for <b>software engineering internships</b>, especially roles related to AI products, applied ML, developer tools, or human-centered computing.</p>
