@@ -40,6 +40,7 @@
             height: 100dvh;
             z-index: 1;
         }
+        #canvas-container canvas { display: block; }   /* 去掉 inline canvas 底部基线缝隙(否则露出深色 body → 黑条) */
 
         .ui-overlay {
             position: fixed;
