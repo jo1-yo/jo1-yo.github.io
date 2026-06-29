@@ -6,7 +6,7 @@
     <title>SUAB - Jane Zhang</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* Refined rose palette — sophisticated, not candy */
@@ -24,6 +24,7 @@
 
             /* Warm neutrals */
             --cream:    #fffafb;
+            --canvas:   #fdf4f8;   /* uniform page + overscroll background */
             --paper:    #ffffff;
             --ink:      #2a2026;   /* headings */
             --body:     #5c5159;   /* body copy */
@@ -47,24 +48,31 @@
             box-sizing: border-box;
         }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+            min-height: 100%;
+            /* ONE uniform flat color fills both the page canvas and the elastic overscroll
+               gap. Because it's a single solid color (no gradient), pulling the page up or
+               down past the edge reveals the exact same color as the page background. */
+            background-color: var(--canvas);
+        }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             line-height: 1.7;
             color: var(--body);
-            background-color: var(--cream);
+            background: transparent;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
         h1, h2, h3 {
-            font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+            font-family: 'Poppins', 'Inter', sans-serif;
             color: var(--ink);
             font-weight: 500;
-            letter-spacing: -0.01em;
-            line-height: 1.12;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
         }
 
         a { color: inherit; }
@@ -91,80 +99,52 @@
         /* ---------- Home link ---------- */
         .home-link {
             position: fixed;
-            top: 26px;
-            left: 32px;
+            top: 22px;
+            right: 26px;
             z-index: 200;
         }
 
         .home-link a {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            color: var(--ink);
-            text-decoration: none;
-            background: rgba(255, 255, 255, 0.82);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            padding: 0.55rem 1.05rem;
-            border-radius: 100px;
-            border: 1px solid var(--line);
-            box-shadow: var(--shadow-sm);
+            display: block;
+            width: 66px;
+            height: 66px;
             transition: var(--transition);
         }
 
-        .home-link a::before {
-            content: "←";
-            font-size: 1rem;
-            color: var(--rose-500);
-            transition: transform 0.4s var(--ease);
+        .home-link a img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 5px 12px rgba(140, 47, 79, 0.20));
         }
 
         .home-link a:hover {
-            color: var(--rose-600);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .home-link a:hover::before {
-            transform: translateX(-3px);
+            transform: translateY(-2px) scale(1.06);
         }
 
         /* ---------- Hero ---------- */
         header {
             position: relative;
             text-align: center;
-            padding: 11rem 0 7rem;
+            padding: 3rem 0 3rem;
             overflow: hidden;
-            background:
-                radial-gradient(1100px 520px at 50% -10%, var(--rose-100) 0%, rgba(251,232,238,0) 70%),
-                radial-gradient(800px 400px at 85% 110%, var(--rose-50) 0%, rgba(253,244,246,0) 70%),
-                var(--cream);
-            border-bottom: 1px solid var(--line);
+            /* hero glow lives only in the header now, so the global canvas stays a single
+               flat color that matches the overscroll color exactly */
+            background: radial-gradient(1200px 640px at 50% -120px, var(--rose-100) 0%, rgba(251, 232, 238, 0) 62%);
         }
 
-        /* soft floating accent orbs */
-        header::before,
-        header::after {
+        /* soft floating accent orb */
+        header::before {
             content: "";
             position: absolute;
             border-radius: 50%;
             filter: blur(8px);
-            opacity: 0.5;
+            opacity: 0.45;
             pointer-events: none;
-        }
-        header::before {
             width: 220px; height: 220px;
-            top: 14%; left: -60px;
+            top: 12%; left: -70px;
             background: radial-gradient(circle at 30% 30%, var(--rose-200), rgba(246,210,221,0));
-        }
-        header::after {
-            width: 300px; height: 300px;
-            bottom: -90px; right: -70px;
-            background: radial-gradient(circle at 50% 50%, var(--rose-100), rgba(251,232,238,0));
         }
 
         .header-content {
@@ -175,37 +155,14 @@
             padding: 0 40px;
         }
 
-        .header-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.55rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: var(--rose-600);
-            background: var(--paper);
-            border: 1px solid var(--rose-200);
-            padding: 0.5rem 1.1rem;
-            border-radius: 100px;
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 2rem;
-        }
-        .header-badge .dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: var(--rose-500);
-            box-shadow: 0 0 0 4px var(--rose-100);
-        }
-
         h1 {
-            font-size: clamp(2.6rem, 6.2vw, 4.6rem);
-            font-weight: 500;
-            letter-spacing: -0.025em;
+            font-size: clamp(2.5rem, 6vw, 4.4rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
             margin-bottom: 1.4rem;
             color: var(--ink);
         }
-        h1 .accent { color: var(--rose-500); font-style: italic; font-weight: 400; }
+        h1 .accent { color: var(--rose-500); font-weight: 500; }
 
         .tagline {
             font-size: clamp(1.05rem, 2.2vw, 1.3rem);
@@ -217,17 +174,16 @@
 
         /* ---------- Sections ---------- */
         .section {
-            padding: 6.5rem 0;
+            padding: 2rem 0;
         }
-        .section.tinted {
-            background:
-                linear-gradient(180deg, var(--rose-50), var(--cream) 60%);
+        .section:first-of-type {
+            padding-top: 1rem;
         }
 
         .section-head {
             text-align: center;
             max-width: 680px;
-            margin: 0 auto 4rem;
+            margin: 0 auto 2rem;
         }
         .section-head .eyebrow { margin-bottom: 0.85rem; }
         .section-title {
@@ -262,11 +218,11 @@
         .story-text p:last-child { margin-bottom: 0; }
 
         .quote {
-            font-family: 'Fraunces', Georgia, serif;
+            font-family: 'Poppins', 'Inter', sans-serif;
             font-style: italic;
-            font-weight: 400;
-            font-size: clamp(1.35rem, 2.6vw, 1.7rem);
-            line-height: 1.4;
+            font-weight: 500;
+            font-size: clamp(1.2rem, 2.3vw, 1.5rem);
+            line-height: 1.5;
             color: var(--ink);
             margin: 2.2rem 0;
             padding: 0.4rem 0 0.4rem 1.6rem;
@@ -298,121 +254,153 @@
         }
         .story-image:hover img { transform: scale(1.05); }
 
-        /* ---------- Branches (logo boxes) ---------- */
-        .logo-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 32px;
-            max-width: 920px;
-            margin: 0 auto;
-        }
-
-        .logo-box {
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
-            padding: 2.6rem 2.2rem 2.2rem;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-        }
-        .logo-box:hover {
-            transform: translateY(-6px);
+        /* Certificate — show the whole document, no frame/mat */
+        .story-image.is-document {
+            aspect-ratio: auto;
+            background: transparent;
             box-shadow: var(--shadow-md);
-            border-color: var(--rose-200);
+            max-width: 460px;
+            margin-inline: auto;
         }
+        .story-image.is-document::after { display: none; }
+        .story-image.is-document img {
+            height: auto;
+            object-fit: contain;
+        }
+        .story-image.is-document:hover img { transform: none; }
 
-        .logo-image {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 1.6rem;
-            border-radius: 50%;
-            background: var(--rose-50);
-            border: 1px solid var(--rose-100);
+        /* ---------- Branches ---------- */
+        .branches {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 18px;
-            transition: var(--transition);
+            max-width: 880px;
+            margin: 0 auto;
         }
-        .logo-box:hover .logo-image {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-sm);
+        .branch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 52px;
+            flex: 1;
         }
-        .logo-image img {
-            width: 100%;
-            height: 100%;
+        .branch {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+        }
+        .branch-logo {
+            width: 220px;
+            height: 220px;
+            flex-shrink: 0;
+            border-radius: 50%;
             object-fit: contain;
-            display: block;
-        }
-
-        .logo-title {
-            font-size: 1.45rem;
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.85rem;
-        }
-        .logo-box > p {
-            margin-bottom: 1.5rem;
-            flex-grow: 1;
-            color: var(--body);
-            font-size: 1rem;
-        }
-
-        .wechat-box {
-            display: inline-block;
             background: var(--rose-50);
             border: 1px solid var(--rose-100);
-            padding: 0.85rem 1.4rem;
-            border-radius: var(--radius-sm);
-            margin: 0 auto;
-            transition: var(--transition);
-            font-size: 0.92rem;
-            color: var(--rose-700);
-            text-align: center;
-            line-height: 1.45;
+            padding: 16px;
         }
-        .wechat-box p { margin: 0; }
-        .wechat-box p:first-child { font-weight: 600; color: var(--rose-600); }
-        .wechat-box:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-sm);
-            border-color: var(--rose-200);
+        .branch-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-bottom: 0.25rem;
+        }
+        .branch-diff {
+            color: var(--body);
+            font-size: 1.02rem;
+            margin-bottom: 0.45rem;
+        }
+        .branch-wechat {
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            color: var(--rose-600);
         }
 
-        /* ---------- Achievements grid ---------- */
+        /* ---------- Past Events — full-bleed horizontal scroller ---------- */
         .achievements {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-            max-width: var(--maxw);
-            margin: 0 auto;
+            display: flex;
+            gap: 44px;
+            overflow-x: auto;
+            scroll-behavior: auto;
+            -webkit-overflow-scrolling: touch;
+            /* a centered band, a bit wider than the text column, framed by EQUAL margins
+               on both sides (capped so they never get too wide). Cards fill it edge to
+               edge — no dead gap at either end. */
+            width: min(calc(100vw - 120px), 1500px);
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 14px 2px 36px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--rose-200) transparent;
+        }
+        .achievements::-webkit-scrollbar { height: 7px; }
+        .achievements::-webkit-scrollbar-track { background: transparent; }
+        .achievements::-webkit-scrollbar-thumb {
+            background: var(--rose-200);
+            border-radius: 100px;
+        }
+        .achievements::-webkit-scrollbar-thumb:hover { background: var(--rose-300); }
+
+        /* gallery speed control */
+        .events-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 26px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+        }
+        .events-controls input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 170px;
+            height: 4px;
+            border-radius: 100px;
+            background: var(--rose-200);
+            outline: none;
+            cursor: pointer;
+        }
+        .events-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 17px; height: 17px;
+            border-radius: 50%;
+            background: var(--rose-500);
+            border: 2px solid #fff;
+            box-shadow: var(--shadow-sm);
+        }
+        .events-controls input[type="range"]::-moz-range-thumb {
+            width: 17px; height: 17px;
+            border-radius: 50%;
+            background: var(--rose-500);
+            border: 2px solid #fff;
         }
 
         .achievement-card {
+            flex: 0 0 clamp(280px, 26vw, 372px);
             background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: var(--radius);
+            border: 1px solid rgba(42, 32, 38, 0.03);
+            border-radius: 24px;
             overflow: hidden;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 14px 40px rgba(140, 47, 79, 0.06);
             display: flex;
             flex-direction: column;
-            transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.45s var(--ease);
+            transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
         }
         .achievement-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--rose-200);
+            transform: translateY(-6px);
+            box-shadow: 0 26px 56px rgba(140, 47, 79, 0.12);
         }
 
         .achievement-image {
             position: relative;
             width: 100%;
-            aspect-ratio: 4 / 3;
+            aspect-ratio: 3 / 2;
             overflow: hidden;
-            background: var(--rose-100);
+            background: var(--rose-50);
         }
         .achievement-image::after {
             content: "";
@@ -433,7 +421,7 @@
         .achievement-card:hover .achievement-image img { transform: scale(1.07); }
 
         .achievement-content {
-            padding: 1.7rem 1.7rem 1.9rem;
+            padding: 1.6rem 1.65rem 1.8rem;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
@@ -467,9 +455,9 @@
         .cta-section {
             position: relative;
             overflow: hidden;
-            padding: 6rem 0;
+            padding: 6rem 0 3.4rem;
             text-align: center;
-            background: linear-gradient(135deg, var(--rose-600), var(--rose-500) 60%, var(--rose-400));
+            background: linear-gradient(135deg, var(--rose-500), var(--rose-400) 60%, var(--rose-300));
             color: #fff;
         }
         .cta-section::before {
@@ -494,52 +482,31 @@
             margin-bottom: 1.1rem;
         }
         .cta-content p {
-            font-size: 1.15rem;
+            font-size: 1.12rem;
             line-height: 1.75;
-            color: rgba(255,255,255,0.92);
+            color: rgba(255,255,255,0.94);
+            max-width: 520px;
             margin: 0 auto;
+            text-align: left;
         }
-
-        /* ---------- Footer ---------- */
-        footer {
-            background-color: var(--ink);
-            color: rgba(255,255,255,0.78);
-            text-align: center;
-            padding: 3.5rem 0;
-            font-size: 0.95rem;
-        }
-        footer .brand {
-            font-family: 'Fraunces', Georgia, serif;
-            font-size: 1.25rem;
+        .cta-content a {
             color: #fff;
-            margin-bottom: 0.6rem;
-        }
-        footer p { margin-bottom: 0.5rem; }
-        footer p:last-child { margin-bottom: 0; color: rgba(255,255,255,0.55); }
-
-        /* ---------- Back to top ---------- */
-        .back-to-top {
-            position: fixed;
-            bottom: 26px;
-            right: 26px;
-            width: 48px;
-            height: 48px;
-            background: var(--rose-500);
-            color: #fff;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-            box-shadow: var(--shadow-md);
-            font-size: 1.2rem;
-            z-index: 150;
+            font-weight: 600;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: rgba(255,255,255,0.55);
             transition: var(--transition);
         }
-        .back-to-top:hover {
-            background: var(--rose-600);
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+        .cta-content a:hover { text-decoration-color: #fff; }
+
+        /* ---------- CTA copyright ---------- */
+        .cta-copyright {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            margin: 3.2rem auto 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.72);
         }
 
         /* ---------- Scroll reveal ---------- */
@@ -561,12 +528,13 @@
 
         /* ---------- Responsive ---------- */
         @media (max-width: 980px) {
-            .achievements { grid-template-columns: repeat(2, 1fr); }
+            .achievement-card { flex-basis: clamp(280px, 64vw, 360px); }
         }
 
         @media (max-width: 768px) {
             .container { padding: 0 22px; }
-            .home-link { top: 16px; left: 16px; }
+            .home-link { top: 14px; right: 14px; }
+            .home-link a { width: 54px; height: 54px; }
 
             header { padding: 8.5rem 0 5rem; }
             .header-content { padding: 0 22px; }
@@ -582,9 +550,14 @@
             .story-container.reverse .story-image { order: 2; }
             .story-image { aspect-ratio: 16 / 10; }
 
-            .logo-container { grid-template-columns: 1fr; gap: 24px; max-width: 460px; }
+            .branches { gap: 20px; max-width: 460px; }
+            .branches .brace { width: 28px; }
+            .branch { gap: 18px; }
+            .branch-list { gap: 38px; }
+            .branch-logo { width: 84px; height: 84px; padding: 9px; }
 
-            .achievements { grid-template-columns: 1fr; gap: 24px; max-width: 440px; }
+            .achievements { gap: 18px; padding: 10px 22px 26px; margin: 0 -22px; scroll-padding-left: 22px; }
+            .achievement-card { flex-basis: 82vw; }
 
             .quote { font-size: 1.3rem; margin: 1.8rem 0; }
 
@@ -598,14 +571,15 @@
     </style>
 </head>
 <body>
-    <!-- Home link back to portfolio -->
+    <!-- Avatar — links back to portfolio -->
     <div class="home-link">
-        <a href="index.html">Jane Zhang</a>
+        <a href="index.html" aria-label="Back to Jane Zhang's portfolio">
+            <img src="images/jane-avatar.png" alt="Jane Zhang">
+        </a>
     </div>
 
     <header>
         <div class="header-content">
-            <span class="header-badge"><span class="dot"></span>Youth-led nonprofit</span>
             <h1>Student Union<br>Against <span class="accent">Bullying</span></h1>
             <p class="tagline">A nonprofit officially registered in Massachusetts</p>
         </div>
@@ -614,17 +588,16 @@
     <section class="section">
         <div class="container">
             <div class="section-head reveal">
-                <span class="eyebrow">Why we exist</span>
                 <h2 class="section-title">Our Mission</h2>
             </div>
             <div class="story-container reveal">
                 <div class="story-text">
-                    <p>Everyone deserves to grow up in a safe and respectful environment. However, I personally experienced the harm and loneliness caused by bullying. Though painful, that experience became the driving force behind founding the Student Union Against Bullying (SUAB).</p>
-                    <p class="quote">When we choose to stand up, it's not just for ourselves, but for those who continue to suffer in silence.</p>
-                    <p>Bullying is not just a personal issue; it's a social problem. Through SUAB, I hope to create a platform where every voice that has been hurt can be heard, and every person who needs help can receive support.</p>
+                    <p>Everyone deserves to grow up in a safe and respectful environment. The president of SUAB knew the harm and loneliness of bullying firsthand — and that painful experience became the driving force behind leading the Student Union Against Bullying (SUAB).</p>
+                    <p class="quote">When we find the courage to speak up, we do it not just for ourselves, but for everyone still suffering in silence.</p>
+                    <p>Bullying isn't only a personal struggle; it's a social problem. Through SUAB, that conviction grew into a platform where every voice that has been hurt can be heard, and everyone who needs help can find support.</p>
                 </div>
-                <div class="story-image">
-                    <img src="images/mission-illustration.jpg" alt="Anti-bullying concept illustration">
+                <div class="story-image is-document">
+                    <img src="images/mission-illustration.jpg" alt="SUAB Certificate of Good Standing from the Commonwealth of Massachusetts">
                 </div>
             </div>
         </div>
@@ -633,44 +606,28 @@
     <section class="section tinted about-section">
         <div class="container">
             <div class="section-head reveal">
-                <span class="eyebrow">Who we are</span>
                 <h2 class="section-title">About SUAB</h2>
-                <p class="lede">SUAB operates with two branches, each with its own focus but united in our mission against bullying.</p>
+                <p class="lede">Two branches, united by one mission.</p>
             </div>
 
-            <div class="logo-container">
-                <div class="logo-box reveal">
-                    <div class="logo-image">
-                        <img src="images/suab-main-logo.png" alt="SUAB Main Organization Logo">
+            <div class="branches reveal">
+                <div class="branch-list">
+                    <div class="branch">
+                        <img class="branch-logo" src="images/suab-main-logo.png" alt="SUAB logo">
+                        <div>
+                            <h3 class="branch-name">SUAB</h3>
+                            <p class="branch-diff">The founding U.S. chapter, registered in Massachusetts.</p>
+                            <p class="branch-wechat">WeChat: SUAB · ID: KENTSUAB</p>
+                        </div>
                     </div>
-                    <h3 class="logo-title">SUAB</h3>
-                    <p>The Student Union Against Bullying is a nonprofit officially registered in Massachusetts, dedicated to eliminating bullying through education, advocacy, and support.</p>
-                    <div class="wechat-box">
-                        <p>WeChat: 反霸凌社SUAB</p>
-                        <p>ID: KENTSUAB</p>
+                    <div class="branch">
+                        <img class="branch-logo" src="images/suab-beijing-logo.png" alt="SUAB Beijing Branch logo">
+                        <div>
+                            <h3 class="branch-name">SUAB Beijing Branch</h3>
+                            <p class="branch-diff">A coalition of a dozen-plus schools across Beijing.</p>
+                            <p class="branch-wechat">WeChat: SUAB Hutong Guardian · ID: gh_6172ea08af2c</p>
+                        </div>
                     </div>
-                </div>
-
-                <div class="logo-box reveal">
-                    <div class="logo-image">
-                        <img src="images/suab-beijing-logo.png" alt="SUAB Beijing Branch Logo">
-                    </div>
-                    <h3 class="logo-title">SUAB Beijing Branch</h3>
-                    <p>The Beijing branch consists of more than a dozen schools in Beijing, focusing on eliminating campus bullying in the Beijing area through collaborative initiatives.</p>
-                    <div class="wechat-box">
-                        <p>WeChat: SUAB胡同守望者 (Hutong Guardian)</p>
-                        <p>ID: gh_6172ea08af2c</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="story-container reverse reveal" style="margin-top: 5rem;">
-                <div class="story-text">
-                    <p>As the president of both the main SUAB organization and its Beijing branch, I lead teams that conduct a series of activities aimed at raising public awareness about bullying issues, providing support for victims, and fostering a culture of respect and inclusion.</p>
-                    <p>We believe that only through collective effort can we create a world without bullying.</p>
-                </div>
-                <div class="story-image">
-                    <img src="images/suab-team.jpg" alt="SUAB team working together">
                 </div>
             </div>
         </div>
@@ -679,10 +636,19 @@
     <section class="section">
         <div class="container">
             <div class="section-head reveal">
-                <span class="eyebrow">In action</span>
-                <h2 class="section-title">Our Achievements</h2>
+                <h2 class="section-title">Past Events</h2>
             </div>
             <div class="achievements">
+                <div class="achievement-card reveal">
+                    <div class="achievement-image">
+                        <img src="images/suab-team.jpg" alt="Students at the anti-bullying debate holding certificates" loading="lazy" decoding="async" width="834" height="712">
+                    </div>
+                    <div class="achievement-content">
+                        <h3 class="achievement-title">Anti-Bullying Debate</h3>
+                        <p>An anti-bullying debate hosted by the International Department of the High School Affiliated to Peking University, where students argued questions such as "Are bullies truly guilty — and how should that guilt be defined?"</p>
+                    </div>
+                </div>
+
                 <div class="achievement-card reveal">
                     <div class="achievement-image">
                         <img src="images/charity-sales.jpg" alt="Charity sales at schools" loading="lazy" decoding="async" width="539" height="561">
@@ -748,21 +714,11 @@
 
     <section class="cta-section">
         <div class="container cta-content reveal">
-            <span class="eyebrow">Get involved</span>
             <h2>Join Us</h2>
-            <p>Follow our WeChat public accounts and visit our website to learn more about anti-bullying information and activities. Together, we can create a safer environment for everyone.</p>
+            <p>Have a story to share, or want to get involved? Leave a comment or reach out at <a href="mailto:janezhang555l@gmail.com">janezhang555l@gmail.com</a>.</p>
         </div>
+        <p class="cta-copyright">© 2026 Student Union Against Bullying. All Rights Reserved.</p>
     </section>
-
-    <footer>
-        <div class="container">
-            <p class="brand">Student Union Against Bullying</p>
-            <p>© 2025 Student Union Against Bullying. All Rights Reserved.</p>
-            <p>An organization dedicated to creating a world without bullying</p>
-        </div>
-    </footer>
-
-    <a href="#" class="back-to-top" aria-label="Back to top">↑</a>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -783,13 +739,50 @@
                 reveals.forEach(function (el) { el.classList.add('animate'); });
             }
 
-            // Smooth scroll for back-to-top button
-            var topBtn = document.querySelector('.back-to-top');
-            if (topBtn) {
-                topBtn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Past Events — auto-rotating gallery with manual speed control
+            var track = document.querySelector('.achievements');
+            var speedInput = document.getElementById('events-speed');
+            if (track && speedInput && track.children.length) {
+                var count = track.children.length;
+                for (var i = 0; i < count; i++) {
+                    var clone = track.children[i].cloneNode(true);
+                    clone.classList.remove('reveal');
+                    clone.classList.add('animate');
+                    clone.setAttribute('aria-hidden', 'true');
+                    track.appendChild(clone);
+                }
+
+                var loopWidth = track.children[count].offsetLeft - track.children[0].offsetLeft;
+                window.addEventListener('resize', function () {
+                    loopWidth = track.children[count].offsetLeft - track.children[0].offsetLeft;
                 });
+
+                var speed = parseFloat(speedInput.value); // px per second
+                var paused = false;
+                var carry = 0;
+                var last = null;
+
+                speedInput.addEventListener('input', function () { speed = parseFloat(speedInput.value); });
+                track.addEventListener('pointerenter', function () { paused = true; });
+                track.addEventListener('pointerleave', function () { paused = false; });
+
+                function tick(ts) {
+                    if (last === null) last = ts;
+                    var dt = (ts - last) / 1000;
+                    last = ts;
+                    if (!paused && speed > 0 && loopWidth > 0) {
+                        carry += speed * dt;
+                        var whole = Math.floor(carry);
+                        if (whole > 0) {
+                            carry -= whole;
+                            var next = track.scrollLeft + whole;
+                            if (next >= loopWidth) next -= loopWidth;
+                            track.scrollLeft = next;
+                        }
+                    }
+                    requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
             }
         });
     </script>
