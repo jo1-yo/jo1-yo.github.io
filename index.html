@@ -33,14 +33,13 @@
 
         #canvas-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            height: 100dvh;
+            inset: 0;           /* pin to all four edges → always exactly the viewport, with
+                                   no 100dvh / sub-pixel gap that could expose a bar at the bottom */
             z-index: 1;
         }
-        #canvas-container canvas { display: block; }   /* 去掉 inline canvas 底部基线缝隙(否则露出深色 body → 黑条) */
+        /* display:block kills the inline-baseline gap; width/height 100% force the canvas to
+           fill the container even if the WebGL drawing buffer is a hair short → no bottom seam */
+        #canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
 
         .ui-overlay {
             position: fixed;
