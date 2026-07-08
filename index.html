@@ -1740,11 +1740,18 @@
                 color: 0x000000,
                 transparent: true,
                 opacity: 0.22,
-                depthWrite: false
+                depthWrite: false,
+                // 相机 near/far 是 0.1/1000, 深度精度在这个场景常见的 10-30 距离上
+                // 压得很扁; 之前只留 0.01 世界单位的间隙, 在桌面浏览器上凑巧没事,
+                // 但在手机 GPU (深度缓冲精度通常更低) 上会跟地面 z-fighting 而"消失"。
+                // polygonOffset 从深度缓冲层面把它推到地面前面, 不再依赖这点几何间隙。
+                polygonOffset: true,
+                polygonOffsetFactor: -4,
+                polygonOffsetUnits: -4
             });
             const shadow = new THREE.Mesh(shadowGeom, shadowMat);
             shadow.rotation.x = -Math.PI / 2;
-            shadow.position.y = -0.09; // flower 组本身位于地面上方 0.1, 这里贴回地面附近
+            shadow.position.y = -0.06; // flower 组本身位于地面上方 0.1, 这里贴回地面附近(留更大间隙)
             flower.add(shadow);
 
             // Petals
