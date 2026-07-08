@@ -89,6 +89,27 @@
             100% { opacity: 0; transform: translateX(-50%) scale(1); }
         }
 
+        /* 很小的一次性提示: 告诉用户可以上滑进入宇宙之旅(手机端捏合手势不够直观) */
+        .swipe-hint {
+            position: fixed;
+            top: 96px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            color: rgba(255,255,255,0.55);
+            text-transform: uppercase;
+            text-shadow: 0 1px 6px rgba(0,0,0,0.35);
+            white-space: nowrap;
+            animation: swipeHintBob 1.8s ease-in-out infinite;
+        }
+
+        @keyframes swipeHintBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.4; }
+            50% { transform: translateX(-50%) translateY(-4px); opacity: 0.8; }
+        }
+
         .hint-text {
             position: fixed;
             bottom: 60px;
@@ -536,6 +557,8 @@
         <div class="season-name summer" id="summerTitle">Summer</div>
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
+
+    <div class="swipe-hint" id="swipeHint">Swipe up to explore &#8593;</div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
 
@@ -1707,6 +1730,20 @@
             const flower = new THREE.Group();
             const colors = [0xff69b4, 0xffb6c1, 0xffc0cb, 0xffffff, 0xffff99];
             const color = colors[Math.floor(Math.random() * colors.length)];
+
+            // 花朵自带的贴地圆形软影 —— 不依赖实时阴影贴图(覆盖范围有限, 只有离树干近的
+            // 花才会落在树冠的阴影里), 保证每一朵花都有跟自己对应的影子。
+            const shadowGeom = new THREE.CircleGeometry(0.22, 12);
+            const shadowMat = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.22,
+                depthWrite: false
+            });
+            const shadow = new THREE.Mesh(shadowGeom, shadowMat);
+            shadow.rotation.x = -Math.PI / 2;
+            shadow.position.y = -0.09; // flower 组本身位于地面上方 0.1, 这里贴回地面附近
+            flower.add(shadow);
 
             // Petals
             for (let i = 0; i < 5; i++) {
@@ -3194,6 +3231,7 @@
 
         let touchStartSingleX = 0;
         let touchStartSingleY = 0;
+        let touchLastSingleY = 0;
         let touchStartTime = 0;
         let touchLastDist = 0;
 
@@ -3203,6 +3241,7 @@
             if (e.touches.length === 1) {
                 touchStartSingleX = e.touches[0].clientX;
                 touchStartSingleY = e.touches[0].clientY;
+                touchLastSingleY = e.touches[0].clientY;
                 touchStartTime = Date.now();
             }
             if (e.touches.length === 2) {
@@ -3215,6 +3254,20 @@
         function onTouchMove(e) {
             // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
             if (oneDActive) return;
+
+            // 单指上滑 → 宇宙缩放之旅 (和电脑端滚轮/触控板效果一致); 双指捏合手势不受影响。
+            // 小幅抖动/点击(<8px)不触发, 避免点击作品时误触发 journey。
+            if (e.touches.length === 1) {
+                const y = e.touches[0].clientY;
+                const dY = y - touchLastSingleY;
+                touchLastSingleY = y;              // 每帧更新 → 丝滑, 和双指捏合一致
+                if (Math.abs(y - touchStartSingleY) > 8) {
+                    e.preventDefault();
+                    journeyTarget = clampN(journeyTarget - dY * 0.0052, 0, 1);
+                }
+                return;
+            }
+
             if (e.touches.length !== 2) return;
             e.preventDefault();
             const dist = pinchDist(e);
@@ -3554,10 +3607,23 @@
             });
 
             // Autumn elements
+            // 秋天入场时, 把叶子随机撒在整条下落路径的各个高度上(而非全部堆在树冠顶端),
+            // 让它们看起来"本来就正在飘落"的稳定状态, 而不是一开场就一股脑往下倒。
+            const enteringAutumn = currentSeason === 2 && fallingLeaves.length && !fallingLeaves[0].visible;
             fallingLeaves.forEach(l => {
                 l.visible = currentSeason === 2;
             });
-            
+            if (enteringAutumn) {
+                fallingLeaves.forEach(l => {
+                    const a = Math.random() * Math.PI * 2;
+                    const r = 2 + Math.random() * 7;
+                    l.position.x = Math.cos(a) * r;
+                    l.position.z = Math.sin(a) * r;
+                    l.position.y = Math.random() * l.userData.startY;
+                    l.userData.startX = l.position.x;
+                });
+            }
+
             // 河流及河岸 (秋季)
             scene.children.forEach(child => {
                 if (child.userData.type === 'river') {
@@ -4124,7 +4190,7 @@
         }
 
         function setTreeUIOpacity(o) {
-            ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
+            ['.season-indicator', '.swipe-hint', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
                 document.querySelectorAll(s).forEach(el => {
                     el.style.opacity = o;
                     el.style.pointerEvents = o < 0.5 ? 'none' : '';
@@ -4180,6 +4246,26 @@
             else if (j < 0.66) dist = lerpN(56, 95, smooth(seg(j, 0.30, 0.66)));
             else dist = 95;
             controls.minDistance = controls.maxDistance = dist;
+
+            // 旅程展开后禁止再旋转(手机单指上滑同时也会被 OrbitControls 当成旋转,
+            // 一次长滑动会把视角转到底, 变成从下方仰视星球); 且把残留的旋转角度拉回"平视",
+            // 只保留左右方位角, 不管之前抬头/低头看树看到了什么角度。
+            controls.enableRotate = j < 0.08;
+            {
+                const offset = camera.position.clone().sub(controls.target);
+                const r = offset.length();
+                if (r > 0.001) {
+                    const theta = Math.atan2(offset.x, offset.z);
+                    const curPhi = Math.acos(clampN(offset.y / r, -1, 1));
+                    const levelBlend = smooth(seg(j, 0, 0.18));
+                    const phi = lerpN(curPhi, Math.PI / 2, levelBlend);
+                    camera.position.set(
+                        controls.target.x + dist * Math.sin(phi) * Math.sin(theta),
+                        controls.target.y + dist * Math.cos(phi),
+                        controls.target.z + dist * Math.sin(phi) * Math.cos(theta)
+                    );
+                }
+            }
 
             // 背景/雾/星空: 地面卷起时天空渐暗进入太空
             const space = smooth(seg(j, 0.42, 0.64));
@@ -4254,9 +4340,11 @@
                     if (tree) tree.visible = false;
                     if (starField) starField.visible = false;   // 天空/星星已一并变成方块
                     if (pixCanvas) { pixCanvas.style.display = 'block'; pixCanvas.style.opacity = '1'; }
-                    const coarsenT = smooth(seg(j, 0.71, 0.76));  // 清晰 → 粗像素
-                    const gapT = smooth(seg(j, 0.76, 0.81));      // 裂开缝隙 → 一颗颗像素
-                    const collapseP = seg(j, 0.81, 0.965);        // 从左上逐颗往下掉, 掉光
+                    const coarsenT = smooth(seg(j, 0.71, 0.77));  // 清晰 → 粗像素
+                    const gapT = smooth(seg(j, 0.77, 0.85));      // 裂开缝隙 → 一颗颗像素
+                    // 0.85–0.93 之间 gapT 已经是 1、collapseP 还是 0 → 马赛克完整定住不动,
+                    // 给用户足够时间看清这一帧, 不再是转瞬即逝。
+                    const collapseP = seg(j, 0.93, 0.975);        // 从左上逐颗往下掉, 掉光
                     drawPixels(coarsenT, gapT, collapseP);
                 }
             } else {
@@ -4270,10 +4358,10 @@
 
             // 塌完 → 暖炭微光 → 作品集页
             const flash = document.getElementById('cosmosFlash');
-            if (flash) flash.style.opacity = smooth(seg(j, 0.93, 0.97)) * (1 - smooth(seg(j, 0.985, 1.0)));
+            if (flash) flash.style.opacity = smooth(seg(j, 0.96, 0.978)) * (1 - smooth(seg(j, 0.99, 1.0)));
             const canvasC = document.getElementById('canvas-container');
             if (canvasC) canvasC.style.opacity = pixCaptured ? '0' : '1';
-            setOneDActive(j >= 0.97);
+            setOneDActive(j >= 0.978);
         }
 
         // 构建坍塌后的白色个人网站 (极简高级)
