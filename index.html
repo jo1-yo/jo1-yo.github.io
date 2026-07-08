@@ -96,19 +96,20 @@
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 700;
             letter-spacing: 0.18em;
             color: #fff;
             text-transform: uppercase;
-            /* 之前只有一层弱阴影 + 55% 透明度, 在春/夏/秋这几个偏浅色的天空背景上
-               基本看不清; 改用跟 .hint-text 一样的双层深色阴影撑出对比度。 */
-            text-shadow: 0 0 10px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.5);
+            /* 上一版还是太淡: 加粗、加大字号, 阴影再叠厚一层, 亮度下限也提高,
+               保证在浅色天空背景上依然扎实、不会糊成一团灰白。 */
+            text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.75), 0 2px 4px rgba(0,0,0,0.7);
             white-space: nowrap;
             animation: swipeHintBob 1.8s ease-in-out infinite;
         }
 
         @keyframes swipeHintBob {
-            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.7; }
+            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.88; }
             50% { transform: translateX(-50%) translateY(-4px); opacity: 1; }
         }
 
@@ -1752,6 +1753,11 @@
             const shadow = new THREE.Mesh(shadowGeom, shadowMat);
             shadow.rotation.x = -Math.PI / 2;
             shadow.position.y = -0.06; // flower 组本身位于地面上方 0.1, 这里贴回地面附近(留更大间隙)
+            // 阳光来自 sunLight.position(30,50,20) 射向原点, 树影因此偏向左下(-X,-Z)。
+            // 之前影子直接画在花正下方, 跟树影的偏移方向对不上; 这里按同一个光照方向
+            // 顺移一点, 让所有花的影子和树影朝同一边偏, 符合"同一个太阳"的自然规律。
+            shadow.position.x = -0.07 * 0.832;
+            shadow.position.z = -0.07 * 0.555;
             flower.add(shadow);
 
             // Petals
