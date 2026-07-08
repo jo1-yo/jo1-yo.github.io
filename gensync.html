@@ -83,6 +83,13 @@
             z-index: 1;
             transition: opacity 0.8s ease-out;
             opacity: 1; /* 初始可见 */
+            /* css/main.css 里另有一个同名 .fullscreen-video (弹窗式大图/视频组件),
+               默认 visibility:hidden, 只在加 .active 时才可见。这个页面的 hero
+               背景视频复用了同一个类名却不走那套 .active 逻辑, 结果是: 首屏加载时
+               视频其实在播放, 但 visibility 被那条规则盖成 hidden, 直到用户第一次
+               滚动触发下面的 JS 才会被手动设回 visible —— 加载后一片纯黑。这里显式
+               覆盖回 visible, 不依赖滚动事件。 */
+            visibility: visible;
         }
 
         .fullscreen-video video {
@@ -337,6 +344,54 @@
 
         .github-link:hover {
             background: rgba(245, 203, 92, 0.3);
+        }
+
+        /* ============================================
+           手机端适配 —— 之前完全没有 @media, 桌面尺寸直接搬到手机上:
+           标题 6.5rem + 9 层重阴影、电脑框用 60vh 定高在竖屏手机上被拉成竖条、
+           视频区 70vh 在窄屏上大片留黑, 看起来很乱。这里针对性收窄。
+           ============================================ */
+        @media (max-width: 768px) {
+            .navwrapper { top: 16px; padding: 12px 0; }
+            .nav { padding: 0 6%; }
+            .nav a { font-size: 15px; }
+            .nav ul { gap: 16px; margin-right: 0; }
+
+            .hero-section { height: 220vh; }
+
+            /* 电脑框改成固定宽高比, 不再用 60vh 定高 —— 否则竖屏手机上
+               (窄且高) 会把"电脑屏幕"拉成一条竖长的方块。 */
+            .computer-frame {
+                width: 92%;
+                max-width: 92%;
+                height: auto;
+                aspect-ratio: 16 / 10;
+            }
+
+            .content-section { padding: 90px 6% 70px 6%; }
+
+            .main-title {
+                font-size: 2.8rem;
+                margin-top: 0;
+                margin-bottom: 30px;
+                text-shadow:
+                    1px 1px 0 #242423,
+                    2px 2px 0 #242423,
+                    3px 3px 0 #242423,
+                    4px 4px 0 #242423,
+                    5px 5px 10px rgba(36, 36, 35, 0.7);
+            }
+
+            .typewriter-text { font-size: 1.05rem; margin-bottom: 28px; }
+            .body-text, .feature-text { font-size: 1rem; line-height: 1.7; margin-bottom: 32px; }
+            .feature-block { margin-bottom: 90px; }
+            .feature-video { height: 42vh; margin-bottom: 24px; }
+            .github-link { margin: 30px 0; padding: 10px 20px; }
+        }
+
+        @media (max-width: 420px) {
+            .main-title { font-size: 2.2rem; }
+            .computer-frame { width: 94%; max-width: 94%; }
         }
     </style>
 </head>
