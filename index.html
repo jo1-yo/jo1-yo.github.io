@@ -99,10 +99,10 @@
             font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 0.18em;
-            color: #fff;
+            /* 不要白色 —— 换成作品集页里已经在用的暖金色, 跟站点其余的强调色一致
+               (fp-role / fp-connect:hover 等都是这个色), 阴影仍然负责撑对比度。 */
+            color: #e7c87e;
             text-transform: uppercase;
-            /* 上一版还是太淡: 加粗、加大字号, 阴影再叠厚一层, 亮度下限也提高,
-               保证在浅色天空背景上依然扎实、不会糊成一团灰白。 */
             text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.75), 0 2px 4px rgba(0,0,0,0.7);
             white-space: nowrap;
             animation: swipeHintBob 1.8s ease-in-out infinite;
@@ -1734,9 +1734,20 @@
             const colors = [0xff69b4, 0xffb6c1, 0xffc0cb, 0xffffff, 0xffff99];
             const color = colors[Math.floor(Math.random() * colors.length)];
 
-            // 花朵自带的贴地圆形软影 —— 不依赖实时阴影贴图(覆盖范围有限, 只有离树干近的
+            // 花朵自带的贴地软影 —— 不依赖实时阴影贴图(覆盖范围有限, 只有离树干近的
             // 花才会落在树冠的阴影里), 保证每一朵花都有跟自己对应的影子。
-            const shadowGeom = new THREE.CircleGeometry(0.22, 12);
+            // 形状不再是纯圆, 用一条 5 瓣的极坐标曲线 r = base + amp*max(0,cos(5θ))
+            // 描出跟花朵本身(5 片花瓣绕中心一圈)呼应的轮廓, 而不是一个糊成一片的圆点。
+            const shadowShape = new THREE.Shape();
+            const shadowSteps = 48;
+            const shadowBaseR = 0.12, shadowPetalAmp = 0.14;
+            for (let i = 0; i <= shadowSteps; i++) {
+                const t = (i / shadowSteps) * Math.PI * 2;
+                const r = shadowBaseR + shadowPetalAmp * Math.max(0, Math.cos(5 * t));
+                const px = Math.cos(t) * r, py = Math.sin(t) * r;
+                if (i === 0) shadowShape.moveTo(px, py); else shadowShape.lineTo(px, py);
+            }
+            const shadowGeom = new THREE.ShapeGeometry(shadowShape);
             const shadowMat = new THREE.MeshBasicMaterial({
                 color: 0x000000,
                 transparent: true,
