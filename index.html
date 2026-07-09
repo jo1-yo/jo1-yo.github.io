@@ -565,10 +565,24 @@
     </div>
 
     <div class="swipe-hint" id="swipeHint">
-        <svg viewBox="0 0 60 84" width="40" height="56" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="30" cy="62" rx="19" ry="15" fill="#d9a86a"/>
-            <rect x="17" y="10" width="26" height="46" rx="13" fill="#eecb92"/>
-            <ellipse cx="30" cy="21" rx="8" ry="7" fill="#f7dfb4"/>
+        <svg viewBox="0 0 100 130" width="46" height="60" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="handGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fff3e0"/>
+                    <stop offset="100%" stop-color="#eab976"/>
+                </linearGradient>
+            </defs>
+            <!-- 上滑箭头 + 虚线轨迹, 对齐手指 -->
+            <polygon points="52,0 62,14 42,14" fill="#a89484"/>
+            <line x1="52" y1="18" x2="52" y2="33" stroke="#a89484" stroke-width="4" stroke-linecap="round" stroke-dasharray="1,7"/>
+            <!-- 手: 圆润的手掌团 + 小拇指团 + 短而略倾斜的手指。之前画的是"伸直单指
+                 立在拳头上"那种细长比例, 不管怎么调拇指位置都会被看成是别的手势;
+                 这次改成矮胖的短手指 + 大圆手掌, 不再是那个轮廓。 -->
+            <g stroke="#6b4a35" stroke-width="3" stroke-linejoin="round">
+                <rect x="18" y="68" width="64" height="56" rx="28" fill="url(#handGrad)"/>
+                <rect x="4" y="76" width="20" height="28" rx="10" fill="url(#handGrad)" transform="rotate(-15 14 90)"/>
+                <rect x="38" y="30" width="22" height="42" rx="11" fill="url(#handGrad)" transform="rotate(10 49 68)"/>
+            </g>
         </svg>
     </div>
 
