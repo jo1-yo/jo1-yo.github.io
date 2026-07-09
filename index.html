@@ -94,26 +94,39 @@
            (等号见 scheduleSwipeHandHint), 一旦用户开始滑动旅程就淡出隐藏。 */
         .swipe-hint {
             position: fixed;
-            /* 右下方(偏下), 贴近拇指自然滑动的位置; 离 .season-next 按钮(right:20,
-               宽 48)留够距离, 不会撞在一起。 */
-            right: 90px;
-            bottom: 165px;
+            /* 右下角靠边, 离季节花朵/苹果比较密集的中下部更远一点; 离
+               .season-next 按钮(right:20, 宽 48)也留够距离。 */
+            right: 26px;
+            bottom: 150px;
             z-index: 100;
             line-height: 1;
             opacity: 0;
             pointer-events: none;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.25));
+            transition: opacity 0.4s ease;
+            /* 一块柔和的圆形光晕垫在图标后面, 跟场景里的花/苹果/地面明确分开,
+               不会看起来像是在指着某个具体的东西。 */
+            background: radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 78%);
+            border-radius: 50%;
+            padding: 10px;
         }
 
         .swipe-hint.visible {
-            animation: swipeHandLoop 1.6s ease-in-out infinite;
+            opacity: 1;
         }
 
-        @keyframes swipeHandLoop {
+        /* 只有手在滑, 箭头+虚线轨迹本身不动 —— 看起来是手指顺着轨迹往上滑,
+           而不是整个图标原地弹一下、抖一抖(那样容易被看成是在提示点击)。 */
+        .swipe-hint.visible .swipe-hand {
+            animation: swipeHandSlide 1.6s ease-in-out infinite;
+            transform-box: fill-box;
+            transform-origin: center;
+        }
+
+        @keyframes swipeHandSlide {
             0% { transform: translateY(0) scale(1); opacity: 0; }
             14% { opacity: 0.95; }
-            72% { transform: translateY(-40px) scale(0.9); opacity: 0.9; }
-            100% { transform: translateY(-48px) scale(0.86); opacity: 0; }
+            72% { transform: translateY(-46px) scale(0.88); opacity: 0.85; }
+            100% { transform: translateY(-56px) scale(0.82); opacity: 0; }
         }
 
         .hint-text {
@@ -583,8 +596,10 @@
             <polygon points="48,0 59,15 37,15" fill="#a89484"/>
             <line x1="48" y1="23" x2="48" y2="47" stroke="#a89484" stroke-width="5" stroke-linecap="round" stroke-dasharray="5,11"/>
             <!-- 手 (照参考图): 奶油色填充 + 深棕描边, 食指上伸,
-                 右侧三个弯折的指节鼓包依次降低, 左侧拇指内勾, 底部圆腕。 -->
-            <g fill="#fdeade" stroke="#6b4a35" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+                 右侧三个弯折的指节鼓包依次降低, 左侧拇指内勾, 底部圆腕。
+                 只有这个 g 参与滑动动画, 虚线轨迹本身不动 —— 这样看起来是手指
+                 顺着轨迹往上滑,不是整个图标原地弹一下(那样看起来像是在点它)。 -->
+            <g class="swipe-hand" fill="#fdeade" stroke="#6b4a35" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
                 <path d="M41,108
                          L41,64 Q41,55 48.5,55 Q56,55 56,64
                          L56,90
