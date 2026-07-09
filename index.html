@@ -350,16 +350,6 @@
                 display: none;
             }
 
-            .social-links {
-                bottom: 70px;
-                right: 16px;
-                gap: 12px;
-            }
-
-            .social-link {
-                font-size: 0.75rem;
-            }
-
             .hint-text {
                 font-size: 0.85rem;
                 letter-spacing: 0.1em;
@@ -395,7 +385,11 @@
                 letter-spacing: 0.38em;
                 text-indent: 0.38em;
             }
+        }
 
+        /* 手机/触屏(含横屏)与窄窗口: 树场景不放社交链接 —
+           作品集页底部的 Connect 才是 LinkedIn/GitHub/Hire Me 的入口 */
+        @media (max-width: 768px), (pointer: coarse), (hover: none) {
             .social-links {
                 display: none;
             }
@@ -4056,14 +4050,23 @@
         let treeZoom = 0, treeZoomTarget = 0;
         let swipeHandTimer = null;
 
-        // 停留 3 秒还没开始滑动 → 出现上滑手指提示; 一旦 journey 开始推进就撤掉,
-        // 且不会再重新出现(一次性引导, 不反复打扰)。
+        // 在树前驻留 3 秒 → 出现上滑手指提示; journey 一推进就撤掉。
+        // 不再是一次性: 回到树前再驻留 3 秒会重新出现 (之前滑过一次就永远消失,
+        // 用户会以为提示坏了/丢了)。
         function scheduleSwipeHandHint() {
             // 只在触屏(手机/平板)上出现 —— 桌面端有滚轮, 不需要上滑手势提示。
-            if (!window.matchMedia('(pointer: coarse)').matches) return;
+            // 除 pointer:coarse 外也认 touch 事件支持: DevTools 设备模拟等环境更可靠。
+            const isTouch = window.matchMedia('(pointer: coarse)').matches ||
+                'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            if (!isTouch) return;
+            if (swipeHandTimer) return;                       // 已在倒计时
+            const el = document.getElementById('swipeHint');
+            if (el && el.classList.contains('visible')) return; // 已经显示着
             swipeHandTimer = setTimeout(() => {
-                if (journey < 0.02) {
-                    const el = document.getElementById('swipeHint');
+                swipeHandTimer = null;
+                // 正在近距离看树(treeZoom)时不打扰; 退出特写后外层每帧的
+                // scheduleSwipeHandHint 会重新武装, 3 秒后再检查一次。
+                if (journey < 0.02 && treeZoomTarget < 0.05 && !oneDActive) {
                     if (el) el.classList.add('visible');
                 }
             }, 3000);
@@ -4494,6 +4497,7 @@
             // 树场景 UI 淡出
             setTreeUIOpacity(1 - smooth(seg(j, 0.04, 0.18)));
             if (j > 0.02) dismissSwipeHandHint();
+            else if (!oneDActive) scheduleSwipeHandHint();     // 回到树前重新武装 (内部有防重入)
 
             // 塌完 → 暖炭微光 → 作品集页
             const flash = document.getElementById('cosmosFlash');
