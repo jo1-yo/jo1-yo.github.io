@@ -556,7 +556,10 @@
             .branch-list { gap: 38px; }
             .branch-logo { width: 84px; height: 84px; padding: 9px; }
 
-            .achievements { gap: 18px; padding: 10px 22px 26px; margin: 0 -22px; scroll-padding-left: 22px; }
+            /* 基础规则的 width: calc(100vw - 120px) 在手机上只剩 ~270px, 比 82vw 的卡片
+               还窄 → 每张卡都被裁掉右边。这里改成真·全出血: 占满整个视口宽,
+               用 padding 留出与 .container 一致的 22px 边距。 */
+            .achievements { width: 100vw; margin: 0; gap: 18px; padding: 10px 22px 26px; scroll-padding-left: 22px; }
             .achievement-card { flex-basis: 82vw; }
 
             .quote { font-size: 1.3rem; margin: 1.8rem 0; }
