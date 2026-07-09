@@ -99,11 +99,10 @@
             font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 0.18em;
-            /* 不要白色 —— 换成作品集页里已经在用的暖金色, 跟站点其余的强调色一致
-               (fp-role / fp-connect:hover 等都是这个色), 阴影仍然负责撑对比度。 */
-            color: #e7c87e;
+            /* 不用阴影撑对比度, 直接用一个深一点的暖金/棕色, 跟三个季节的浅色天空
+               背景算过对比度 (~6:1), 不靠阴影也能读清楚。 */
+            color: #6b5216;
             text-transform: uppercase;
-            text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.75), 0 2px 4px rgba(0,0,0,0.7);
             white-space: nowrap;
             animation: swipeHintBob 1.8s ease-in-out infinite;
         }
@@ -1736,15 +1735,30 @@
 
             // 花朵自带的贴地软影 —— 不依赖实时阴影贴图(覆盖范围有限, 只有离树干近的
             // 花才会落在树冠的阴影里), 保证每一朵花都有跟自己对应的影子。
-            // 形状不再是纯圆, 用一条 5 瓣的极坐标曲线 r = base + amp*max(0,cos(5θ))
-            // 描出跟花朵本身(5 片花瓣绕中心一圈)呼应的轮廓, 而不是一个糊成一片的圆点。
+            // 不再用抽象曲线近似, 直接按 createFlower() 里 5 片花瓣 + 花心的真实圆心/
+            // 半径描边: 沿每个角度取"该方向上离原点最远的那个圆的边界"作为轮廓点,
+            // 相当于这 6 个圆的并集外轮廓 —— 影子就是花朵本身的投影形状。
+            // (局部 y 用负的, 抵消 shadow.rotation.x=-90° 带来的 Z 轴翻转, 让影子的花瓣
+            // 朝向跟真花瓣的角度对得上)
+            const shadowParts = [{ cx: 0, cy: 0, r: 0.08 }];
+            for (let i = 0; i < 5; i++) {
+                const pAngle = (i / 5) * Math.PI * 2;
+                shadowParts.push({ cx: Math.cos(pAngle) * 0.15, cy: -Math.sin(pAngle) * 0.15, r: 0.15 });
+            }
             const shadowShape = new THREE.Shape();
-            const shadowSteps = 48;
-            const shadowBaseR = 0.12, shadowPetalAmp = 0.14;
+            const shadowSteps = 64;
             for (let i = 0; i <= shadowSteps; i++) {
                 const t = (i / shadowSteps) * Math.PI * 2;
-                const r = shadowBaseR + shadowPetalAmp * Math.max(0, Math.cos(5 * t));
-                const px = Math.cos(t) * r, py = Math.sin(t) * r;
+                const dx = Math.cos(t), dy = Math.sin(t);
+                let maxT = 0;
+                for (const part of shadowParts) {
+                    const proj = dx * part.cx + dy * part.cy;
+                    const disc = proj * proj - (part.cx * part.cx + part.cy * part.cy - part.r * part.r);
+                    if (disc < 0) continue;
+                    const tExit = proj + Math.sqrt(disc);
+                    if (tExit > maxT) maxT = tExit;
+                }
+                const px = dx * maxT, py = dy * maxT;
                 if (i === 0) shadowShape.moveTo(px, py); else shadowShape.lineTo(px, py);
             }
             const shadowGeom = new THREE.ShapeGeometry(shadowShape);
