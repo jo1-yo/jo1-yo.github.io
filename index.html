@@ -94,11 +94,11 @@
            (等号见 scheduleSwipeHandHint), 一旦用户开始滑动旅程就淡出隐藏。 */
         .swipe-hint {
             position: fixed;
-            bottom: 172px;
-            left: 50%;
-            transform: translateX(-50%);
+            /* 右下方(偏下), 贴近拇指自然滑动的位置; 离 .season-next 按钮(right:20,
+               宽 48)留够距离, 不会撞在一起。 */
+            right: 90px;
+            bottom: 165px;
             z-index: 100;
-            font-size: 2.1rem;
             line-height: 1;
             opacity: 0;
             pointer-events: none;
@@ -110,10 +110,10 @@
         }
 
         @keyframes swipeHandLoop {
-            0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0; }
+            0% { transform: translateY(0) scale(1); opacity: 0; }
             14% { opacity: 0.95; }
-            72% { transform: translateX(-50%) translateY(-48px) scale(0.9); opacity: 0.9; }
-            100% { transform: translateX(-50%) translateY(-58px) scale(0.86); opacity: 0; }
+            72% { transform: translateY(-40px) scale(0.9); opacity: 0.9; }
+            100% { transform: translateY(-48px) scale(0.86); opacity: 0; }
         }
 
         .hint-text {
@@ -564,7 +564,13 @@
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
 
-    <div class="swipe-hint" id="swipeHint">&#128070;</div>
+    <div class="swipe-hint" id="swipeHint">
+        <svg viewBox="0 0 60 84" width="40" height="56" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="30" cy="62" rx="19" ry="15" fill="#d9a86a"/>
+            <rect x="17" y="10" width="26" height="46" rx="13" fill="#eecb92"/>
+            <ellipse cx="30" cy="21" rx="8" ry="7" fill="#f7dfb4"/>
+        </svg>
+    </div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
 
@@ -1775,16 +1781,16 @@
                 opacity: 0.22,
                 depthWrite: false,
                 // 相机 near/far 是 0.1/1000, 深度精度在这个场景常见的 10-30 距离上
-                // 压得很扁; 之前只留 0.01 世界单位的间隙, 在桌面浏览器上凑巧没事,
-                // 但在手机 GPU (深度缓冲精度通常更低) 上会跟地面 z-fighting 而"消失"。
-                // polygonOffset 从深度缓冲层面把它推到地面前面, 不再依赖这点几何间隙。
+                // 压得很扁, 而且花是撒在半径 3-11 的一圈范围内, 离相机越远深度精度越差 ——
+                // 上一次的间隙/偏移量在近处的花上够用, 远处的花仍然会跟地面 z-fighting,
+                // 导致"有的花有影子、有的没有"。这次把两个量都加大一截, 覆盖到最远的花。
                 polygonOffset: true,
-                polygonOffsetFactor: -4,
-                polygonOffsetUnits: -4
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12
             });
             const shadow = new THREE.Mesh(shadowGeom, shadowMat);
             shadow.rotation.x = -Math.PI / 2;
-            shadow.position.y = -0.06; // flower 组本身位于地面上方 0.1, 这里贴回地面附近(留更大间隙)
+            shadow.position.y = -0.02; // flower 组本身位于地面上方 0.1, 这里贴回地面附近(间隙比上次更大)
             // 阳光来自 sunLight.position(30,50,20) 射向原点, 树影因此整个偏到左边,
             // 不是糊在树干正下方。之前只挪了 0.07(影子半径 0.3 的不到 1/4), 大半影子
             // 还是压在花正下方; 现在挪够一个影子半径多, 让影子整体偏到花的左边。
