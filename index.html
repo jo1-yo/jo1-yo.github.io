@@ -90,26 +90,30 @@
         }
 
         /* 很小的一次性提示: 告诉用户可以上滑进入宇宙之旅(手机端捏合手势不够直观) */
+        /* 文字提示换成一只反复上滑的手指动效: 默认不显示, 停留 3 秒没操作才出现
+           (等号见 scheduleSwipeHandHint), 一旦用户开始滑动旅程就淡出隐藏。 */
         .swipe-hint {
             position: fixed;
-            top: 96px;
+            bottom: 172px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            font-size: 0.8rem;
-            font-weight: 700;
-            letter-spacing: 0.18em;
-            /* 不用阴影撑对比度, 直接用一个深一点的暖金/棕色, 跟三个季节的浅色天空
-               背景算过对比度 (~6:1), 不靠阴影也能读清楚。 */
-            color: #6b5216;
-            text-transform: uppercase;
-            white-space: nowrap;
-            animation: swipeHintBob 1.8s ease-in-out infinite;
+            font-size: 2.1rem;
+            line-height: 1;
+            opacity: 0;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.25));
         }
 
-        @keyframes swipeHintBob {
-            0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.88; }
-            50% { transform: translateX(-50%) translateY(-4px); opacity: 1; }
+        .swipe-hint.visible {
+            animation: swipeHandLoop 1.6s ease-in-out infinite;
+        }
+
+        @keyframes swipeHandLoop {
+            0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0; }
+            14% { opacity: 0.95; }
+            72% { transform: translateX(-50%) translateY(-48px) scale(0.9); opacity: 0.9; }
+            100% { transform: translateX(-50%) translateY(-58px) scale(0.86); opacity: 0; }
         }
 
         .hint-text {
@@ -560,7 +564,7 @@
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
 
-    <div class="swipe-hint" id="swipeHint">Swipe up to explore &#8593;</div>
+    <div class="swipe-hint" id="swipeHint">&#128070;</div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
 
@@ -879,6 +883,9 @@
             // 初始构图，并在地址栏/内置浏览器 UI 稳定后再校正一次
             onWindowResize();
             setTimeout(onWindowResize, 300);
+
+            // 停留 3 秒还没滑动 → 出现一只上滑手指提示
+            scheduleSwipeHandHint();
 
             // Start animation
             animate();
@@ -1778,11 +1785,11 @@
             const shadow = new THREE.Mesh(shadowGeom, shadowMat);
             shadow.rotation.x = -Math.PI / 2;
             shadow.position.y = -0.06; // flower 组本身位于地面上方 0.1, 这里贴回地面附近(留更大间隙)
-            // 阳光来自 sunLight.position(30,50,20) 射向原点, 树影因此偏向左下(-X,-Z)。
-            // 之前影子直接画在花正下方, 跟树影的偏移方向对不上; 这里按同一个光照方向
-            // 顺移一点, 让所有花的影子和树影朝同一边偏, 符合"同一个太阳"的自然规律。
-            shadow.position.x = -0.07 * 0.832;
-            shadow.position.z = -0.07 * 0.555;
+            // 阳光来自 sunLight.position(30,50,20) 射向原点, 树影因此整个偏到左边,
+            // 不是糊在树干正下方。之前只挪了 0.07(影子半径 0.3 的不到 1/4), 大半影子
+            // 还是压在花正下方; 现在挪够一个影子半径多, 让影子整体偏到花的左边。
+            shadow.position.x = -0.32 * 0.832;
+            shadow.position.z = -0.32 * 0.555;
             flower.add(shadow);
 
             // Petals
@@ -3303,7 +3310,10 @@
                 touchLastSingleY = y;              // 每帧更新 → 丝滑, 和双指捏合一致
                 if (Math.abs(y - touchStartSingleY) > 8) {
                     e.preventDefault();
-                    journeyTarget = clampN(journeyTarget - dY * 0.0052, 0, 1);
+                    // 之前 0.0052 太敏感, 一次随便的滑动(~200px)就直接冲到底, 宇宙坍塌成
+                    // 马赛克那段几乎看不清就过去了。降到 0.0018, 要滑够将近一整屏才能走完
+                    // 全程, 中间过程才有机会看清楚。
+                    journeyTarget = clampN(journeyTarget - dY * 0.0018, 0, 1);
                 }
                 return;
             }
@@ -3324,7 +3334,8 @@
                 return;
             }
             // 双指捏合 → 宇宙缩放之旅 (每帧连续平滑驱动; 捏开=放大=journey↓)
-            journeyTarget = clampN(journeyTarget - dDist * 0.0052, 0, 1);
+            // 跟单指上滑用同一个更慢的灵敏度, 手感一致。
+            journeyTarget = clampN(journeyTarget - dDist * 0.0018, 0, 1);
         }
 
         function onTouchEnd(e) {
@@ -3986,6 +3997,25 @@
         // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
         // ============================================================
         let journey = 0, journeyTarget = 0;
+        let swipeHandTimer = null;
+
+        // 停留 3 秒还没开始滑动 → 出现上滑手指提示; 一旦 journey 开始推进就撤掉,
+        // 且不会再重新出现(一次性引导, 不反复打扰)。
+        function scheduleSwipeHandHint() {
+            swipeHandTimer = setTimeout(() => {
+                if (journey < 0.02) {
+                    const el = document.getElementById('swipeHint');
+                    if (el) el.classList.add('visible');
+                }
+            }, 3000);
+        }
+
+        function dismissSwipeHandHint() {
+            if (swipeHandTimer) { clearTimeout(swipeHandTimer); swipeHandTimer = null; }
+            const el = document.getElementById('swipeHint');
+            if (el) el.classList.remove('visible');
+        }
+
         let cosmosInited = false, cosmicWorld = null;
         let planetMesh = null, planetAtmo = null, starField = null;
         let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
@@ -4230,7 +4260,10 @@
         }
 
         function setTreeUIOpacity(o) {
-            ['.season-indicator', '.swipe-hint', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
+            // .swipe-hint 不放在这里: 它有自己独立的 3 秒延迟出现 + 一次性撤销逻辑
+            // (scheduleSwipeHandHint/dismissSwipeHandHint), 这里如果也去设 inline
+            // opacity/animation, 会在用户还没滑动时就把它强制设成不透明、盖掉延迟效果。
+            ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
                 document.querySelectorAll(s).forEach(el => {
                     el.style.opacity = o;
                     el.style.pointerEvents = o < 0.5 ? 'none' : '';
@@ -4395,6 +4428,7 @@
 
             // 树场景 UI 淡出
             setTreeUIOpacity(1 - smooth(seg(j, 0.04, 0.18)));
+            if (j > 0.02) dismissSwipeHandHint();
 
             // 塌完 → 暖炭微光 → 作品集页
             const flash = document.getElementById('cosmosFlash');
