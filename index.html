@@ -468,10 +468,11 @@
         /* "Message" 连接按钮 (与其它 connect 链接同款) */
         .fp-msg-btn { background: none; border: none; padding: 0; margin: 0; color: #cbc4b4; font-size: .98rem; font-family: inherit; width: max-content; cursor: pointer; text-align: left; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
         .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
-        .fp-hire-toggle { display: none; }   /* 桌面端表单常开, 折叠链接只在手机端显示 */
-        /* "Hire Me" — Connect 里 GitHub 下方的高端内联表单框 (提交 → 直达手机) */
-        .fp-hirebox { margin-top: 28px; padding: 20px 20px 22px; border: 1px solid rgba(231,225,211,.12); border-radius: 16px; background: rgba(255,255,255,.025); display: flex; flex-direction: column; gap: 12px; max-width: 340px; }
-        .fp-hirebox-h { font-size: 1.16rem; font-weight: 700; letter-spacing: -.01em; color: #f4efe3; }
+        /* "Hire Me" — Connect 里 GitHub 下方的高端内联表单框 (提交 → 直达手机)。
+           全端折叠: 平时只是 Connect 里的一个链接 (与 LinkedIn/GitHub 同款), 点开才展开表单 */
+        .fp-hirebox { margin-top: 28px; padding: 20px 20px 22px; border: 1px solid rgba(231,225,211,.12); border-radius: 16px; background: rgba(255,255,255,.025); display: none; flex-direction: column; gap: 12px; max-width: 340px; }
+        .fp-hirebox.open { display: flex; }
+        .fp-hirebox-h { display: none; }     /* 链接就叫 Hire Me, 表单里不再重复 */
         .fp-hirebox-sub { margin: -3px 0 5px; font-size: .84rem; line-height: 1.55; color: #9b9484; }
         .fp-hirebox-sub b { color: #ddd5c5; font-weight: 600; }
         .fp-hirebox input, .fp-hirebox textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04); border: 1px solid rgba(231,225,211,.13); border-radius: 10px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s, background .2s; }
@@ -567,11 +568,8 @@
             .fp-projects { order: 4; }
             .fp-side-label { order: 8; margin-top: 60px; }
             .fp-connect { order: 9; }
-            /* Hire Me 折叠: 平时只是 Connect 里的一个链接, 点开才展开表单 */
-            .fp-hire-toggle { display: block; }
-            .fp-hirebox { display: none; order: 10; margin-top: 18px; max-width: none; }
-            .fp-hirebox.open { display: flex; }
-            .fp-hirebox-h { display: none; }                     /* 链接就叫 Hire Me, 表单里不再重复 */
+            /* Hire Me 折叠行为已是全端默认, 这里只调排序和宽度 */
+            .fp-hirebox { order: 10; margin-top: 18px; max-width: none; }
             /* fp-side 摊平后没有自己的盒子, 其子块各自接管入场淡入 */
             .fp-name, .fp-role, .fp-side-label, .fp-connect, .fp-hirebox { opacity: 0; transform: translateY(18px); transition: opacity .85s ease, transform .85s cubic-bezier(.22,.61,.36,1); }
             #oneDSite.active .fp-name, #oneDSite.active .fp-role { opacity: 1; transform: none; transition-delay: .08s; }
@@ -4373,11 +4371,12 @@
         }
 
         // "Hey, I'm Jane." 打字机效果 (每次进入作品集页时重新打出)
+        // 文案写死, 不从 DOM 读: Chrome 网页翻译会改写 textContent, 从 DOM 读会把
+        // 译文缓存成"原文", 关掉翻译后就永远换不回英文 (h1 同时标了 translate="no")。
         function typeHero() {
             const el = document.querySelector('.fp-hero');
             if (!el) return;
-            const full = el.dataset.full || el.textContent;
-            el.dataset.full = full;
+            const full = "Hey, I'm Jane.";
             clearInterval(el._typeTimer);
             clearTimeout(el._typeDone);
             el.textContent = '';
@@ -4607,7 +4606,7 @@
                     </form>
                 </aside>
                 <main class="fp-main">
-                    <h1 class="fp-hero">Hey, I'm Jane.</h1>
+                    <h1 class="fp-hero notranslate" translate="no">Hey, I'm Jane.</h1>
                     <div class="fp-lede">
                         <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.</p>
                         <p>Since I began keeping journals at seven, I've been haunted by one image: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</p>
