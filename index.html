@@ -3373,7 +3373,7 @@
                     // 之前 0.0052 太敏感, 一次随便的滑动(~200px)就直接冲到底, 宇宙坍塌成
                     // 马赛克那段几乎看不清就过去了。降到 0.0018, 要滑够将近一整屏才能走完
                     // 全程, 中间过程才有机会看清楚。
-                    journeyTarget = clampN(journeyTarget - dY * 0.0018, 0, 1);
+                    nudgeJourneyTarget(-dY * 0.0018);
                 }
                 return;
             }
@@ -3397,11 +3397,11 @@
             // 拉到头后继续捏开 = 镜头靠近树细看(treeZoom↑); 捏合(缩小)反向:
             // 先退出树部特写, 退完才推进宇宙之旅。跟单指上滑同样的慢灵敏度。
             if (dDist > 0) {
-                if (journeyTarget > 0.001) journeyTarget = clampN(journeyTarget - dDist * 0.0018, 0, 1);
+                if (journeyTarget > 0.001) nudgeJourneyTarget(-dDist * 0.0018);
                 else treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
             } else {
                 if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
-                else journeyTarget = clampN(journeyTarget - dDist * 0.0018, 0, 1);
+                else nudgeJourneyTarget(-dDist * 0.0018);
             }
         }
 
@@ -3456,11 +3456,11 @@
             const dj = e.deltaY * zoomSens;   // >0 = 缩小(推进旅程), <0 = 放大
             // 与双指捏合同一套路由: 放大到旅程 0 之后继续放大 = 靠近树细看。
             if (dj < 0) {
-                if (journeyTarget > 0.001) journeyTarget = clampN(journeyTarget + dj, 0, 1);
+                if (journeyTarget > 0.001) nudgeJourneyTarget(dj);
                 else treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1);
             } else {
                 if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1);
-                else journeyTarget = clampN(journeyTarget + dj, 0, 1);
+                else nudgeJourneyTarget(dj);
             }
         }
 
@@ -4072,13 +4072,32 @@
         // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
         // ============================================================
         let journey = 0, journeyTarget = 0;
-        // "地球缩小 → 宇宙定格变模糊 → 像素坍塌" 是电影段: 前进方向限速, 无论滚轮/
-        // 手指滑得多快都不能跳过 (0.32–0.66 星球成形 ≥ ~4s, 0.66–1 像素化坍塌 ≥ ~10s,
-        // 全程至少 ~15s 保证看到变模糊的完整过程)。倒退不限速, 随时可快速滑回树场景。
-        const CINE_FROM = 0.32;           // 限速带起点 (星球开始成形前一点)
-        const CINE_SPLIT = 0.66;          // 两段限速的分界 (星球成形完毕, 相机停稳)
-        const CINE_RATE_EARTH = 0.08;     // 0.32–0.66 每秒最大推进量
-        const CINE_RATE_COSMOS = 0.03;    // 0.66–1.0 每秒最大推进量
+        // "地球缩小 → 宇宙定格变模糊 → 像素坍塌" 是重头戏, 但节奏始终交给用户的手:
+        // 进入电影段后降低手势灵敏度 (星球成形段要滚 ~2 倍距离, 变模糊→坍塌段要滚
+        // ~5 倍距离) — 快速一甩推不到底, 继续滚就继续走, 停手即停。回滚方向不降
+        // 灵敏度, 随时可快速滑回树场景。updateJourney 里另有一道宽松的速度兜底,
+        // 只拦触控板惯性甩动这类一次涌入巨量增量的输入 (变模糊全程仍 ≥ ~4s)。
+        const CINE_FROM = 0.32;           // 电影段起点 (星球开始成形前一点)
+        const CINE_SPLIT = 0.66;          // 两段的分界 (星球成形完毕, 相机停稳)
+        const CINE_DRAG_EARTH = 0.5;      // 0.32–0.66 前进手势灵敏度倍率
+        const CINE_DRAG_COSMOS = 0.2;     // 0.66–1.0 前进手势灵敏度倍率
+        const CINE_RATE_EARTH = 0.25;     // 兜底: 0.32–0.66 每秒最大推进量
+        const CINE_RATE_COSMOS = 0.08;    // 兜底: 0.66–1.0 每秒最大推进量
+        // 手势推进旅程统一走这里: 前进按电影段分段降灵敏度, 一次大增量跨段时逐段折算
+        function nudgeJourneyTarget(dj) {
+            let t = journeyTarget, guard = 0;
+            while (dj !== 0 && guard++ < 32) {
+                if (dj < 0) { t = Math.max(0, t + dj); break; }   // 回滚不降灵敏度
+                let scale, edge;
+                if (t < CINE_FROM) { scale = 1; edge = CINE_FROM; }
+                else if (t < CINE_SPLIT) { scale = CINE_DRAG_EARTH; edge = CINE_SPLIT; }
+                else { scale = CINE_DRAG_COSMOS; edge = 1; }
+                const want = t + dj * scale;
+                if (want <= edge) { t = want; dj = 0; }
+                else { dj -= (edge - t) / scale; t = edge; if (t >= 1) dj = 0; }
+            }
+            journeyTarget = clampN(t, 0, 1);
+        }
         // 树部特写: 捏开(或滚轮放大)到旅程 0 之后继续放大 → 镜头靠近树 (0=默认取景, 1=最近)。
         let treeZoom = 0, treeZoomTarget = 0;
         let swipeHandTimer = null;
