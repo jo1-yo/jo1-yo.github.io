@@ -823,7 +823,7 @@
         const seasonColors = {
             spring: {
                 bg: [0.95, 0.92, 0.93],
-                leaves: 0x7cb342,
+                leaves: 0x5f8f34,
                 accent: 0xf8bbd9
             },
             summer: {
@@ -955,7 +955,8 @@
             sunLight.shadow.camera.right = 30;
             sunLight.shadow.camera.top = 30;
             sunLight.shadow.camera.bottom = -30;
-            sunLight.shadow.bias = -0.0001;
+            sunLight.shadow.bias = -0.00002;
+            sunLight.shadow.normalBias = 0.035;
             scene.add(sunLight);
 
             // Fill light
@@ -1101,7 +1102,8 @@
             const trunk = new THREE.Mesh(trunkGeo, sharedBarkMaterial);
             trunk.position.y = cfg.height / 2;
             trunk.castShadow = true;
-            trunk.receiveShadow = true;
+            // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
+            trunk.receiveShadow = false;
             trunk.userData.isTrunk = true;
 
             return trunk;
@@ -1111,11 +1113,13 @@
         // 统一树皮材质 (树干和分支共用)
         // ============================================
         const sharedBarkMaterial = new THREE.MeshStandardMaterial({
-                color: 0x4a3728,
+            color: 0x352a1d,
+            emissive: 0x050302,
+            emissiveIntensity: 0.04,
             roughness: 0.95,
             metalness: 0,
             flatShading: false
-            });
+        });
 
         // ============================================
         // 严格 start/end 驱动的树枝系统
@@ -1149,7 +1153,7 @@
                 { height: 7.5, angle: 2.5, end: [-4, 13, 2], radius: 0.35, id: 'main2' },
                 { height: 8.0, angle: 4.0, end: [3, 14, -4], radius: 0.3, id: 'main3' },
                 { height: 6.5, angle: 3.8, end: [-5, 11, -3], radius: 0.38, id: 'main4' },
-                { height: 8.5, angle: 1.57, end: [0, 15, 0], radius: 0.35, id: 'main5' },
+                { height: 8.35, angle: 1.57, end: [0.75, 13.05, -0.45], radius: 0.24, id: 'main5' },
                 { height: 7.2, angle: 5.5, end: [4, 11, -3], radius: 0.32, id: 'main6' },
                 { height: 8.8, angle: 2.0, end: [-3, 14, -1], radius: 0.28, id: 'main7' },
                 { height: 6.8, angle: 1.0, end: [2, 10, 4], radius: 0.3, id: 'main8' },
@@ -1451,7 +1455,7 @@
             leafPositions.forEach((pos, i) => {
                 const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.2, 6, 4);
                 const leafMat = new THREE.MeshStandardMaterial({
-                    color: 0x7cb342,
+                    color: 0x5f8f34,
                     roughness: 0.8,
                     metalness: 0.1,
                     transparent: true,
@@ -1727,16 +1731,16 @@
 
         function createSpringElements() {
             // Apples (clickable projects)
-            // 挂在树冠中下层的外缘 (方位角摊开一圈) — 真苹果挂在冠层外侧才看得见;
-            // 埋在冠心会被叶球挡住 (防穿模推开叶球后尤其明显)
+            // 挂在树冠外缘, 但不绕成均匀一圈: 上/中/低错落, 中层做主体。
+            // 埋在冠心会被叶球挡住 (防穿模推开叶球后尤其明显)。
             const applePositions = [
-                { x: 4.6, y: 12.4, z: 2.6 },
-                { x: -3.4, y: 12.0, z: 4.2 },
-                { x: 5.2, y: 13.0, z: -1.6 },
-                { x: -1.6, y: 12.6, z: -5.0 },
-                { x: 1.4, y: 11.8, z: 5.0 },
-                { x: -5.0, y: 13.2, z: -0.6 },
-                { x: 2.4, y: 13.6, z: -4.4 }
+                { x: 4.1, y: 16.7, z: 2.7 },
+                { x: -3.6, y: 15.2, z: 3.8 },
+                { x: 5.3, y: 13.9, z: -1.1 },
+                { x: -1.4, y: 14.6, z: -5.1 },
+                { x: 1.2, y: 12.2, z: 5.1 },
+                { x: -5.1, y: 13.1, z: -0.5 },
+                { x: 2.3, y: 17.8, z: -3.2 }
             ];
 
             // 果皮贴图 (共用一张): 乘法贴图 — 底色压暗一点点, 撒上更亮的果点
