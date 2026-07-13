@@ -1737,39 +1737,77 @@
                 { x: 2, y: 16, z: -3 }
             ];
 
+            // 果皮贴图 (共用一张): 乘法贴图 — 底色压暗一点点, 撒上更亮的果点
+            // (lenticels) 和极淡的纵向条纹, 苹果表面就不再是死板的均匀色
+            const skinCv = document.createElement('canvas');
+            skinCv.width = skinCv.height = 256;
+            const skinCtx = skinCv.getContext('2d');
+            skinCtx.fillStyle = '#f0eeec';
+            skinCtx.fillRect(0, 0, 256, 256);
+            for (let k = 0; k < 46; k++) {   // 纵向条纹 (u 方向环绕果身)
+                const sx = Math.random() * 256;
+                skinCtx.globalAlpha = 0.05 + Math.random() * 0.08;
+                skinCtx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#cbbfae';
+                skinCtx.fillRect(sx, 0, 1.5 + Math.random() * 4, 256);
+            }
+            for (let k = 0; k < 260; k++) {  // 果点
+                skinCtx.globalAlpha = 0.22 + Math.random() * 0.24;
+                skinCtx.fillStyle = '#ffffff';
+                skinCtx.beginPath();
+                skinCtx.arc(Math.random() * 256, Math.random() * 256, 0.7 + Math.random() * 1.3, 0, Math.PI * 2);
+                skinCtx.fill();
+            }
+            const skinTex = new THREE.CanvasTexture(skinCv);
+            skinTex.wrapS = skinTex.wrapT = THREE.RepeatWrapping;
+            skinTex.repeat.set(2, 1);
+
+            // 每颗苹果品种色略有不同 — 有正红、橘红、玫红、黄底 gala, 不是清一色大红。
+            // 色值故意比目标观感深/饱和不少: 场景环境光很强, 渲染出来会亮一大截
+            const APPLE_TONES = [
+                { top: 0xa8241a, bottom: 0xc98a3a },
+                { top: 0xb23322, bottom: 0xcf9a45 },
+                { top: 0x9c2430, bottom: 0xbd8438 },
+                { top: 0xb13122, bottom: 0xd2a44e }
+            ];
+
             applePositions.forEach((pos, i) => {
-                // 苹果外形: 纵剖面轮廓绕 y 轴车削成型 (LatheGeometry) — 上宽下窄,
-                // 顶部凹出梗洼、底部收出萼洼, 比纯圆球更像真苹果
-                const appleProfile = [
-                    [0, -0.30], [0.10, -0.38], [0.24, -0.35], [0.37, -0.22],
-                    [0.44, -0.02], [0.42, 0.16], [0.34, 0.30], [0.20, 0.385],
-                    [0.09, 0.355], [0, 0.30]
+                // 苹果外形: 控制点过样条(SplineCurve)取密集轮廓点再车削 — 曲面圆润
+                // 光滑, 顶部凹出梗洼、底部收出萼洼
+                const appleCtrl = [
+                    [0, -0.30], [0.10, -0.38], [0.26, -0.345], [0.385, -0.21],
+                    [0.445, 0.0], [0.43, 0.17], [0.35, 0.31], [0.21, 0.395],
+                    [0.10, 0.365], [0, 0.305]
                 ].map(p => new THREE.Vector2(p[0], p[1]));
-                const appleGeom = new THREE.LatheGeometry(appleProfile, 24);
-                // 顶点色: 主体亮红, 黄只在底部萼洼附近一小圈 (从下往上看也得是红苹果),
-                // 再往随机一侧压一抹更深的红晕
-                const cTop = new THREE.Color(0xd02418);
-                const cBottom = new THREE.Color(0xe0a13c);
-                const cBlush = new THREE.Color(0x9a1a0e);
+                const appleProfile = new THREE.SplineCurve(appleCtrl).getPoints(28);
+                const appleGeom = new THREE.LatheGeometry(appleProfile, 40);
+                // 顶点色: 果顶到果底的自然过渡 + 随机一侧更深的红晕
+                const tone = APPLE_TONES[i % APPLE_TONES.length];
+                const cTop = new THREE.Color(tone.top);
+                const cBottom = new THREE.Color(tone.bottom);
+                const cBlush = new THREE.Color(tone.top).multiplyScalar(0.62);
                 const blushA = Math.random() * Math.PI * 2;
                 const vPos = appleGeom.attributes.position;
                 const vCols = [];
                 for (let v = 0; v < vPos.count; v++) {
                     const x = vPos.getX(v), y = vPos.getY(v), z = vPos.getZ(v);
                     const h = Math.min(1, Math.max(0, (y + 0.38) / 0.76));
-                    const c = cTop.clone().lerp(cBottom, Math.pow(1 - h, 3.0) * 0.6);
+                    const c = cTop.clone().lerp(cBottom, Math.pow(1 - h, 2.2) * 0.7);
                     const rr = Math.hypot(x, z);
                     if (rr > 1e-4) {
                         const facing = (x * Math.cos(blushA) + z * Math.sin(blushA)) / rr;
-                        if (facing > 0) c.lerp(cBlush, facing * 0.4);
+                        if (facing > 0) c.lerp(cBlush, facing * 0.35);
                     }
                     vCols.push(c.r, c.g, c.b);
                 }
                 appleGeom.setAttribute('color', new THREE.Float32BufferAttribute(vCols, 3));
-                const appleMat = new THREE.MeshStandardMaterial({
+                // 物理材质 + 清漆层 = 苹果打过蜡的水润高光
+                const appleMat = new THREE.MeshPhysicalMaterial({
                     vertexColors: true,
-                    roughness: 0.35,   // 蜡质微高光
-                    metalness: 0.05
+                    map: skinTex,
+                    roughness: 0.45,
+                    metalness: 0,
+                    clearcoat: 0.55,
+                    clearcoatRoughness: 0.25
                 });
                 const apple = new THREE.Mesh(appleGeom, appleMat);
                 apple.position.set(pos.x, pos.y, pos.z);
@@ -1783,23 +1821,36 @@
                 apple.userData.originalScale = s;
                 apple.castShadow = true;
 
-                // 果梗: 下粗上细, 从梗洼里微歪着长出来
-                const stemGeom = new THREE.CylinderGeometry(0.02, 0.045, 0.24, 6);
-                const stemMat = new THREE.MeshStandardMaterial({ color: 0x54402a, roughness: 0.9 });
-                const stem = new THREE.Mesh(stemGeom, stemMat);
-                stem.position.set(0, 0.40, 0);
-                stem.rotation.z = 0.16;
+                // 果梗: 沿弧线的圆管, 微微弯着从梗洼里长出来, 顶端圆头收尾
+                const stemCurve = new THREE.CatmullRomCurve3([
+                    new THREE.Vector3(0, 0.28, 0),
+                    new THREE.Vector3(0.012, 0.42, 0),
+                    new THREE.Vector3(0.05, 0.53, 0)
+                ]);
+                const stemMat = new THREE.MeshStandardMaterial({ color: 0x6b4a2f, roughness: 0.8 });
+                const stem = new THREE.Mesh(new THREE.TubeGeometry(stemCurve, 8, 0.028, 8, false), stemMat);
                 stem.castShadow = true;
                 apple.add(stem);
+                const stemTip = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), stemMat);
+                stemTip.position.set(0.05, 0.53, 0);
+                apple.add(stemTip);
 
-                // 梗旁一片小叶子
-                const leafGeom = new THREE.CircleGeometry(0.12, 8);
-                leafGeom.scale(1, 0.42, 1);
-                leafGeom.translate(0.12, 0, 0);   // 叶柄端放在原点, 方便绕根部摆角度
-                const leafMat = new THREE.MeshStandardMaterial({ color: 0x6a994e, roughness: 0.85, side: THREE.DoubleSide });
+                // 叶子: 两段二次曲线围出的真叶形, 沿主脉折起一点, 不是死平的圆片
+                const leafShape = new THREE.Shape();
+                leafShape.moveTo(0, 0);
+                leafShape.quadraticCurveTo(0.10, 0.095, 0.25, 0.015);
+                leafShape.quadraticCurveTo(0.10, -0.075, 0, 0);
+                const leafGeom = new THREE.ShapeGeometry(leafShape, 8);
+                const lPos = leafGeom.attributes.position;
+                for (let v = 0; v < lPos.count; v++) {
+                    lPos.setZ(v, Math.abs(lPos.getY(v)) * 0.5);   // 主脉折痕
+                }
+                leafGeom.computeVertexNormals();
+                const leafMat = new THREE.MeshStandardMaterial({ color: 0x4d7a30, roughness: 0.7, side: THREE.DoubleSide });
                 const leaf = new THREE.Mesh(leafGeom, leafMat);
-                leaf.position.set(0.02, 0.45, 0);
-                leaf.rotation.set(-0.9, 0.3, 0.35);
+                leaf.position.set(0, 0.42, 0.01);
+                leaf.rotation.set(-1.25, -0.5, 0.2);   // 从梗根向斜上方撑出去, 别贴着果顶
+                leaf.scale.setScalar(1.35);
                 apple.add(leaf);
 
                 tree.add(apple);
