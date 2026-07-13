@@ -1727,14 +1727,16 @@
 
         function createSpringElements() {
             // Apples (clickable projects)
+            // 挂在树冠中下层的外缘 (方位角摊开一圈) — 真苹果挂在冠层外侧才看得见;
+            // 埋在冠心会被叶球挡住 (防穿模推开叶球后尤其明显)
             const applePositions = [
-                { x: 3, y: 14, z: 2 },
-                { x: -3, y: 13, z: 3 },
-                { x: 4, y: 12, z: -2 },
-                { x: -2, y: 15, z: -2 },
-                { x: 1, y: 13, z: 4 },
-                { x: -4, y: 14, z: -1 },
-                { x: 2, y: 16, z: -3 }
+                { x: 4.6, y: 12.4, z: 2.6 },
+                { x: -3.4, y: 12.0, z: 4.2 },
+                { x: 5.2, y: 13.0, z: -1.6 },
+                { x: -1.6, y: 12.6, z: -5.0 },
+                { x: 1.4, y: 11.8, z: 5.0 },
+                { x: -5.0, y: 13.2, z: -0.6 },
+                { x: 2.4, y: 13.6, z: -4.4 }
             ];
 
             // 果皮贴图 (共用一张): 乘法贴图 — 底色压暗一点点, 撒上更亮的果点
@@ -1744,10 +1746,10 @@
             const skinCtx = skinCv.getContext('2d');
             skinCtx.fillStyle = '#f0eeec';
             skinCtx.fillRect(0, 0, 256, 256);
-            for (let k = 0; k < 46; k++) {   // 纵向条纹 (u 方向环绕果身)
+            for (let k = 0; k < 52; k++) {   // 纵向条纹 (u 方向环绕果身), 偏暖黄 — 红底黄纹
                 const sx = Math.random() * 256;
-                skinCtx.globalAlpha = 0.05 + Math.random() * 0.08;
-                skinCtx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#cbbfae';
+                skinCtx.globalAlpha = 0.06 + Math.random() * 0.10;
+                skinCtx.fillStyle = Math.random() < 0.6 ? '#ffe9b0' : '#c4b49a';
                 skinCtx.fillRect(sx, 0, 1.5 + Math.random() * 4, 256);
             }
             for (let k = 0; k < 260; k++) {  // 果点
@@ -1761,13 +1763,14 @@
             skinTex.wrapS = skinTex.wrapT = THREE.RepeatWrapping;
             skinTex.repeat.set(2, 1);
 
-            // 每颗苹果品种色略有不同 — 有正红、橘红、玫红、黄底 gala, 不是清一色大红。
-            // 色值故意比目标观感深/饱和不少: 场景环境光很强, 渲染出来会亮一大截
+            // 每颗苹果品种色略有不同 — 正红、橘红、玫红、偏黄冠, 不是清一色大红。
+            // 色值故意比目标观感深/饱和不少: 场景环境光很强, 渲染出来会亮一大截。
+            // body = 果身主色 (含果底), crown = 梗洼周围果肩上的黄绿纹理色
             const APPLE_TONES = [
-                { top: 0xa8241a, bottom: 0xc98a3a },
-                { top: 0xb23322, bottom: 0xcf9a45 },
-                { top: 0x9c2430, bottom: 0xbd8438 },
-                { top: 0xb13122, bottom: 0xd2a44e }
+                { body: 0x9c150c, crown: 0xc89a34 },
+                { body: 0xa32112, crown: 0xd0a844 },
+                { body: 0x8e1418, crown: 0xbd8a30 },
+                { body: 0xa42c10, crown: 0xd2b054 }
             ];
 
             applePositions.forEach((pos, i) => {
@@ -1780,22 +1783,25 @@
                 ].map(p => new THREE.Vector2(p[0], p[1]));
                 const appleProfile = new THREE.SplineCurve(appleCtrl).getPoints(28);
                 const appleGeom = new THREE.LatheGeometry(appleProfile, 40);
-                // 顶点色: 果顶到果底的自然过渡 + 随机一侧更深的红晕
+                // 顶点色: 深红果身, 黄绿纹理只出现在梗洼周围的果肩 (真苹果的黄纹在
+                // 顶部, 果身果底都是深红 — 从树下仰视时看到的必须是红), 果底再往深
+                // 收一点, 随机一侧压更深的红晕
                 const tone = APPLE_TONES[i % APPLE_TONES.length];
-                const cTop = new THREE.Color(tone.top);
-                const cBottom = new THREE.Color(tone.bottom);
-                const cBlush = new THREE.Color(tone.top).multiplyScalar(0.62);
+                const cBody = new THREE.Color(tone.body);
+                const cCrown = new THREE.Color(tone.crown);
+                const cBlush = new THREE.Color(tone.body).multiplyScalar(0.55);
                 const blushA = Math.random() * Math.PI * 2;
                 const vPos = appleGeom.attributes.position;
                 const vCols = [];
                 for (let v = 0; v < vPos.count; v++) {
                     const x = vPos.getX(v), y = vPos.getY(v), z = vPos.getZ(v);
                     const h = Math.min(1, Math.max(0, (y + 0.38) / 0.76));
-                    const c = cTop.clone().lerp(cBottom, Math.pow(1 - h, 2.2) * 0.7);
+                    const c = cBody.clone().lerp(cCrown, Math.pow(h, 5) * 0.6);
+                    c.lerp(cBlush, Math.pow(1 - h, 2.5) * 0.3);
                     const rr = Math.hypot(x, z);
                     if (rr > 1e-4) {
                         const facing = (x * Math.cos(blushA) + z * Math.sin(blushA)) / rr;
-                        if (facing > 0) c.lerp(cBlush, facing * 0.35);
+                        if (facing > 0) c.lerp(cBlush, facing * 0.3);
                     }
                     vCols.push(c.r, c.g, c.b);
                 }
@@ -1848,14 +1854,40 @@
                 leafGeom.computeVertexNormals();
                 const leafMat = new THREE.MeshStandardMaterial({ color: 0x4d7a30, roughness: 0.7, side: THREE.DoubleSide });
                 const leaf = new THREE.Mesh(leafGeom, leafMat);
-                leaf.position.set(0, 0.42, 0.01);
-                leaf.rotation.set(-1.25, -0.5, 0.2);   // 从梗根向斜上方撑出去, 别贴着果顶
-                leaf.scale.setScalar(1.35);
+                // 挂在果梗中上段, 朝斜上方撑出去 — 整片叶子都在果肩 (y≈0.40) 之上,
+                // 不会穿进果身
+                leaf.position.set(0.03, 0.48, 0);
+                leaf.rotation.set(-0.35, -0.5, 0.6);
+                leaf.scale.setScalar(1.25);
                 apple.add(leaf);
 
                 tree.add(apple);
                 interactiveObjects.push(apple);
             });
+
+            // 防穿模: 苹果位置是精心摆的可点击目标, 不动它们 — 把插进果身的树冠
+            // 叶球沿远离苹果中心的方向推开。叶球风摆每帧从 originalX/Y 重算位置,
+            // 所以连摆动基准一起挪 (余量 0.28 覆盖 ~0.1 的摆动振幅)。跑两遍,
+            // 防止被 A 推开的叶球落进相邻苹果 B 里。
+            const springApples = interactiveObjects.filter(o => o.userData.type === 'spring');
+            for (let pass = 0; pass < 2; pass++) {
+                springApples.forEach(ap => {
+                    const apR = 0.445 * ap.scale.x + 0.28;
+                    leaves.forEach(lf => {
+                        const lr = lf.geometry.parameters.radius;
+                        const dv = new THREE.Vector3(lf.userData.originalX, lf.userData.originalY, lf.position.z).sub(ap.position);
+                        const d = dv.length();
+                        const minD = apR + lr;
+                        if (d >= minD) return;
+                        if (d < 1e-3) dv.set(0, 1, 0);
+                        dv.setLength(minD);
+                        const np = ap.position.clone().add(dv);
+                        lf.userData.originalX = np.x;
+                        lf.userData.originalY = np.y;
+                        lf.position.set(np.x, np.y, np.z);
+                    });
+                });
+            }
 
             // Flowers around the tree
             for (let i = 0; i < 40; i++) {
