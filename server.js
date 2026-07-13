@@ -12,9 +12,9 @@ app.use('/media', express.static(path.join(__dirname, 'media')));
 // 提供images目录下的图片
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
-// 添加路由重定向，访问/gensync时重定向到gensync.html
+// 访问/gensync时直接跳转到GitHub仓库（原页面代码归档在gensync.html的注释里）
 app.get('/gensync', (req, res) => {
-    res.redirect('/gensync.html');
+    res.redirect('https://github.com/ms48-gensync');
 });
 
 // API 路由
