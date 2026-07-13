@@ -1810,11 +1810,12 @@
                 });
                 const apple = new THREE.Mesh(appleGeom, appleMat);
                 apple.position.set(pos.x, pos.y, pos.z);
-                // 每颗大小、朝向、悬挂角度略有不同
+                // 每颗大小、朝向略有不同; 悬挂角度只让少数微歪 —
+                // 全歪显得乱, 全正又太假
                 const s = 1.0 + Math.random() * 0.2;
                 apple.scale.setScalar(s);
                 apple.rotation.y = Math.random() * Math.PI * 2;
-                apple.rotation.z = (Math.random() - 0.5) * 0.2;
+                apple.rotation.z = Math.random() < 0.4 ? (Math.random() - 0.5) * 0.24 : 0;
                 apple.userData.type = 'spring';
                 apple.userData.projectId = i;
                 apple.userData.originalScale = s;
@@ -1843,6 +1844,34 @@
             // 所以连摆动基准一起挪 (余量 0.28 覆盖 ~0.1 的摆动振幅)。跑两遍,
             // 防止被 A 推开的叶球落进相邻苹果 B 里。
             const springApples = interactiveObjects.filter(o => o.userData.type === 'spring');
+
+            // 防穿模 (树枝): 子枝走向每次加载随机生成, 苹果可能正好撞上枝干 —
+            // 枝不能动, 把苹果沿"离开最近枝段"的方向推开, 迭代到无相交。
+            // 这步在叶球推开之前做, 苹果先落位。
+            const segClosest = (p, a, b) => {
+                const ab = b.clone().sub(a);
+                const t = Math.max(0, Math.min(1, p.clone().sub(a).dot(ab) / ab.lengthSq()));
+                return a.clone().add(ab.multiplyScalar(t));
+            };
+            springApples.forEach(ap => {
+                const apR = 0.445 * ap.scale.x;
+                for (let iter = 0; iter < 6; iter++) {
+                    let moved = false;
+                    branchDataList.forEach(bd => {
+                        const cp = segClosest(ap.position, bd.start, bd.end);
+                        const dv = ap.position.clone().sub(cp);
+                        const d = dv.length();
+                        const minD = apR + bd.radius + 0.06;
+                        if (d >= minD) return;
+                        if (d < 1e-3) dv.set(0, -1, 0);   // 恰好在枝轴上: 向下坠开
+                        dv.setLength(minD - d + 0.01);
+                        ap.position.add(dv);
+                        moved = true;
+                    });
+                    if (!moved) break;
+                }
+            });
+
             for (let pass = 0; pass < 2; pass++) {
                 springApples.forEach(ap => {
                     const apR = 0.445 * ap.scale.x + 0.28;
