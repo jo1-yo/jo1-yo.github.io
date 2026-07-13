@@ -4072,6 +4072,13 @@
         // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
         // ============================================================
         let journey = 0, journeyTarget = 0;
+        // "地球缩小 → 宇宙定格变模糊 → 像素坍塌" 是电影段: 前进方向限速, 无论滚轮/
+        // 手指滑得多快都不能跳过 (0.32–0.66 星球成形 ≥ ~4s, 0.66–1 像素化坍塌 ≥ ~10s,
+        // 全程至少 ~15s 保证看到变模糊的完整过程)。倒退不限速, 随时可快速滑回树场景。
+        const CINE_FROM = 0.32;           // 限速带起点 (星球开始成形前一点)
+        const CINE_SPLIT = 0.66;          // 两段限速的分界 (星球成形完毕, 相机停稳)
+        const CINE_RATE_EARTH = 0.08;     // 0.32–0.66 每秒最大推进量
+        const CINE_RATE_COSMOS = 0.03;    // 0.66–1.0 每秒最大推进量
         // 树部特写: 捏开(或滚轮放大)到旅程 0 之后继续放大 → 镜头靠近树 (0=默认取景, 1=最近)。
         let treeZoom = 0, treeZoomTarget = 0;
         let swipeHandTimer = null;
@@ -4399,8 +4406,14 @@
             // 俯仰角会原样带回树场景, 被 OrbitControls 钳位成奇怪的俯视角。
             // 钳住后大跳变成 ~20 帧的快速动画, 每个过渡段都能正常走完。
             dt = Math.min(dt, 0.066);
-            // 平滑趋近目标 (丝滑)
+            // 平滑趋近目标 (丝滑); 前进进入电影段后按 CINE_RATE_* 限速 (见常量注释)
+            const jPrev = journey;
             journey += (journeyTarget - journey) * Math.min(1, dt * 3.2);
+            if (journey > jPrev && journey > CINE_FROM) {
+                const base = Math.max(jPrev, CINE_FROM);
+                const rate = base < CINE_SPLIT ? CINE_RATE_EARTH : CINE_RATE_COSMOS;
+                journey = Math.min(journey, base + rate * dt);
+            }
             treeZoom += (treeZoomTarget - treeZoom) * Math.min(1, dt * 3.2);
             // 单指上滑直接推进旅程时, 残留的树部特写自动缓缓退出
             if (journeyTarget > 0.02 && treeZoomTarget > 0) treeZoomTarget = Math.max(0, treeZoomTarget - dt * 1.5);
