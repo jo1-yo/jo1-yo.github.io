@@ -472,9 +472,7 @@
            全端折叠: 平时只是 Connect 里的一个链接 (与 LinkedIn/GitHub 同款), 点开才展开表单 */
         .fp-hirebox { margin-top: 28px; padding: 20px 20px 22px; border: 1px solid rgba(231,225,211,.12); border-radius: 16px; background: rgba(255,255,255,.025); display: none; flex-direction: column; gap: 12px; max-width: 340px; }
         .fp-hirebox.open { display: flex; }
-        .fp-hirebox-h { display: none; }     /* 链接就叫 Hire Me, 表单里不再重复 */
-        .fp-hirebox-sub { margin: -3px 0 5px; font-size: .84rem; line-height: 1.55; color: #9b9484; }
-        .fp-hirebox-sub b { color: #ddd5c5; font-weight: 600; }
+        .fp-hirebox-h { display: none; }     /* 链接就叫 Talk to Me, 表单里不再重复 */
         .fp-hirebox input, .fp-hirebox textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04); border: 1px solid rgba(231,225,211,.13); border-radius: 10px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s, background .2s; }
         .fp-hirebox textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
         .fp-hirebox textarea.is-template { color: #6b6557; }   /* 默认模板淡色; 聚焦后(去掉此类)变亮可改 */
@@ -631,7 +629,7 @@
     <div class="social-links">
         <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
         <a href="https://github.com/jo1-yo" target="_blank" rel="noopener noreferrer" class="social-link">GitHub</a>
-        <a href="#" class="social-link" id="treeMsgBtn">Hire Me</a>
+        <a href="#" class="social-link" id="treeMsgBtn">Talk to Me</a>
     </div>
 
     <div class="project-modal" id="projectModal">
@@ -648,8 +646,8 @@
     <div id="msgModal" aria-hidden="true">
         <div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
             <button class="msg-close" id="msgClose" type="button" aria-label="Close">&times;</button>
-            <h3 id="msgTitle">Hire Me</h3>
-            <p class="msg-sub">I'm looking for internships across software engineering, product, and GTM. Tell me about the role — it reaches me directly and I'll get right back to you.</p>
+            <h3 id="msgTitle">Talk to Me</h3>
+            <p class="msg-sub">Your message reaches me directly and I'll get right back to you.</p>
             <form id="msgForm">
                 <input type="text" name="from_name" placeholder="Your name" autocomplete="name">
                 <input type="text" name="reply_to" placeholder="Email to reach you back" autocomplete="email">
@@ -4625,10 +4623,9 @@
                     <div class="fp-name">Jane Zhang</div>
                     <div class="fp-role">SWE · ML · AI Products</div>
                     <div class="fp-side-label">Connect</div>
-                    <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}<button type="button" class="fp-msg-btn fp-hire-toggle" id="hireToggle">Hire Me</button></div>
+                    <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}<button type="button" class="fp-msg-btn fp-hire-toggle" id="hireToggle">Talk to Me</button></div>
                     <form id="hireForm" class="fp-hirebox">
-                        <div class="fp-hirebox-h">Hire Me</div>
-                        <p class="fp-hirebox-sub">I'm interested in internships across <b>software engineering</b>, <b>product</b>, and <b>GTM</b>.</p>
+                        <div class="fp-hirebox-h">Talk to Me</div>
                         <input type="text" name="name" placeholder="Name" autocomplete="name" maxlength="80">
                         <input type="text" name="email" placeholder="Email / Phone Number" autocomplete="email" maxlength="120">
                         <textarea name="message" rows="4" required maxlength="500" class="is-template">${HIRE_DEFAULT_MSG}</textarea>
