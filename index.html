@@ -93,7 +93,7 @@
            出现约 3 秒后自动淡出 (见 showLogoHint), 点了 logo 也会立刻消失。 */
         .logo-hint {
             position: fixed;
-            top: 62px; right: 12px;
+            top: 116px; right: 20px;
             z-index: 3300;
             line-height: 1;
             opacity: 0;
@@ -116,17 +116,46 @@
             45%      { transform: translateY(-7px); }
         }
 
-        /* 手机端小提示: 告知桌面版功能更多 (宇宙之旅等)。仅触屏显示。
-           无底框 —— 底部一行极克制的小字, 不抢季节名, 不挡任何东西。 */
-        .pc-hint {
-            position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%);
-            z-index: 90; display: none;
-            font-size: .6rem; letter-spacing: .26em; text-transform: uppercase;
-            color: rgba(255,255,255,0.55);
-            text-shadow: 0 0 10px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.35);
-            white-space: nowrap; pointer-events: none;
+        /* 首次进入的提示弹窗 (仅触屏): Apple 风柔和磨砂玻璃卡片, 点 "Got it" 关闭。 */
+        #pcModal {
+            position: fixed; inset: 0; z-index: 4000; display: none;
+            align-items: center; justify-content: center; padding: 30px;
+            background: rgba(18,16,14,0.20);
+            -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+            opacity: 0; transition: opacity .4s ease;
         }
-        body.is-touch .pc-hint { display: block; }
+        #pcModal.show { display: flex; opacity: 1; }
+        .pc-card {
+            width: 100%; max-width: 300px; box-sizing: border-box;
+            padding: 26px 26px 22px; text-align: center;
+            border-radius: 30px;
+            /* 磨砂玻璃(靠重模糊出质感), 淡一点更轻盈但仍能看清字; 无硬边, 大软投影 */
+            background: rgba(255,255,255,0.60);
+            -webkit-backdrop-filter: blur(46px) saturate(180%); backdrop-filter: blur(46px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.32);
+            box-shadow: 0 30px 80px rgba(20,22,34,0.16);
+            color: #26262c;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+            transform: scale(.92) translateY(8px); transition: transform .45s cubic-bezier(.22,.9,.32,1.1);
+        }
+        #pcModal.show .pc-card { transform: none; }
+        .pc-card-h { font-size: 1.18rem; font-weight: 600; letter-spacing: -.02em; margin-bottom: 8px; color: #1b1b1e; }
+        .pc-card-p { font-size: .89rem; line-height: 1.46; color: #5b5b63; margin: 0 auto 22px; max-width: 21em; }
+        /* 动作按钮: 一块更亮一点的磨砂玻璃, 柔边, 中灰字 (不死黑), hover/点按有下沉触感 */
+        .pc-ok {
+            display: block; width: 100%; box-sizing: border-box;
+            padding: 12px; border: 1px solid rgba(255,255,255,0.4); border-radius: 15px; cursor: pointer;
+            font-family: inherit; font-size: 1rem; font-weight: 500; letter-spacing: .01em;
+            background: rgba(255,255,255,0.34); color: #5c5c64;
+            -webkit-backdrop-filter: blur(7px) saturate(140%); backdrop-filter: blur(7px) saturate(140%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+            -webkit-tap-highlight-color: transparent;
+            transition: background .18s ease, transform .12s ease, box-shadow .18s ease, color .18s ease;
+        }
+        .pc-ok:hover { background: rgba(255,255,255,0.5); color: #3f3f46; transform: translateY(1px) scale(.99);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.55); }
+        .pc-ok:active { transform: translateY(1.5px) scale(.965); color: #2c2c32;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.06); background: rgba(255,255,255,0.62); }
 
         .hint-text {
             position: fixed;
@@ -456,20 +485,15 @@
         /* 右上角 logo (Jane 头像): 桌面端只在作品集页出现(点击回 3D 宇宙);
            手机端(触屏)在树场景也常显 —— 点它直接进作品页, 再点回树。 */
         #fpHome {
-            position: fixed; top: 22px; right: 24px; z-index: 3200;
-            box-sizing: border-box;
-            width: 52px; height: 52px; padding: 4px; border-radius: 50%;
-            /* 磨砂玻璃底托: 让浅色头像在浅色天空上也看得清, 在深色作品页上又低调隐入 */
-            background: rgba(34,28,20,0.30);
-            border: 1px solid rgba(255,255,255,0.22);
-            -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.22);
+            position: fixed; top: 22px; right: 26px; z-index: 3200;
+            width: 68px; height: 68px; padding: 0; border: none; background: none;
             cursor: pointer; opacity: 0; visibility: hidden; pointer-events: none;
             -webkit-tap-highlight-color: transparent;
             transition: opacity .6s ease, visibility .6s ease, transform .2s ease;
         }
-        #fpHome img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
-        #fpHome:hover { transform: scale(1.09); }
+        /* 干净头像, 不加底圈也不加阴影 */
+        #fpHome img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        #fpHome:hover { transform: scale(1.08); }
         /* 显隐由 JS 每帧按 (作品页开 || 靠近树) 切换 .show —— 桌面端旅程途中淡出, 手机端常显 */
         #fpHome.show { opacity: 1; visibility: visible; pointer-events: auto; }
         /* "Message" 连接按钮 (与其它 connect 链接同款) */
@@ -572,7 +596,7 @@
             .fp-name { order: 1; }
             .fp-role { order: 2; }
             .fp-lede { order: 3; margin-top: 30px; }
-            .fp-lede p b { font-weight: 400; color: inherit; }   /* 自述不加粗 */
+            /* 手机端也保留加粗 (Columbia University 等) —— 与桌面一致 */
             /* 折叠态: 只显示到 "one image", 其余(同段后半 + 后两段)藏起, 点箭头展开 */
             .fp-lede.is-collapsed .fp-lede-tail,
             .fp-lede.is-collapsed .fp-lede-rest { display: none; }
@@ -594,7 +618,7 @@
             .fp-name, .fp-role, .fp-side-label, .fp-connect, .fp-hirebox { opacity: 0; transform: translateY(18px); transition: opacity .85s ease, transform .85s cubic-bezier(.22,.61,.36,1); }
             #oneDSite.active .fp-name, #oneDSite.active .fp-role { opacity: 1; transform: none; transition-delay: .08s; }
             #oneDSite.active .fp-side-label, #oneDSite.active .fp-connect, #oneDSite.active .fp-hirebox { opacity: 1; transform: none; transition-delay: .55s; }
-            #fpHome { top: 16px; right: 16px; width: 42px; height: 42px; }
+            #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
         }
     </style>
 </head>
@@ -627,7 +651,13 @@
         </svg>
     </div>
 
-    <div class="pc-hint" id="pcHint">More features on desktop</div>
+    <div id="pcModal" role="dialog" aria-modal="true" aria-labelledby="pcCardH">
+        <div class="pc-card">
+            <div class="pc-card-h" id="pcCardH">Best on desktop</div>
+            <div class="pc-card-p">Open on a computer for the full interactive experience.</div>
+            <button type="button" class="pc-ok" id="pcOk">Got it</button>
+        </div>
+    </div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
 
@@ -680,10 +710,11 @@
     <div id="cosmosFlash"></div>
     <div id="oneDSite">
         <div class="fp-wrap" id="fpWrap"></div>
-        <button id="fpHome" title="View portfolio" aria-label="View portfolio">
-            <img src="images/jane-avatar.png" alt="Jane Zhang — open portfolio">
-        </button>
     </div>
+    <!-- logo 放在 #oneDSite 外面: 否则树场景时 #oneDSite 的 opacity:0 会连它一起隐掉 -->
+    <button id="fpHome" title="View portfolio" aria-label="View portfolio">
+        <img src="images/jane-avatar.png" alt="Jane Zhang — open portfolio">
+    </button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -947,11 +978,21 @@
             onWindowResize();
             setTimeout(onWindowResize, 300);
 
-            // 触屏设备: 标记 body (让 logo 在树场景常显), 并在 logo 淡入后弹出一次性
-            // 手指提示(指向 logo, 3 秒后自动消失), 引导用户点 logo 进作品页。
+            // 触屏设备: 标记 body (让 logo 在树场景常显), 首次进入弹出"桌面版更完整"
+            // 苹果风磨砂弹窗; 点 Got it 关闭后, 再用手指提示指向右上角 logo (进作品页)。
             if (IS_TOUCH) {
                 document.body.classList.add('is-touch');
-                setTimeout(showLogoHint, 1300);
+                const pm = document.getElementById('pcModal');
+                const ok = document.getElementById('pcOk');
+                if (pm && ok) {
+                    setTimeout(() => pm.classList.add('show'), 450);
+                    ok.addEventListener('click', () => {
+                        pm.classList.remove('show');
+                        setTimeout(showLogoHint, 30000);      // 在树场景玩约 30s 后再指引点 logo
+                    });
+                } else {
+                    setTimeout(showLogoHint, 30000);
+                }
             }
 
             // Start animation
