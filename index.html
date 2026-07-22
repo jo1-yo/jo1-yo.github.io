@@ -973,6 +973,8 @@
             
             // 添加季节点击切换
             setupSeasonDotClicks();
+            // 作品页往下滚时自动收起右上角 logo, 不遮正文
+            setupSiteScrollHide();
 
             // 初始构图，并在地址栏/内置浏览器 UI 稳定后再校正一次
             onWindowResize();
@@ -4550,18 +4552,43 @@
             });
         }
 
+        // logo 显隐统一入口: 树场景靠近树时显示(桌面端旅程途中淡出); 作品页平时显示,
+        // 但往下滚时自动隐藏、往上滚或回到顶部时再出现 —— 头像不再盖住正文。
+        let logoScrollHidden = false, lastSiteScroll = 0;
+        function updateLogoVisibility() {
+            const h = document.getElementById('fpHome');
+            if (!h) return;
+            const show = oneDActive ? !logoScrollHidden : (journey < 0.06);
+            h.classList.toggle('show', show);
+        }
+        function setupSiteScrollHide() {
+            const site = document.getElementById('oneDSite');
+            if (!site) return;
+            site.addEventListener('scroll', () => {
+                const y = site.scrollTop;
+                if (y < 40) logoScrollHidden = false;                       // 顶部附近始终显示
+                else if (y > lastSiteScroll + 4) logoScrollHidden = true;   // 往下滑 → 隐藏
+                else if (y < lastSiteScroll - 4) logoScrollHidden = false;  // 往上滑 → 再出现
+                lastSiteScroll = y;
+                updateLogoVisibility();
+            }, { passive: true });
+        }
+
         function setOneDActive(active) {
             if (active === oneDActive) return;
             oneDActive = active;
+            logoScrollHidden = false; lastSiteScroll = 0;   // 进/出作品页都从"显示"开始
             const home = document.getElementById('fpHome');
             if (home) {                                   // logo 双重身份: 树↔作品页
                 home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
                 home.setAttribute('title', active ? 'Back to the tree' : 'View portfolio');
             }
             const site = document.getElementById('oneDSite');
-            if (!site) return;
-            if (active) { site.classList.add('active'); site.scrollTop = 0; setTimeout(typeHero, 320); }
-            else { site.classList.remove('active'); }
+            if (site) {
+                if (active) { site.classList.add('active'); site.scrollTop = 0; setTimeout(typeHero, 320); }
+                else { site.classList.remove('active'); }
+            }
+            updateLogoVisibility();
         }
 
         // "Hey, I'm Jane." 打字机效果 (每次进入作品集页时重新打出)
@@ -4587,10 +4614,7 @@
         }
 
         function updateJourney(dt) {
-            // logo 显隐: 靠近树 或 作品页时显示; 桌面端旅程途中(离开树)淡出。
-            // 手机端 journey 恒为 0 → 树场景常显。放在 cosmosInited 判断前, 加载即生效。
-            const homeEl = document.getElementById('fpHome');
-            if (homeEl) homeEl.classList.toggle('show', oneDActive || journey < 0.06);
+            updateLogoVisibility();   // 每帧刷新 logo 显隐 (树场景常驻; 作品页由滚动方向控制)
             if (!cosmosInited) return;
             // 限制单帧 dt: 标签页切后台再回来(或手机浏览器节流 rAF)时 dt 会是好几秒,
             // journey 一帧直接跳到目标 → 跳过中段"拉回平视"过渡, 用户自由旋转过的
@@ -4976,7 +5000,11 @@
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
-            
+
+            // 手机端进入作品页后, 3D 场景被不透明面板完全盖住 → 暂停整套渲染/动画,
+            // 把性能全留给作品页的原生滚动 (更丝滑) 并省电; 返回树时自动恢复。
+            if (oneDActive && IS_TOUCH) { lastTime = currentTime; return; }
+
             // 计算 deltaTime
             const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0.016;
             lastTime = currentTime;
