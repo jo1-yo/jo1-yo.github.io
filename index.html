@@ -89,45 +89,44 @@
             100% { opacity: 0; transform: translateX(-50%) scale(1); }
         }
 
-        /* 很小的一次性提示: 告诉用户可以上滑进入宇宙之旅(手机端捏合手势不够直观) */
-        /* 文字提示换成一只反复上滑的手指动效: 默认不显示, 停留 3 秒没操作才出现
-           (等号见 scheduleSwipeHandHint), 一旦用户开始滑动旅程就淡出隐藏。 */
-        .swipe-hint {
+        /* 手机端一次性提示: 一只手指点向右上角 logo, 引导用户点 logo 进作品页。
+           出现约 3 秒后自动淡出 (见 showLogoHint), 点了 logo 也会立刻消失。 */
+        .logo-hint {
             position: fixed;
-            /* 右下角靠边, 离季节花朵/苹果比较密集的中下部更远一点; 离
-               .season-next 按钮(right:20, 宽 48)也留够距离。 */
-            right: 26px;
-            bottom: 150px;
-            z-index: 100;
+            top: 62px; right: 12px;
+            z-index: 3300;
             line-height: 1;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.4s ease;
-            /* 一块柔和的圆形光晕垫在图标后面, 跟场景里的花/苹果/地面明确分开,
-               不会看起来像是在指着某个具体的东西。 */
-            background: radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.22) 55%, rgba(255,255,255,0) 78%);
+            transition: opacity 0.45s ease;
+            /* 柔和圆形光晕垫底, 和场景/logo 分开 */
+            background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 55%, rgba(255,255,255,0) 78%);
             border-radius: 50%;
-            padding: 10px;
+            padding: 8px;
         }
-
-        .swipe-hint.visible {
-            opacity: 1;
-        }
-
-        /* 只有手在滑, 箭头+虚线轨迹本身不动 —— 看起来是手指顺着轨迹往上滑,
-           而不是整个图标原地弹一下、抖一抖(那样容易被看成是在提示点击)。 */
-        .swipe-hint.visible .swipe-hand {
-            animation: swipeHandSlide 1.6s ease-in-out infinite;
+        .logo-hint.visible { opacity: 1; }
+        /* 手指朝 logo 方向(上)反复轻点一下 */
+        .logo-hint .lh-hand {
+            animation: logoHintTap 1.25s ease-in-out infinite;
             transform-box: fill-box;
-            transform-origin: center;
+            transform-origin: center bottom;
+        }
+        @keyframes logoHintTap {
+            0%, 100% { transform: translateY(5px); }
+            45%      { transform: translateY(-7px); }
         }
 
-        @keyframes swipeHandSlide {
-            0% { transform: translateY(0) scale(1); opacity: 0; }
-            14% { opacity: 0.95; }
-            72% { transform: translateY(-46px) scale(0.88); opacity: 0.85; }
-            100% { transform: translateY(-56px) scale(0.82); opacity: 0; }
+        /* 手机端小提示: 告知桌面版功能更多 (宇宙之旅等)。仅触屏显示。
+           无底框 —— 底部一行极克制的小字, 不抢季节名, 不挡任何东西。 */
+        .pc-hint {
+            position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%);
+            z-index: 90; display: none;
+            font-size: .6rem; letter-spacing: .26em; text-transform: uppercase;
+            color: rgba(255,255,255,0.55);
+            text-shadow: 0 0 10px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.35);
+            white-space: nowrap; pointer-events: none;
         }
+        body.is-touch .pc-hint { display: block; }
 
         .hint-text {
             position: fixed;
@@ -454,17 +453,25 @@
             position: fixed; inset: 0; z-index: 2500;
             background: #15140f; opacity: 0; pointer-events: none;
         }
-        /* 地球图标: 作品集页右上角, 点击倒带回 3D 宇宙 */
+        /* 右上角 logo (Jane 头像): 桌面端只在作品集页出现(点击回 3D 宇宙);
+           手机端(触屏)在树场景也常显 —— 点它直接进作品页, 再点回树。 */
         #fpHome {
             position: fixed; top: 22px; right: 24px; z-index: 3200;
-            width: 50px; height: 50px; padding: 0; border: none; border-radius: 50%;
-            background: none; cursor: pointer; opacity: 0; visibility: hidden;
+            box-sizing: border-box;
+            width: 52px; height: 52px; padding: 4px; border-radius: 50%;
+            /* 磨砂玻璃底托: 让浅色头像在浅色天空上也看得清, 在深色作品页上又低调隐入 */
+            background: rgba(34,28,20,0.30);
+            border: 1px solid rgba(255,255,255,0.22);
+            -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.22);
+            cursor: pointer; opacity: 0; visibility: hidden; pointer-events: none;
             -webkit-tap-highlight-color: transparent;
-            transition: opacity .9s ease .3s, visibility .9s ease .3s, transform .2s ease;
+            transition: opacity .6s ease, visibility .6s ease, transform .2s ease;
         }
-        #fpHome img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 2px 7px rgba(0,0,0,.45)); }
+        #fpHome img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 2px 6px rgba(0,0,0,.5)); }
         #fpHome:hover { transform: scale(1.09); }
-        #oneDSite.active ~ #fpHome, #oneDSite.active #fpHome { opacity: 1; visibility: visible; }
+        /* 显隐由 JS 每帧按 (作品页开 || 靠近树) 切换 .show —— 桌面端旅程途中淡出, 手机端常显 */
+        #fpHome.show { opacity: 1; visibility: visible; pointer-events: auto; }
         /* "Message" 连接按钮 (与其它 connect 链接同款) */
         .fp-msg-btn { background: none; border: none; padding: 0; margin: 0; color: #cbc4b4; font-size: .98rem; font-family: inherit; width: max-content; cursor: pointer; text-align: left; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
         .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
@@ -540,6 +547,9 @@
         .fp-lede { margin-top: 26px; max-width: 40em; }
         .fp-lede p { font-size: 1.08rem; line-height: 1.75; color: #aaa394; margin-bottom: 16px; }
         .fp-lede p b { color: #e7e1d3; font-weight: 600; }
+        /* 简介"展开更多": 仅手机端折叠(见媒体查询)。桌面端显示全文、隐藏箭头。 */
+        .fp-lede-toggle { display: none; }
+        .fp-lede-chev { display: inline-block; line-height: 1; transition: transform .25s ease; }
         /* 项目列表: 极简编辑排版 — 细发丝分隔线, 小而轻的字, 不用金色底/金色边,
            hover 只做标题提亮 + 箭头浮现, 无位移无底色。 */
         .fp-projects { margin-top: 46px; }
@@ -563,6 +573,18 @@
             .fp-role { order: 2; }
             .fp-lede { order: 3; margin-top: 30px; }
             .fp-lede p b { font-weight: 400; color: inherit; }   /* 自述不加粗 */
+            /* 折叠态: 只显示到 "one image", 其余(同段后半 + 后两段)藏起, 点箭头展开 */
+            .fp-lede.is-collapsed .fp-lede-tail,
+            .fp-lede.is-collapsed .fp-lede-rest { display: none; }
+            .fp-lede-toggle {
+                display: inline-flex; align-items: center; justify-content: center;
+                margin-top: 2px; padding: 6px 16px 6px 0;
+                background: none; border: 0; cursor: pointer; font: inherit;
+                font-size: 1.7rem; line-height: 1; color: #8c8676;
+                -webkit-tap-highlight-color: transparent; transition: color .2s;
+            }
+            .fp-lede-toggle:active { color: #e7c87e; }
+            .fp-lede:not(.is-collapsed) .fp-lede-chev { transform: rotate(90deg); }
             .fp-projects { order: 4; }
             .fp-side-label { order: 8; margin-top: 60px; }
             .fp-connect { order: 9; }
@@ -586,16 +608,10 @@
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
 
-    <div class="swipe-hint" id="swipeHint">
-        <svg viewBox="0 0 100 150" width="48" height="72" xmlns="http://www.w3.org/2000/svg">
-            <!-- 上滑箭头 + 虚线轨迹, 对齐指尖 (参考图: 实心三角箭头 + 两段圆头虚线) -->
-            <polygon points="48,0 59,15 37,15" fill="#a89484"/>
-            <line x1="48" y1="23" x2="48" y2="47" stroke="#a89484" stroke-width="5" stroke-linecap="round" stroke-dasharray="5,11"/>
-            <!-- 手 (照参考图): 奶油色填充 + 深棕描边, 食指上伸,
-                 右侧三个弯折的指节鼓包依次降低, 左侧拇指内勾, 底部圆腕。
-                 只有这个 g 参与滑动动画, 虚线轨迹本身不动 —— 这样看起来是手指
-                 顺着轨迹往上滑,不是整个图标原地弹一下(那样看起来像是在点它)。 -->
-            <g class="swipe-hand" fill="#fdeade" stroke="#6b4a35" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <!-- 手机端: 引导点右上角 logo 进作品页的一次性手指提示 (食指朝上指向 logo) -->
+    <div class="logo-hint" id="logoHint" aria-hidden="true">
+        <svg viewBox="14 48 88 100" width="40" height="46" xmlns="http://www.w3.org/2000/svg">
+            <g class="lh-hand" fill="#fdeade" stroke="#6b4a35" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
                 <path d="M41,108
                          L41,64 Q41,55 48.5,55 Q56,55 56,64
                          L56,90
@@ -610,6 +626,8 @@
             </g>
         </svg>
     </div>
+
+    <div class="pc-hint" id="pcHint">More features on desktop</div>
 
     <div class="hint-text" id="hintText">Click the apples to explore</div>
 
@@ -662,8 +680,8 @@
     <div id="cosmosFlash"></div>
     <div id="oneDSite">
         <div class="fp-wrap" id="fpWrap"></div>
-        <button id="fpHome" title="Back to the universe" aria-label="Back to the universe">
-            <img src="images/jane-avatar.png" alt="Jane — back to the universe">
+        <button id="fpHome" title="View portfolio" aria-label="View portfolio">
+            <img src="images/jane-avatar.png" alt="Jane Zhang — open portfolio">
         </button>
     </div>
 
@@ -929,8 +947,12 @@
             onWindowResize();
             setTimeout(onWindowResize, 300);
 
-            // 停留 3 秒还没滑动 → 出现一只上滑手指提示
-            scheduleSwipeHandHint();
+            // 触屏设备: 标记 body (让 logo 在树场景常显), 并在 logo 淡入后弹出一次性
+            // 手指提示(指向 logo, 3 秒后自动消失), 引导用户点 logo 进作品页。
+            if (IS_TOUCH) {
+                document.body.classList.add('is-touch');
+                setTimeout(showLogoHint, 1300);
+            }
 
             // Start animation
             animate();
@@ -3433,6 +3455,11 @@
             if (uniforms.uOffset2.value.y < -100) uniforms.uOffset2.value.y += 100;
         }
 
+        // 触屏(手机/平板)标记: 决定手机端的简化交互 —— 单指环绕看树、logo 进作品页、
+        // 不走"宇宙之旅"(那套只留给桌面鼠标滚轮)。一次性判定, 设备不会中途变触屏。
+        const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches ||
+            'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
         let touchStartX = 0;
         let touchStartY = 0;
         let isSwiping = false;
@@ -3459,11 +3486,6 @@
         let touchLastSingleY = 0;
         let touchStartTime = 0;
         let touchLastDist = 0;
-        // 本次单指手势是否用于"环绕参观宇宙"(交给 OrbitControls 旋转, 不推进旅程)。
-        // 在 touchstart 时按当前旅程进度锁定, 整个手势期间不变 —— 与 OrbitControls
-        // 自己在 touchstart 时按 enableRotate 决定是否进入旋转态的时机一致,
-        // 避免滑动途中跨过阈值导致行为突变。
-        let touchGestureOrbit = false;
 
         function pinchDist(e) { const a = e.touches[0], b = e.touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
 
@@ -3471,9 +3493,7 @@
             if (e.touches.length === 1) {
                 touchStartSingleX = e.touches[0].clientX;
                 touchStartSingleY = e.touches[0].clientY;
-                touchLastSingleY = e.touches[0].clientY;
                 touchStartTime = Date.now();
-                touchGestureOrbit = !oneDActive && journey > 0.50 && journey < 0.71;
             }
             if (e.touches.length === 2) {
                 touchStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -3483,31 +3503,13 @@
         }
 
         function onTouchMove(e) {
-            // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
+            // 作品集页: 原生竖直滚动, 停在本页; 点右上角 logo 返回
             if (oneDActive) return;
 
-            // 单指上滑 → 宇宙缩放之旅 (和电脑端滚轮/触控板效果一致); 双指捏合手势不受影响。
-            // 小幅抖动/点击(<8px)不触发, 避免点击作品时误触发 journey。
-            if (e.touches.length === 1) {
-                // 宇宙参观阶段: 单指拖动 = OrbitControls 环绕星球, 不推进旅程
-                // (继续/回退旅程用双指捏合)。preventDefault 防止页面下拉刷新等手势。
-                if (touchGestureOrbit) {
-                    if (Math.abs(e.touches[0].clientX - touchStartSingleX) > 8 ||
-                        Math.abs(e.touches[0].clientY - touchStartSingleY) > 8) e.preventDefault();
-                    return;
-                }
-                const y = e.touches[0].clientY;
-                const dY = y - touchLastSingleY;
-                touchLastSingleY = y;              // 每帧更新 → 丝滑, 和双指捏合一致
-                if (Math.abs(y - touchStartSingleY) > 8) {
-                    e.preventDefault();
-                    // 之前 0.0052 太敏感, 一次随便的滑动(~200px)就直接冲到底, 宇宙坍塌成
-                    // 马赛克那段几乎看不清就过去了。降到 0.0018, 要滑够将近一整屏才能走完
-                    // 全程, 中间过程才有机会看清楚。
-                    nudgeJourneyTarget(-dY * 0.0018);
-                }
-                return;
-            }
+            // 手机端: 单指拖动 = 环绕看树, 交给 OrbitControls 自己转 (树场景 j≈0 时
+            // enableRotate 为真, touches.ONE 默认 ROTATE)。这里直接放行, 不推进任何
+            // "宇宙之旅" —— 那套只留给桌面鼠标+滚轮 (触摸事件只在触屏上触发)。
+            if (e.touches.length === 1) return;
 
             if (e.touches.length !== 2) return;
             e.preventDefault();
@@ -3516,24 +3518,17 @@
             touchLastDist = dist;                  // ★ 每帧都更新 → 不会跳变(丝滑关键)
             const currentX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
             const deltaX = currentX - touchStartX;
-            // 靠近树 + 明显横向(几乎没在捏) → 切季节, 一次手势触发一次
-            if (isSwiping && journey < 0.08 && !seasonChangeCooldown &&
+            // 明显横向(几乎没在捏) → 切季节, 一次手势触发一次
+            if (isSwiping && !seasonChangeCooldown &&
                 Math.abs(deltaX) > 70 && Math.abs(deltaX) > Math.abs(dDist) * 4) {
                 if (deltaX < 0 && currentSeason < 2) changeSeason(1);
                 else if (deltaX > 0 && currentSeason > 0) changeSeason(-1);
                 isSwiping = false;
                 return;
             }
-            // 双指捏合 → 每帧连续平滑驱动。捏开(放大): 先把旅程拉回树(journey↓),
-            // 拉到头后继续捏开 = 镜头靠近树细看(treeZoom↑); 捏合(缩小)反向:
-            // 先退出树部特写, 退完才推进宇宙之旅。跟单指上滑同样的慢灵敏度。
-            if (dDist > 0) {
-                if (journeyTarget > 0.001) nudgeJourneyTarget(-dDist * 0.0018);
-                else treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
-            } else {
-                if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
-                else nudgeJourneyTarget(-dDist * 0.0018);
-            }
+            // 双指捏合 → 只做"靠近树细看"(treeZoom); 手机端不进宇宙之旅。
+            // 捏开(放大)→ 更近看树; 捏合(缩小)→ 退回默认距离。
+            treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
         }
 
         function onTouchEnd(e) {
@@ -4231,33 +4226,22 @@
         }
         // 树部特写: 捏开(或滚轮放大)到旅程 0 之后继续放大 → 镜头靠近树 (0=默认取景, 1=最近)。
         let treeZoom = 0, treeZoomTarget = 0;
-        let swipeHandTimer = null;
+        let logoHintTimer = null;
 
-        // 在树前驻留 3 秒 → 出现上滑手指提示; journey 一推进就撤掉。
-        // 不再是一次性: 回到树前再驻留 3 秒会重新出现 (之前滑过一次就永远消失,
-        // 用户会以为提示坏了/丢了)。
-        function scheduleSwipeHandHint() {
-            // 只在触屏(手机/平板)上出现 —— 桌面端有滚轮, 不需要上滑手势提示。
-            // 除 pointer:coarse 外也认 touch 事件支持: DevTools 设备模拟等环境更可靠。
-            const isTouch = window.matchMedia('(pointer: coarse)').matches ||
-                'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            if (!isTouch) return;
-            if (swipeHandTimer) return;                       // 已在倒计时
-            const el = document.getElementById('swipeHint');
-            if (el && el.classList.contains('visible')) return; // 已经显示着
-            swipeHandTimer = setTimeout(() => {
-                swipeHandTimer = null;
-                // 正在近距离看树(treeZoom)时不打扰; 退出特写后外层每帧的
-                // scheduleSwipeHandHint 会重新武装, 3 秒后再检查一次。
-                if (journey < 0.02 && treeZoomTarget < 0.05 && !oneDActive) {
-                    if (el) el.classList.add('visible');
-                }
-            }, 3000);
+        // 手机端一次性提示: 树场景加载后, 一只手指指向右上角 logo, 只显示约 3 秒后淡出,
+        // 引导用户点 logo 进作品页。点了 logo(或已在作品页)会立刻撤掉。桌面端不出现。
+        function showLogoHint() {
+            if (!IS_TOUCH) return;
+            const el = document.getElementById('logoHint');
+            if (!el || oneDActive) return;
+            el.classList.add('visible');
+            clearTimeout(logoHintTimer);
+            logoHintTimer = setTimeout(() => el.classList.remove('visible'), 3000);
         }
 
-        function dismissSwipeHandHint() {
-            if (swipeHandTimer) { clearTimeout(swipeHandTimer); swipeHandTimer = null; }
-            const el = document.getElementById('swipeHint');
+        function dismissLogoHint() {
+            clearTimeout(logoHintTimer);
+            const el = document.getElementById('logoHint');
             if (el) el.classList.remove('visible');
         }
 
@@ -4482,15 +4466,23 @@
 
             setupPixelCanvas();
             buildOneDSite();
-            // 头像点击 → 直接硬切回最初的树 (无倒带/特效)
+            // logo(头像)点击: 树场景 → 直接进作品页(手机端跳过整段宇宙之旅);
+            // 作品页 → 直接硬切回最初的树 (无倒带/特效)。
             const home = document.getElementById('fpHome');
             if (home) home.addEventListener('click', () => {
+                dismissLogoHint();
+                if (!oneDActive) {                                        // 树 → 作品页
+                    setOneDActive(true);
+                    return;
+                }
+                // 作品页 → 树
                 const site = document.getElementById('oneDSite');
                 if (site) site.style.transition = 'none';                 // 作品集页瞬间收起, 不淡出
                 // 背景先复位到季节色, 否则 j<0.05 的快照会把天空染成太空黑
                 if (scene.background && scene.background.isColor) scene.background.copy(seasonBgColor);
                 journey = 0; journeyTarget = 0;                            // 直接定位到树
                 treeZoom = 0; treeZoomTarget = 0;                          // 树部特写一并复位
+                setOneDActive(false);                                     // 手机端: journey 不再驱动站点开关, 显式关站
                 updateJourney(0);                                         // 本帧立即复位整个场景
                 if (site) requestAnimationFrame(() => { site.style.transition = ''; });
             });
@@ -4506,9 +4498,8 @@
         }
 
         function setTreeUIOpacity(o) {
-            // .swipe-hint 不放在这里: 它有自己独立的 3 秒延迟出现 + 一次性撤销逻辑
-            // (scheduleSwipeHandHint/dismissSwipeHandHint), 这里如果也去设 inline
-            // opacity/animation, 会在用户还没滑动时就把它强制设成不透明、盖掉延迟效果。
+            // 只淡入淡出树场景常驻 UI; logo(#fpHome)与 .logo-hint 有各自的显隐逻辑,
+            // 不放这里(否则会盖掉 logo 常显 / 手指提示的一次性淡出)。
             ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
                 document.querySelectorAll(s).forEach(el => {
                     el.style.opacity = o;
@@ -4521,6 +4512,11 @@
         function setOneDActive(active) {
             if (active === oneDActive) return;
             oneDActive = active;
+            const home = document.getElementById('fpHome');
+            if (home) {                                   // logo 双重身份: 树↔作品页
+                home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
+                home.setAttribute('title', active ? 'Back to the tree' : 'View portfolio');
+            }
             const site = document.getElementById('oneDSite');
             if (!site) return;
             if (active) { site.classList.add('active'); site.scrollTop = 0; setTimeout(typeHero, 320); }
@@ -4550,6 +4546,10 @@
         }
 
         function updateJourney(dt) {
+            // logo 显隐: 靠近树 或 作品页时显示; 桌面端旅程途中(离开树)淡出。
+            // 手机端 journey 恒为 0 → 树场景常显。放在 cosmosInited 判断前, 加载即生效。
+            const homeEl = document.getElementById('fpHome');
+            if (homeEl) homeEl.classList.toggle('show', oneDActive || journey < 0.06);
             if (!cosmosInited) return;
             // 限制单帧 dt: 标签页切后台再回来(或手机浏览器节流 rAF)时 dt 会是好几秒,
             // journey 一帧直接跳到目标 → 跳过中段"拉回平视"过渡, 用户自由旋转过的
@@ -4711,15 +4711,16 @@
 
             // 树场景 UI 淡出
             setTreeUIOpacity(1 - smooth(seg(j, 0.04, 0.18)));
-            if (j > 0.02) dismissSwipeHandHint();
-            else if (!oneDActive) scheduleSwipeHandHint();     // 回到树前重新武装 (内部有防重入)
 
             // 塌完 → 暖炭微光 → 作品集页
             const flash = document.getElementById('cosmosFlash');
             if (flash) flash.style.opacity = smooth(seg(j, 0.96, 0.978)) * (1 - smooth(seg(j, 0.99, 1.0)));
             const canvasC = document.getElementById('canvas-container');
             if (canvasC) canvasC.style.opacity = pixCaptured ? '0' : '1';
-            setOneDActive(j >= 0.978);
+            // 旅程走到底自动进作品页 —— 只"开"不"关": 关闭统一交给 logo 点击显式处理。
+            // (若每帧按 j 回写 false, 手机端/桌面端点 logo 开的作品页会被立刻关掉。
+            //  手机端 journey 恒为 0, 永不触发这里, 作品页全靠 logo。)
+            if (!oneDActive && j >= 0.978) setOneDActive(true);
         }
 
         // 构建坍塌后的白色个人网站 (极简高级)
@@ -4769,11 +4770,14 @@
                 </aside>
                 <main class="fp-main">
                     <h1 class="fp-hero notranslate" translate="no">Hey, I'm Jane.</h1>
-                    <div class="fp-lede">
+                    <div class="fp-lede is-collapsed">
                         <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.</p>
-                        <p>Since I began keeping journals at seven, I've been haunted by one image: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</p>
-                        <p>That question — what lasts, what counts, and how small lives find meaning in vast time — has followed me from fiction and stream-of-consciousness writing into websites, experiments, and AI-native apps. Building is my way of answering it: turning strange ideas into something concrete that helps us thrive.</p>
-                        <p>I'm a <b>fast shipper</b>, a <b>creative thinker</b>, and an <b>active explorer</b> — curious about everything in the world.</p>
+                        <p>Since I began keeping journals at seven, I've been haunted by one image<span class="fp-lede-tail">: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</span></p>
+                        <div class="fp-lede-rest">
+                            <p>That question — what lasts, what counts, and how small lives find meaning in vast time — has followed me from fiction and stream-of-consciousness writing into websites, experiments, and AI-native apps. Building is my way of answering it: turning strange ideas into something concrete that helps us thrive.</p>
+                            <p>I'm a <b>fast shipper</b>, a <b>creative thinker</b>, and an <b>active explorer</b> — curious about everything in the world.</p>
+                        </div>
+                        <button type="button" class="fp-lede-toggle" id="ledeToggle" aria-expanded="false" aria-label="Show more"><span class="fp-lede-chev" aria-hidden="true">›</span></button>
                     </div>
                     <section class="fp-projects">
                         <div class="fp-h2">Work Experience</div>
@@ -4788,13 +4792,22 @@
                         ${researchLab.map(it => row(it, null)).join('')}
                     </section>
                     <section class="fp-projects">
-                        <div class="fp-h2">Leadership Showcase</div>
+                        <div class="fp-h2">Leadership</div>
                         ${leadership.map(it => row(it, null)).join('')}
                     </section>
                 </main>`;
             wireMessageModal();
             const hireForm = document.getElementById('hireForm');
             if (hireForm) hireForm.addEventListener('submit', sendHireForm);
+            // 手机端简介: "›" 箭头折叠/展开 (桌面端箭头隐藏, 恒显全文)
+            const ledeToggle = document.getElementById('ledeToggle');
+            if (ledeToggle) ledeToggle.addEventListener('click', () => {
+                const lede = ledeToggle.closest('.fp-lede');
+                if (!lede) return;
+                const collapsed = lede.classList.toggle('is-collapsed');
+                ledeToggle.setAttribute('aria-expanded', String(!collapsed));
+                ledeToggle.setAttribute('aria-label', collapsed ? 'Show more' : 'Show less');
+            });
             // 手机端: Connect 里的 "Hire Me" 链接 → 点击才展开表单 (桌面端表单常开, 此按钮隐藏)
             const hireToggle = document.getElementById('hireToggle');
             if (hireToggle) hireToggle.addEventListener('click', () => {
