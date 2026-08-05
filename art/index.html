@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Jane Zhang — AI Filmmaker · Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --bg:#0b0b0d;
+    --ink:#f3efe7;
+    --muted:#8f897d;
+    --soft:#b6b0a2;   /* a step up from --muted, for text that should read a touch brighter */
+    --line:rgba(243,239,231,.14);
+    --warm:#e7c9a0;
+    --serif:"Geist","Noto Sans SC","Noto Sans JP","Noto Sans KR","Noto Naskh Arabic",sans-serif;
+    --mono:"Geist Mono",ui-monospace,"Noto Sans SC","Noto Sans JP","Noto Sans KR","Noto Naskh Arabic",monospace;
+    --cjk:"Noto Sans SC","Noto Sans JP","Noto Sans KR","Noto Naskh Arabic";
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);height:100%;overflow:hidden;}
+  body{font-family:var(--mono),var(--cjk);-webkit-font-smoothing:antialiased;overscroll-behavior:none;touch-action:none;
+       opacity:0;transition:opacity 1.2s ease;}
+  body.ready{opacity:1}
+  a{color:inherit}
+
+  #stage{position:fixed;inset:0;z-index:1;display:block;}
+
+  /* ---------- film overlays ---------- */
+  #vignette{position:fixed;inset:0;z-index:5;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 42%, transparent 55%, rgba(0,0,0,.55) 100%);}
+  #grain{position:fixed;inset:-50%;z-index:6;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 900ms steps(4) infinite;}
+  @keyframes grain{0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-2%)}100%{transform:translate(3%,1%)}}
+  .bar{position:fixed;left:0;right:0;height:0;z-index:7;background:#000;pointer-events:none;transition:height .8s cubic-bezier(.16,1,.3,1);}
+  #bar-top{top:0}#bar-bot{bottom:0}
+  body.cinema #bar-top,body.cinema #bar-bot{height:11vh}
+
+  /* ---------- HUD ---------- */
+  .hud{position:fixed;z-index:10;}
+  #brand{top:26px;left:30px;}
+  #brand .name{font-family:var(--serif);font-weight:500;letter-spacing:.02em;font-size:19px;line-height:1;}
+  #brand .role{margin-top:7px;font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted);}
+
+  /* language selector — sits in the top-left stack, under the brand */
+  #lang{top:76px;left:30px;z-index:12;}
+  #langBtn{all:unset;cursor:pointer;font-family:var(--mono),var(--cjk);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:8px;padding:5px 0;transition:color .3s;}
+  #langBtn:hover,#lang.open #langBtn{color:var(--ink)}
+  #langBtn .glb{opacity:.55;font-size:11px}
+  #langBtn .car{font-size:8px;opacity:.6;transition:transform .3s}
+  #lang.open #langBtn .car{transform:rotate(180deg)}
+  #langMenu{list-style:none;margin:11px 0 0;padding:7px 0;position:absolute;left:0;transform:translateY(-6px);min-width:158px;
+    background:rgba(14,14,16,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:13px;
+    opacity:0;pointer-events:none;transition:opacity .28s,transform .28s;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  #lang.open #langMenu{opacity:1;pointer-events:auto;transform:translateY(0);}
+  #langMenu li{padding:9px 22px;font-family:var(--mono),var(--cjk);font-size:12px;letter-spacing:.1em;color:var(--muted);cursor:pointer;transition:color .2s,background .2s;text-align:left;}
+  #langMenu li:hover{color:var(--ink);background:rgba(255,255,255,.045)}
+  #langMenu li.on{color:var(--warm)}
+  body.rtl #lang{left:auto;right:30px;}
+  body.rtl #langMenu{left:auto;right:0;}
+
+  /* selected toolkit — top-right */
+  #toolkit{top:28px;right:30px;z-index:12;text-align:right;}
+  #tkBtn{all:unset;cursor:pointer;font-family:var(--mono),var(--cjk);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--soft);display:inline-flex;align-items:center;gap:8px;padding:5px 0;transition:color .3s;}
+  #tkBtn:hover,#toolkit.open #tkBtn{color:var(--ink)}
+  #tkBtn .car{font-size:8px;opacity:.6;transition:transform .3s}
+  #toolkit.open #tkBtn .car{transform:rotate(180deg)}
+  #tkPanel{position:absolute;right:0;margin-top:12px;min-width:212px;padding:9px 6px;
+    background:rgba(14,14,16,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:14px;
+    opacity:0;pointer-events:none;transform:translateY(-6px);transition:opacity .3s,transform .3s;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+  #toolkit.open #tkPanel{opacity:1;pointer-events:auto;transform:translateY(0);}
+  #tkList{list-style:none;margin:0;padding:0;}
+  #tkList li{display:block;}
+  #tkList a{display:flex;align-items:center;gap:14px;padding:10px 16px;
+    color:var(--soft);text-decoration:none;transition:color .25s;text-align:left;}
+  #tkList a:hover{color:var(--ink)}
+  #tkList .mark{width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;}
+  /* marks are alpha-masked in --ink — no chip, just the logo */
+  #tkList .mark img{width:100%;height:100%;object-fit:contain;display:block;opacity:.82;transition:opacity .25s;}
+  #tkList a:hover .mark img{opacity:1;}
+  #tkList .tn{font-family:var(--mono),var(--cjk);font-size:12.5px;letter-spacing:.05em;}
+  body.rtl #toolkit{right:auto;left:30px;text-align:left;}
+  body.rtl #tkPanel{right:auto;left:0;}
+  body.rtl #tkList a{text-align:right;}
+
+  /* hint */
+  /* needs its own position — it isn't a .hud element, so it was laying out static */
+  #hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:12px;transition:opacity .6s;font-family:var(--mono),var(--cjk);
+    text-shadow:0 1px 10px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.7);}
+  #hint .wheel{width:17px;height:27px;border:1px solid var(--line);border-radius:10px;position:relative;flex:none;}
+  #hint .wheel::after{content:"";position:absolute;left:50%;top:6px;width:2px;height:5px;border-radius:2px;background:var(--muted);transform:translateX(-50%);animation:drop 1.6s infinite;}
+  @keyframes drop{0%{opacity:0;transform:translate(-50%,-3px)}30%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(-50%,8px)}}
+
+  /* hover tooltip */
+  #tip{position:fixed;z-index:9;pointer-events:none;opacity:0;transform:translate(-50%,-150%);transition:opacity .25s;font-family:var(--serif);font-weight:500;font-size:13px;letter-spacing:.05em;white-space:nowrap;text-shadow:0 2px 20px #000;}
+
+  /* focus caption */
+  #caption{position:fixed;z-index:10;left:40px;bottom:14vh;max-width:360px;opacity:0;transform:translateY(14px);transition:opacity .6s .15s,transform .6s .15s;pointer-events:none;}
+  body.cinema #caption{opacity:1;transform:none;}
+  #caption .ser{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);font-family:var(--mono),var(--cjk);}
+  #caption h2{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.06;margin:12px 0 6px;}
+  #caption .meta{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
+  #caption .exit{margin-top:18px;font-size:9.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
+
+  body.rtl #caption{left:auto;right:40px;text-align:right;}
+  body.rtl #brand{left:auto;right:30px;text-align:right;}
+
+  /* the scroll hint retires once you've started walking */
+  #hint{transition:opacity .9s ease;}
+  body.hint-off #hint{opacity:0;pointer-events:none;}
+
+  @media (max-width:720px){
+    /* toolkit drops onto the language row — beside the brand it's 2px from the role line */
+    #brand{left:16px;top:16px}#lang{left:16px;top:66px}#toolkit{right:16px;top:64px}
+    #caption{left:20px;right:20px;max-width:none;bottom:16vh}#caption h2{font-size:27px}
+    body.rtl #brand{right:16px}body.rtl #lang{right:16px}body.rtl #toolkit{left:16px}
+  }
+</style>
+
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+
+<!-- overlays -->
+<div id="vignette"></div>
+<div id="grain"></div>
+<div id="bar-top" class="bar"></div>
+<div id="bar-bot" class="bar"></div>
+<div id="tip"></div>
+
+<!-- HUD -->
+<div id="brand" class="hud">
+  <div class="name">Jane Zhang</div>
+  <div class="role"></div>
+</div>
+
+<div id="lang" class="hud">
+  <button id="langBtn"><svg class="glb" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></svg><span class="cur">English</span> <span class="car">▾</span></button>
+  <ul id="langMenu"></ul>
+</div>
+
+<div id="toolkit" class="hud">
+  <button id="tkBtn"><span class="tklabel">Selected Toolkit</span> <span class="car">▾</span></button>
+  <div id="tkPanel"><ul id="tkList"></ul></div>
+</div>
+
+<div id="hint"><span class="wheel"></span> <span id="hintText"></span></div>
+
+<div id="caption" class="hud">
+  <div class="ser"></div>
+  <h2></h2>
+  <div class="meta"></div>
+  <div class="exit"></div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+/* ------------------------------------------------------------ languages --- */
+const LANGS = [
+  ['en','English'],['zh','中文'],['ja','日本語'],['ko','한국어'],
+  ['ar','العربية'],['es','Español'],['fr','Français'],['ru','Русский'],['de','Deutsch']
+];
+const L = {
+  en:{ role:'AI Artist · Filmmaker', sec:['The Scallion','Fair Is Foul','To Be Continued'],
+       hint:'Scroll to walk the gallery', exit:'Scroll or press Esc to step back', still:'AI Film Still', tk:'Selected Toolkit' },
+  zh:{ role:'AI艺术家｜AI电影创作者', sec:['葱','门楣','未完待续'],
+       hint:'滚动以漫步展厅', exit:'滚动或按 Esc 返回', still:'AI 电影剧照', tk:'创作工具精选' },
+  ja:{ role:'AIアーティスト｜AI映画作家', sec:['ネギ','きれいは汚い','つづく'],
+       hint:'スクロールしてギャラリーを巡る', exit:'スクロール、または Esc で戻る', still:'AI 映画スチル', tk:'厳選ツール' },
+  ko:{ role:'AI 아티스트｜AI 영화 창작자', sec:['파','고운 것은 더럽다','계속'],
+       hint:'스크롤하여 갤러리 둘러보기', exit:'스크롤 또는 Esc로 돌아가기', still:'AI 영화 스틸', tk:'엄선한 도구' },
+  ar:{ role:'فنّ الذكاء الاصطناعي · صناعة الأفلام', sec:['البصل الأخضر','الجميل قبيح','يُتبع'],
+       hint:'مرّر للتجوّل في المعرض', exit:'مرّر أو اضغط Esc للرجوع', still:'لقطة من فيلم بالذكاء الاصطناعي', tk:'أدوات مختارة' },
+  es:{ role:'Artista de IA · Cineasta', sec:['La Cebolleta','Lo Bello Es Feo','Continuará'],
+       hint:'Desplázate para recorrer la galería', exit:'Desplázate o pulsa Esc para volver', still:'Fotograma de cine IA', tk:'Herramientas Seleccionadas' },
+  fr:{ role:'Artiste IA · Cinéaste', sec:['L’Oignon Vert','Le Beau Est Affreux','À Suivre'],
+       hint:'Faites défiler pour parcourir la galerie', exit:'Défilez ou appuyez sur Échap pour revenir', still:'Photogramme de film IA', tk:'Outils Sélectionnés' },
+  ru:{ role:'ИИ-художник · кинорежиссёр', sec:['Зелёный лук','Добро есть зло','Продолжение следует'],
+       hint:'Прокрутите, чтобы пройти по галерее', exit:'Прокрутите или нажмите Esc, чтобы вернуться', still:'Кадр из ИИ-фильма', tk:'Избранные инструменты' },
+  de:{ role:'KI-Kunstschaffende · Filmschaffende', sec:['Die Frühlingszwiebel','Schön ist wüst','Fortsetzung folgt'],
+       hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', still:'KI-Filmstill', tk:'Ausgewählte Werkzeuge' },
+};
+let lang = 'en';
+
+/* ------------------------------------------------------------------ data -- */
+/* section names come from L[lang].sec[index]; titles stay English (proper names) */
+const SECTIONS = [
+  { key:'scallion', works:[
+    {id:'hg-5'}, {id:'hg-1'}, {id:'hg-2'}, {id:'hg-3'}, {id:'hg-4'},
+  ]},
+  { key:'fair', works:[
+    {id:'fz-1'}, {id:'fz-2'}, {id:'fz-3'},
+  ]},
+  { key:'progress', works:[
+    {id:'sel-1'}, {id:'sel-2'},
+  ]},
+];
+/* per-work titles, localized — shown on hover and in the focus caption.
+   ids absent here (sel-1, sel-2) stay untitled. */
+const TITLES = {
+  'hg-1':{ en:'Beach', zh:'海滩', ja:'ビーチ', ko:'해변', ar:'الشاطئ', es:'La Playa', fr:'La Plage', ru:'Пляж', de:'Der Strand' },
+  'hg-2':{ en:'Floating Breakfast · Noon', zh:'漂浮早餐 · 正午', ja:'浮かぶ朝食 · 正午', ko:'플로팅 조식 · 정오', ar:'فطور عائم · ظهرًا', es:'Desayuno Flotante · Mediodía', fr:'Petit-déjeuner Flottant · Midi', ru:'Плавучий завтрак · Полдень', de:'Schwimmendes Frühstück · Mittag' },
+  'hg-3':{ en:'Floating Breakfast · Dusk', zh:'漂浮早餐 · 黄昏', ja:'浮かぶ朝食 · 夕暮れ', ko:'플로팅 조식 · 황혼', ar:'فطور عائم · الغسق', es:'Desayuno Flotante · Atardecer', fr:'Petit-déjeuner Flottant · Crépuscule', ru:'Плавучий завтрак · Сумерки', de:'Schwimmendes Frühstück · Dämmerung' },
+  'hg-4':{ en:'Above the Clouds', zh:'云端之上', ja:'雲の上', ko:'구름 위', ar:'فوق الغيوم', es:'Sobre las Nubes', fr:'Au-dessus des Nuages', ru:'Над облаками', de:'Über den Wolken' },
+  'hg-5':{ en:'The Scallion Next Door', zh:'隔壁那根儿老葱', ja:'隣のネギ', ko:'옆집 파', ar:'بصلة الجيران', es:'La Cebolleta de al Lado', fr:'L’Oignon Vert d’à Côté', ru:'Зелёный лук по соседству', de:'Die Zwiebel von nebenan' },
+  'fz-1':{ en:'The Father', zh:'父', ja:'父', ko:'아버지', ar:'الأب', es:'El Padre', fr:'Le Père', ru:'Отец', de:'Der Vater' },
+  'fz-2':{ en:'The Son', zh:'子', ja:'子', ko:'아들', ar:'الابن', es:'El Hijo', fr:'Le Fils', ru:'Сын', de:'Der Sohn' },
+  'fz-3':{ en:'The Standoff', zh:'对峙', ja:'対峙', ko:'대치', ar:'المواجهة', es:'El Enfrentamiento', fr:'L’Affrontement', ru:'Противостояние', de:'Die Konfrontation' },
+};
+const secName = i => L[lang].sec[i];
+const workTitle = w => { const t=TITLES[w.id]; return t ? (t[lang]||t.en) : ''; };
+
+/* --------------------------------------------------------------- layout ---- */
+const WORK_STEP = 6.4, SECTION_LEAD = 8, EYE_Y = 1.55, ART_Y = 1.9, ART_H = 2.05;
+const works = [], marks = [];
+{
+  let z = 0, side = 1;
+  SECTIONS.forEach((sec,si)=>{
+    z -= SECTION_LEAD;
+    marks.push({ key:sec.key, si, z });
+    sec.works.forEach((w)=>{
+      z -= WORK_STEP;
+      works.push({ ...w, si, section:sec, z, side });
+      side *= -1;
+    });
+  });
+  var LAST_Z = z;
+}
+const START_Z = 10.5, END_Z = LAST_Z + 2.5, OUTRO_Z = LAST_Z - 7;
+const SIDE_X = 3.45, ROT = Math.PI/6;
+
+/* --------------------------------------------------------------- three ----- */
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0b0d);
+scene.fog = new THREE.FogExp2(0x0b0b0d, 0.032);
+
+const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0, EYE_Y, START_Z);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 280),
+  new THREE.MeshStandardMaterial({ color:0x141416, roughness:0.42, metalness:0.35 }));
+floor.rotation.x = -Math.PI/2; floor.position.z = (START_Z+LAST_Z)/2; scene.add(floor);
+
+scene.add(new THREE.HemisphereLight(0x2a2b33, 0x060606, 0.5));
+const key = new THREE.DirectionalLight(0xbfc6d8, 0.15); key.position.set(0,10,20); scene.add(key);
+
+function poolTexture(){
+  const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d');
+  const rad=g.createRadialGradient(128,128,0,128,128,128);
+  rad.addColorStop(0,'rgba(231,201,160,.55)'); rad.addColorStop(.5,'rgba(231,201,160,.14)'); rad.addColorStop(1,'rgba(231,201,160,0)');
+  g.fillStyle=rad; g.fillRect(0,0,256,256);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+}
+const POOL = poolTexture();
+
+/* section title — localized big word (rebuilt on language change) */
+const titleMeshes = [];
+function titleTexture(text){
+  const W=2048,H=640, c=document.createElement('canvas'); c.width=W;c.height=H;
+  const g=c.getContext('2d'); g.textAlign='center'; g.textBaseline='middle';
+  let s=360; const maxW=1720;
+  do{ g.font=`300 ${s}px "Geist","Noto Sans SC","Noto Sans JP","Noto Sans KR","Noto Naskh Arabic",sans-serif`; if(g.measureText(text).width<=maxW) break; s-=10; }while(s>70);
+  g.fillStyle='rgba(243,239,231,.94)'; g.fillText(text, W/2, H/2);
+  const tex=new THREE.CanvasTexture(c); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4; return tex;
+}
+function buildTitles(){
+  marks.forEach(mark=>{
+    const tex=titleTexture(secName(mark.si));
+    const mat=new THREE.MeshBasicMaterial({ map:tex, transparent:true, opacity:.9, depthWrite:false, toneMapped:false });
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(9, 9*640/2048), mat);
+    m.position.set(0, 2.3, mark.z); scene.add(m);
+    titleMeshes.push({ mesh:m, mark });
+  });
+}
+function refreshTitles(){
+  titleMeshes.forEach(({mesh,mark})=>{ const old=mesh.material.map; mesh.material.map=titleTexture(secName(mark.si)); mesh.material.needsUpdate=true; if(old)old.dispose(); });
+}
+
+/* artworks */
+const loader = new THREE.TextureLoader();
+const pickables = [];
+function buildWork(w){
+  const g=new THREE.Group();
+  g.position.set(w.side*SIDE_X, ART_Y, w.z); g.rotation.y=-w.side*ROT; scene.add(g);
+  const frame=new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({ color:0x050506, roughness:.9, metalness:0 }));
+  frame.position.z=-0.03; g.add(frame);
+  const imgMat=new THREE.MeshBasicMaterial({ color:0xbdb8ae, toneMapped:false });
+  const img=new THREE.Mesh(new THREE.PlaneGeometry(1,1), imgMat); g.add(img);
+  img.userData.work=w; pickables.push(img); w._img=img; w._mat=imgMat; w._group=g;
+  loader.load('assets/'+w.id+'.jpg',(tex)=>{
+    tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+    imgMat.map=tex; imgMat.needsUpdate=true;
+    const a=tex.image.width/tex.image.height, h=ART_H, wd=h*a;
+    img.scale.set(wd,h,1); frame.scale.set(wd+0.16,h+0.16,1); w._w=wd; w._h=h;
+  });
+  const pool=new THREE.Mesh(new THREE.PlaneGeometry(4.6,4.6), new THREE.MeshBasicMaterial({ map:POOL, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9 }));
+  pool.rotation.x=-Math.PI/2; pool.position.set(w.side*SIDE_X*0.92,0.02,w.z); scene.add(pool);
+  const spot=new THREE.SpotLight(0xffe9c7,40,11,0.62,0.75,1.4);
+  spot.position.set(w.side*SIDE_X*0.7,4.3,w.z+1.4); spot.target=g; scene.add(spot); scene.add(spot.target);
+}
+works.forEach(buildWork);
+
+function buildOutro(){
+  const W=2048,H=520,c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(243,239,231,.9)';
+  g.font='300 150px "Geist","Noto Sans SC",sans-serif'; g.fillText('完 · Fin', W/2, H/2);
+  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(8,8*H/W), new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:.92,depthWrite:false,toneMapped:false}));
+  m.position.set(0,2.0,OUTRO_Z);scene.add(m);
+}
+
+/* ------------------------------------------------- virtual scroll (walk) --- */
+const clamp01=v=>v<0?0:v>1?1:v;
+let targetT=0, curT=0;
+const zForT=t=>START_Z+(END_Z-START_Z)*t;
+const tForZ=z=>clamp01((z-START_Z)/(END_Z-START_Z));
+
+/* --------------------------------------------------------------- state ----- */
+let mode='scroll', focusWork=null;
+const mouse=new THREE.Vector2(0,0), ptr=new THREE.Vector2(), ray=new THREE.Raycaster();
+const desiredPos=new THREE.Vector3().copy(camera.position);
+const desiredLook=new THREE.Vector3(0,1.72,START_Z-12);
+const smoothLook=desiredLook.clone();
+
+function scrollPose(){ const z=zForT(curT); desiredPos.set(mouse.x*0.55,EYE_Y+mouse.y*0.22,z); desiredLook.set(mouse.x*1.4,1.72,z-12); }
+function focusPose(w){
+  const n=new THREE.Vector3(Math.sin(w._group.rotation.y),0,Math.cos(w._group.rotation.y));
+  const fovV=THREE.MathUtils.degToRad(camera.fov);
+  const need=(Math.max((w._h||ART_H)*1.16, ((w._w||3.6)/camera.aspect)*1.16))/(2*Math.tan(fovV/2));
+  const c=w._group.position; desiredPos.set(c.x+n.x*need, c.y+0.02, c.z+n.z*need); desiredLook.copy(c);
+}
+
+/* --------------------------------------------------------------- events ---- */
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+addEventListener('pointermove',(e)=>{ mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-((e.clientY/innerHeight)*2-1); ptr.x=mouse.x; ptr.y=mouse.y; });
+
+let hovered=null; const tip=document.getElementById('tip');
+function updateHover(){ if(mode!=='scroll'){ setHover(null); return; } ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0]; setHover(hit?hit.object.userData.work:null); }
+function setHover(w){
+  if(hovered===w) return;
+  if(hovered) hovered._mat.color.setHex(0xbdb8ae);
+  hovered=w;
+  if(w){ w._mat.color.setHex(0xffffff); canvas.style.cursor='pointer';
+    const t=workTitle(w); if(t){ tip.textContent=t; tip.style.opacity='1'; } else { tip.style.opacity='0'; } }
+  else { canvas.style.cursor='default'; tip.style.opacity='0'; }
+}
+addEventListener('pointermove',e=>{ if(hovered&&workTitle(hovered)){ tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px'; }});
+
+canvas.addEventListener('click',()=>{
+  if(mode==='focus'){ exitFocus(); return; }
+  ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0];
+  if(hit) enterFocus(hit.object.userData.work);
+});
+addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='focus') exitFocus(); });
+
+const capEl=document.getElementById('caption');
+function fillCaption(w){
+  capEl.querySelector('.ser').textContent=secName(w.si);
+  const h2=capEl.querySelector('h2'), meta=capEl.querySelector('.meta');
+  const t=workTitle(w);
+  if(t){ h2.textContent=t; h2.style.display=''; meta.textContent=L[lang].still; meta.style.display=''; }
+  else { h2.style.display='none'; meta.style.display='none'; }
+  capEl.querySelector('.exit').textContent=L[lang].exit;
+}
+function enterFocus(w){ mode='focus'; focusWork=w; document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
+function exitFocus(){ mode='scroll'; focusWork=null; document.body.classList.remove('cinema'); }
+
+/* input: wheel + touch + keys drive targetT */
+let scrolled=false;
+function nudged(){ if(!scrolled){ scrolled=true; document.body.classList.add('hint-off'); } }
+addEventListener('wheel',(e)=>{ e.preventDefault(); nudged();
+  if(mode==='focus'){ exitFocus(); return; }
+  targetT=clamp01(targetT+e.deltaY*0.00058); },{passive:false});
+let touchY=null;
+addEventListener('touchstart',e=>{ touchY=e.touches[0].clientY; },{passive:true});
+addEventListener('touchmove',e=>{ nudged(); e.preventDefault();
+  if(mode==='focus'){ exitFocus(); touchY=e.touches[0].clientY; return; }
+  if(touchY!=null){ const dy=touchY-e.touches[0].clientY; targetT=clamp01(targetT+dy*0.0012); touchY=e.touches[0].clientY; } },{passive:false});
+addEventListener('keydown',e=>{
+  const step=e.shiftKey?0.09:0.035;
+  if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){ nudged(); if(mode==='focus')exitFocus(); targetT=clamp01(targetT+step); e.preventDefault(); }
+  else if(e.key==='ArrowUp'||e.key==='PageUp'){ nudged(); if(mode==='focus')exitFocus(); targetT=clamp01(targetT-step); e.preventDefault(); }
+  else if(e.key==='Home'){ targetT=0; } else if(e.key==='End'){ targetT=1; }
+});
+
+/* --------------------------------------------------------------- i18n ------ */
+const langEl=document.getElementById('lang'), langBtn=document.getElementById('langBtn'), langMenu=document.getElementById('langMenu');
+LANGS.forEach(([code,label])=>{ const li=document.createElement('li'); li.textContent=label; li.dataset.code=code; li.onclick=(e)=>{ e.stopPropagation(); setLang(code); langEl.classList.remove('open'); }; langMenu.appendChild(li); });
+langBtn.onclick=(e)=>{ e.stopPropagation(); tkEl.classList.remove('open'); langEl.classList.toggle('open'); };
+
+/* --------------------------------------------------------- selected toolkit */
+/* bare brand marks, no chip — the whole row (mark + name) links out to the tool */
+const TOOLS=[
+  {name:'Martini', logo:'assets/logos/martini.png', url:'https://www.martini.film/jane-invitation'},
+  {name:'CapCut',  logo:'assets/logos/capcut.png',  url:'https://www.capcut.com'},
+  {name:'Claude',  logo:'assets/logos/claude.svg',  url:'https://claude.ai'},
+];
+const tkEl=document.getElementById('toolkit'), tkBtn=document.getElementById('tkBtn'), tkList=document.getElementById('tkList');
+TOOLS.forEach(t=>{
+  const li=document.createElement('li');
+  li.innerHTML=`<a href="${t.url}" target="_blank" rel="noopener noreferrer">`
+    +`<span class="mark"><img src="${t.logo}" alt="${t.name}"></span>`
+    +`<span class="tn">${t.name}</span></a>`;
+  tkList.appendChild(li);
+});
+tkBtn.onclick=(e)=>{ e.stopPropagation(); langEl.classList.remove('open'); tkEl.classList.toggle('open'); };
+
+addEventListener('click',()=>{ langEl.classList.remove('open'); tkEl.classList.remove('open'); });
+
+function setHintText(){
+  document.getElementById('hintText').textContent = L[lang].hint;
+}
+
+function setLang(code){
+  lang=code;
+  document.documentElement.setAttribute('dir', code==='ar'?'rtl':'ltr');
+  document.body.classList.toggle('rtl', code==='ar');
+  document.querySelector('#brand .role').textContent=L[code].role;
+  setHintText();
+  tkBtn.querySelector('.tklabel').textContent=L[code].tk;
+  langBtn.querySelector('.cur').textContent=(LANGS.find(l=>l[0]===code)||['','English'])[1];
+  langMenu.querySelectorAll('li').forEach(li=>li.classList.toggle('on', li.dataset.code===code));
+  if(titleMeshes.length) refreshTitles();
+  if(hovered){ const t=workTitle(hovered); tip.textContent=t; tip.style.opacity=t?'1':'0'; }
+  if(mode==='focus'&&focusWork) fillCaption(focusWork);
+}
+
+/* --------------------------------------------------------------- loop ------ */
+function frame(){
+  curT+=(targetT-curT)*0.075;
+  if(mode==='scroll'){ scrollPose(); updateHover(); } else focusPose(focusWork);
+  camera.position.lerp(desiredPos,0.09); smoothLook.lerp(desiredLook,0.09);
+  camera.lookAt(smoothLook);
+  renderer.render(scene,camera);
+}
+function tick(){ requestAnimationFrame(tick); frame(); }
+
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve())
+  .then(start).catch(start);
+function start(){
+  buildTitles(); buildOutro(); setLang('en'); tick();
+  requestAnimationFrame(()=>document.body.classList.add('ready'));
+}
+</script>
+
+</body>
+</html>
