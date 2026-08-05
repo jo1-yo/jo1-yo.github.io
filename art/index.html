@@ -102,9 +102,7 @@
   #caption{position:fixed;z-index:10;left:40px;bottom:14vh;max-width:360px;opacity:0;transform:translateY(14px);transition:opacity .6s .15s,transform .6s .15s;pointer-events:none;}
   body.cinema #caption{opacity:1;transform:none;}
   #caption .ser{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);font-family:var(--mono),var(--cjk);}
-  #caption h2{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.06;margin:12px 0 6px;}
-  #caption .meta{font-size:10px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
-  #caption .exit{margin-top:18px;font-size:9.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
+  #caption h2{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.06;margin:12px 0 6px;}  #caption .exit{margin-top:18px;font-size:9.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
 
   body.rtl #caption{left:auto;right:40px;text-align:right;}
   body.rtl #brand{left:auto;right:30px;text-align:right;}
@@ -153,9 +151,7 @@
 
 <div id="caption" class="hud">
   <div class="ser"></div>
-  <h2></h2>
-  <div class="meta"></div>
-  <div class="exit"></div>
+  <h2></h2>  <div class="exit"></div>
 </div>
 
 <script type="importmap">
@@ -171,24 +167,24 @@ const LANGS = [
   ['ar','العربية'],['es','Español'],['fr','Français'],['ru','Русский'],['de','Deutsch']
 ];
 const L = {
-  en:{ role:'AI Artist · Filmmaker', sec:['The Scallion','Fair Is Foul','To Be Continued'],
-       hint:'Scroll to walk the gallery', exit:'Scroll or press Esc to step back', still:'AI Film Still', tk:'Selected Toolkit' },
-  zh:{ role:'AI艺术家｜AI电影创作者', sec:['葱','门楣','未完待续'],
-       hint:'滚动以漫步展厅', exit:'滚动或按 Esc 返回', still:'AI 电影剧照', tk:'创作工具精选' },
-  ja:{ role:'AIアーティスト｜AI映画作家', sec:['ネギ','きれいは汚い','つづく'],
-       hint:'スクロールしてギャラリーを巡る', exit:'スクロール、または Esc で戻る', still:'AI 映画スチル', tk:'厳選ツール' },
-  ko:{ role:'AI 아티스트｜AI 영화 창작자', sec:['파','고운 것은 더럽다','계속'],
-       hint:'스크롤하여 갤러리 둘러보기', exit:'스크롤 또는 Esc로 돌아가기', still:'AI 영화 스틸', tk:'엄선한 도구' },
-  ar:{ role:'فنّ الذكاء الاصطناعي · صناعة الأفلام', sec:['البصل الأخضر','الجميل قبيح','يُتبع'],
-       hint:'مرّر للتجوّل في المعرض', exit:'مرّر أو اضغط Esc للرجوع', still:'لقطة من فيلم بالذكاء الاصطناعي', tk:'أدوات مختارة' },
-  es:{ role:'Artista de IA · Cineasta', sec:['La Cebolleta','Lo Bello Es Feo','Continuará'],
-       hint:'Desplázate para recorrer la galería', exit:'Desplázate o pulsa Esc para volver', still:'Fotograma de cine IA', tk:'Herramientas Seleccionadas' },
-  fr:{ role:'Artiste IA · Cinéaste', sec:['L’Oignon Vert','Le Beau Est Affreux','À Suivre'],
-       hint:'Faites défiler pour parcourir la galerie', exit:'Défilez ou appuyez sur Échap pour revenir', still:'Photogramme de film IA', tk:'Outils Sélectionnés' },
-  ru:{ role:'ИИ-художник · кинорежиссёр', sec:['Зелёный лук','Добро есть зло','Продолжение следует'],
-       hint:'Прокрутите, чтобы пройти по галерее', exit:'Прокрутите или нажмите Esc, чтобы вернуться', still:'Кадр из ИИ-фильма', tk:'Избранные инструменты' },
-  de:{ role:'KI-Kunstschaffende · Filmschaffende', sec:['Die Frühlingszwiebel','Schön ist wüst','Fortsetzung folgt'],
-       hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', still:'KI-Filmstill', tk:'Ausgewählte Werkzeuge' },
+  en:{ role:'AI Artist · Filmmaker', sec:['The Scallion','Fair Is Foul','In Progress'],
+       hint:'Scroll to walk the gallery', exit:'Scroll or press Esc to step back', tk:'Selected Toolkit' },
+  zh:{ role:'AI艺术家｜AI电影创作者', sec:['葱','门楣','敬请期待'],
+       hint:'滚动以漫步展厅', exit:'滚动或按 Esc 返回', tk:'创作工具精选' },
+  ja:{ role:'AIアーティスト｜AI映画作家', sec:['ネギ','きれいは汚い','ご期待ください'],
+       hint:'スクロールしてギャラリーを巡る', exit:'スクロール、または Esc で戻る', tk:'厳選ツール' },
+  ko:{ role:'AI 아티스트｜AI 영화 창작자', sec:['파','고운 것은 더럽다','기대해 주세요'],
+       hint:'스크롤하여 갤러리 둘러보기', exit:'스크롤 또는 Esc로 돌아가기', tk:'엄선한 도구' },
+  ar:{ role:'فنّ الذكاء الاصطناعي · صناعة الأفلام', sec:['البصل الأخضر','الجميل قبيح','قريبًا'],
+       hint:'مرّر للتجوّل في المعرض', exit:'مرّر أو اضغط Esc للرجوع', tk:'أدوات مختارة' },
+  es:{ role:'Artista de IA · Cineasta', sec:['La Cebolleta','Lo Bello Es Feo','Próximamente'],
+       hint:'Desplázate para recorrer la galería', exit:'Desplázate o pulsa Esc para volver', tk:'Herramientas Seleccionadas' },
+  fr:{ role:'Artiste IA · Cinéaste', sec:['L’Oignon Vert','Le Beau Est Affreux','Prochainement'],
+       hint:'Faites défiler pour parcourir la galerie', exit:'Défilez ou appuyez sur Échap pour revenir', tk:'Outils Sélectionnés' },
+  ru:{ role:'ИИ-художник · кинорежиссёр', sec:['Зелёный лук','Добро есть зло','Скоро'],
+       hint:'Прокрутите, чтобы пройти по галерее', exit:'Прокрутите или нажмите Esc, чтобы вернуться', tk:'Избранные инструменты' },
+  de:{ role:'KI-Kunstschaffende · Filmschaffende', sec:['Die Frühlingszwiebel','Schön ist wüst','Demnächst'],
+       hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', tk:'Ausgewählte Werkzeuge' },
 };
 let lang = 'en';
 
@@ -374,10 +370,10 @@ addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='focus') exitFocus()
 const capEl=document.getElementById('caption');
 function fillCaption(w){
   capEl.querySelector('.ser').textContent=secName(w.si);
-  const h2=capEl.querySelector('h2'), meta=capEl.querySelector('.meta');
+  const h2=capEl.querySelector('h2');
   const t=workTitle(w);
-  if(t){ h2.textContent=t; h2.style.display=''; meta.textContent=L[lang].still; meta.style.display=''; }
-  else { h2.style.display='none'; meta.style.display='none'; }
+  if(t){ h2.textContent=t; h2.style.display=''; }
+  else { h2.style.display='none'; }
   capEl.querySelector('.exit').textContent=L[lang].exit;
 }
 function enterFocus(w){ mode='focus'; focusWork=w; document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
