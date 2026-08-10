@@ -8,6 +8,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&family=Noto+Naskh+Arabic:wght@400;500&display=swap" rel="stylesheet" />
 
+<!-- three is imported from an inline module at the bottom, so the preload scanner
+     never sees it — this starts the 1.2MB download while the head is still parsing -->
+<link rel="modulepreload" href="./lib/three.module.js" />
+<!-- the first two frames you walk past, fetched before the scene even builds.
+     crossorigin is required, not cosmetic: TextureLoader requests images as
+     anonymous-CORS, and a preload without it is a cache miss + a second fetch -->
+<link rel="preload" as="image" href="assets/prev/hg-5.jpg" crossorigin />
+<link rel="preload" as="image" href="assets/prev/hg-1.jpg" crossorigin />
+
 <style>
   :root{
     --bg:#0b0b0d;
@@ -290,8 +299,73 @@ function refreshTitles(){
   titleMeshes.forEach(({mesh,mark})=>{ const old=mesh.material.map; mesh.material.map=titleTexture(secName(mark.si)); mesh.material.needsUpdate=true; if(old)old.dispose(); });
 }
 
-/* artworks */
+/* ------------------------------------------------- progressive textures ---- */
+/* Three tiers, so a frame is never an empty slab and you never wait on bytes
+   you can't see yet:
+     lqip — 24px thumbnails, inlined below; on screen in the first frame
+     prev — 720px, streamed nearest-first as you walk
+     full — 1800px, only for frames you actually walk up to (or focus)
+   The queue re-sorts by camera distance whenever a slot frees, so whatever
+   you're looking at is always what's downloading. */
+const LQIP = {
+  'fz-1':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDVuIdB1K6e4NsqrIQT5fykL0IBXHWvBvEmm2mnX729p/q9xC56gDHWus8U6reaZenT7FvKULyR1OSfyrjb5muI7d3PzNlSTySc9a6KupzUND0DwrBdWOgNNMx2y7niVu2OOPrjNT/2re/3Fryi4v72PNkJnMKEbUJ4HHaqn2qb+8fzoVSysKVJt3P/2Q==',1800/1012],
+  'fz-2':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDzW40W5vNNe4Zl+Y/uwD6YJrO8N2yyTsmQCfkPGcqynOPTFQ3WqXc1utojeXCrEqq9s+/etLQSLYbkGTIvJPbnH9K2krtGEJcsWes2sLTXFnFG5WP94Cik8gKvfr7V039k2n92X/vt/wDGvNdHv5Xn2P8A8sSWUjgnPBBPpXU/2m3/ADz/APHm/wAa6UzjaP/Z',1800/1012],
+  'fz-3':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDkbKfSm0vToViQzKG8w85PyMOfoSK7F73QwDENPj3EEZweOK8jt9TI062t9nMZY7gcZyG9veujPiRtjYg5KnnefTHpXSmjkaYuq3enm3iREjikW5LnAJ+XnH4VQ/tK2/vx/wDfArD1TUFuYY1WPYyuxyD2OeOlY3mv61LkWoH/2Q==',1800/1012],
+  'hg-1':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwCO4tswzPHcSlvLbjseOh9q5Twv4kn0ozWEUDSPKrbXU9sdh65FeiXSJ9mlOMHY38q4jwhborfa+rtuA9sV5dXERlZyR1Ohyysup6B4fur3WYPPeWaDa5Ta6KDwAc8fWum/s+5/5+n/AO+RXMabfSQTTNgNiX6fwrW9/bk39wfma6ljE+pKwvkf/9k=',1800/1012],
+  'hg-2':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDjYmZsKDuOcYzwPauobTjZx+fMuIuhPcHuD75Brnr6zjtbNkhyCpBJ7nNV7m+v5tMAmnZ9rg8/lXXeorcrPmEqFW7mmrtWsdrbva2eblxuAXjn1qb+37T+4fzriWu5GiET8gEDjjk85pny+lWsRG3v7mkKFWKtSenQ/9k=',1800/1012],
+  'hg-3':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDwi086eZIovmZ2CgepPGK6i60y9sl+1Rn9yWAB7gkE4P5H8q5Zl8tVeP5SDwRWhc6rqFzaKs8pYB8498YrRuV00YRlC2pqw6lLa8Hb/wACRT/MVZ/t2X/pn/36T/CuXmupZwpfAIUdBjNV9xqbRfxLU09rNaReh//Z',1800/1012],
+  'hg-4':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDvjPPYzOb9kiicBIiMsN394mp7eS5vIFa1kAkj/wBYpHcEg4PfOKr6bGmuaSbO+yVkYjIOCMDqKia3PhyyeaCR5n4GZD/d+lW2+bQlJW1NWz1SS4mWF4WjOSCWHGR0xW1z7flXJ+HdUub9nkuDnLAADtn0rsvK/wBo0SdnYIpNXP/Z',1800/1012],
+  'hg-5':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDzRreKTRdwXdIp3D8OoqxbanPaWUlhEpC3BRlz049fpXN2F1NLi3B2qPSuja2mlAledjtBUDAwM+lcEoO9pHdGXVEGqalHP4bjt1J3IzcdgN2eK8/8+T1rf1aI2sRhVtynnmuZrppRSWhz1JNvU//Z',1800/1011],
+  'sel-1':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDzjSLCG9SeeQ/PGcgeozSw6THeX3kk7VMoUnpwQS31xgGsewvJLK9glUBlfMbqehUk5/H3rUeT7AyPy4DbguQByuDnjnIp8ruUmralfVtMvNMuoliUscgxMOhOe/vS+f4n/uH8k/wq42vi401LSS2UpbJsUEkggfr+tYX9o2v/AD5Rfm3+NQ0yvd7n/9k=',1800/1012],
+  'sel-2':['data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/4QBMRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAGKADAAQAAAABAAAADQAAAAD/wAARCAANABgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9sAQwAHBwcHBwcMBwcMEQwMDBEXERERERceFxcXFxceJB4eHh4eHiQkJCQkJCQkKysrKysrMjIyMjI4ODg4ODg4ODg4/9sAQwEJCQkODQ4ZDQ0ZOyghKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/90ABAAC/9oADAMBAAIRAxEAPwDx7UdSlit4ks5TG+cnacHHavSI7jTbvSbe5vJY5gqhS5A5YYzkfUivI9ZDrd4Ztx2ryfpWdDM0TjPzLnlckA/lVqViHG57izW6R+UrgjJ6n1Oar5g/vD864izuYgqsYywDqcM5IwV6c+/NbP2+3/59k/z+FVchxP/Z',1800/1012],
+};
+
+/* declared up here, not with the rest of the view state — the loader queue reads
+   it while the works are still being built */
+let focusWork = null;
+
+/* phones and thin laptops skip the full tier while walking — 10 × 1800px textures
+   is ~100MB of VRAM. They still get the full version the moment you focus one.
+   Read live rather than frozen at load: windows get resized, phones get rotated,
+   and in-app browsers report a tiny viewport until they've finished laying out. */
+const lowPower = () => innerWidth < 820 || (navigator.hardwareConcurrency||8) <= 4;
+
 const loader = new THREE.TextureLoader();
+const RANK = { lqip:0, prev:1, full:2 };
+const MAX_PARALLEL = 4;
+const queue = []; let active = 0;
+
+function tierUrl(w,tier){ return tier==='prev' ? 'assets/prev/'+w.id+'.jpg' : 'assets/'+w.id+'.jpg'; }
+
+function want(w,tier){
+  if(RANK[tier] <= w._rank || w._asked[tier]) return;
+  w._asked[tier]=true; queue.push({ w, tier }); pump();
+}
+/* lower score = fetched sooner */
+function score(j){
+  if(j.w===focusWork) return -1;                      // whatever you're staring at wins
+  return Math.abs(j.w.z-camera.position.z) + (j.tier==='full' ? 160 : 0);
+}
+function pump(){
+  while(active<MAX_PARALLEL && queue.length){
+    queue.sort((a,b)=>score(a)-score(b));
+    const j=queue.shift(); active++;
+    const done=()=>{ active--; pump(); };
+    loader.load(tierUrl(j.w,j.tier), tex=>{ apply(j.w,j.tier,tex); done(); }, undefined, done);
+  }
+}
+function apply(w,tier,tex){
+  if(RANK[tier] <= w._rank){ tex.dispose(); return; }  // a sharper tier already landed
+  tex.colorSpace=THREE.SRGBColorSpace;
+  if(tier==='lqip'){ tex.minFilter=THREE.LinearFilter; tex.generateMipmaps=false; }
+  else tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  const old=w._mat.map;
+  w._mat.map=tex; w._mat.needsUpdate=true; w._img.visible=true;
+  if(old) old.dispose();
+  w._rank=RANK[tier];
+}
+
+/* artworks */
 const pickables = [];
 function buildWork(w){
   const g=new THREE.Group();
@@ -301,12 +375,17 @@ function buildWork(w){
   const imgMat=new THREE.MeshBasicMaterial({ color:0xbdb8ae, toneMapped:false });
   const img=new THREE.Mesh(new THREE.PlaneGeometry(1,1), imgMat); g.add(img);
   img.userData.work=w; pickables.push(img); w._img=img; w._mat=imgMat; w._group=g;
-  loader.load('assets/'+w.id+'.jpg',(tex)=>{
-    tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
-    imgMat.map=tex; imgMat.needsUpdate=true;
-    const a=tex.image.width/tex.image.height, h=ART_H, wd=h*a;
-    img.scale.set(wd,h,1); frame.scale.set(wd+0.16,h+0.16,1); w._w=wd; w._h=h;
-  });
+  w._rank=-1; w._asked={};
+  img.visible=false;   // an empty dark frame reads better than a grey slab
+
+  /* aspect comes from the lqip table, not from the decoded image — the frame is
+     the right shape on frame 1 and never pops when a sharper tier lands */
+  const a=(LQIP[w.id]&&LQIP[w.id][1])||16/9, h=ART_H, wd=h*a;
+  img.scale.set(wd,h,1); frame.scale.set(wd+0.16,h+0.16,1); w._w=wd; w._h=h;
+
+  if(LQIP[w.id]) loader.load(LQIP[w.id][0], tex=>apply(w,'lqip',tex));  // data URI, no network slot
+  want(w,'prev');
+
   const pool=new THREE.Mesh(new THREE.PlaneGeometry(4.6,4.6), new THREE.MeshBasicMaterial({ map:POOL, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, opacity:.9 }));
   pool.rotation.x=-Math.PI/2; pool.position.set(w.side*SIDE_X*0.92,0.02,w.z); scene.add(pool);
   const spot=new THREE.SpotLight(0xffe9c7,40,11,0.62,0.75,1.4);
@@ -330,7 +409,7 @@ const zForT=t=>START_Z+(END_Z-START_Z)*t;
 const tForZ=z=>clamp01((z-START_Z)/(END_Z-START_Z));
 
 /* --------------------------------------------------------------- state ----- */
-let mode='scroll', focusWork=null;
+let mode='scroll';   /* focusWork lives up in the texture section */
 const mouse=new THREE.Vector2(0,0), ptr=new THREE.Vector2(), ray=new THREE.Raycaster();
 const desiredPos=new THREE.Vector3().copy(camera.position);
 const desiredLook=new THREE.Vector3(0,1.72,START_Z-12);
@@ -376,7 +455,7 @@ function fillCaption(w){
   else { h2.style.display='none'; }
   capEl.querySelector('.exit').textContent=L[lang].exit;
 }
-function enterFocus(w){ mode='focus'; focusWork=w; document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
+function enterFocus(w){ mode='focus'; focusWork=w; want(w,'full'); document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
 function exitFocus(){ mode='scroll'; focusWork=null; document.body.classList.remove('cinema'); }
 
 /* input: wheel + touch + keys drive targetT */
@@ -440,20 +519,39 @@ function setLang(code){
 }
 
 /* --------------------------------------------------------------- loop ------ */
+/* fetch the 1800px version of anything you're walking up to, a little before you
+   get there. cheap enough to run a few times a second, not every frame. */
+let lastPrefetch=-1e9;
+function prefetchNear(){
+  /* throttled on the clock, not on a frame count — a struggling device renders
+     fewer frames, which is exactly when you don't want the check to slow down */
+  if(performance.now()-lastPrefetch < 300 || lowPower()) return;
+  lastPrefetch=performance.now();
+  const z=camera.position.z;
+  for(const w of works) if(Math.abs(w.z-z)<22) want(w,'full');
+}
+
 function frame(){
   curT+=(targetT-curT)*0.075;
   if(mode==='scroll'){ scrollPose(); updateHover(); } else focusPose(focusWork);
   camera.position.lerp(desiredPos,0.09); smoothLook.lerp(desiredLook,0.09);
   camera.lookAt(smoothLook);
+  prefetchNear();
   renderer.render(scene,camera);
 }
 function tick(){ requestAnimationFrame(tick); frame(); }
 
-(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve())
-  .then(start).catch(start);
+/* don't let a slow Google Fonts response hold the whole gallery hostage — the
+   scene starts at 1.2s regardless, and the canvas-drawn section titles get
+   redrawn once the real faces actually land. */
+const fontsReady=(document.fonts&&document.fonts.ready)?document.fonts.ready:Promise.resolve();
+let started=false;
+Promise.race([fontsReady, new Promise(r=>setTimeout(r,1200))]).then(start).catch(start);
 function start(){
+  if(started) return; started=true;
   buildTitles(); buildOutro(); setLang('en'); tick();
   requestAnimationFrame(()=>document.body.classList.add('ready'));
+  fontsReady.then(()=>refreshTitles()).catch(()=>{});
 }
 </script>
 
