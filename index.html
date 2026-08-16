@@ -545,6 +545,7 @@
             -webkit-font-smoothing: antialiased;
         }
         #oneDSite.active { opacity: 1; visibility: visible; }
+        #oneDSite:focus { outline: none; }   /* 为键盘滚动而聚焦, 不该画出焦点框 */
         /* 入场: 内容自下而上、分层淡入 (高级感) */
         .fp-side, .fp-hero, .fp-lede, .fp-projects { opacity: 0; transform: translateY(18px); transition: opacity .85s ease, transform .85s cubic-bezier(.22,.61,.36,1); }
         #oneDSite.active .fp-side { opacity: 1; transform: none; transition-delay: .08s; }
@@ -560,6 +561,11 @@
         .fp-side { position: sticky; top: 13vh; align-self: start; }
         .fp-name { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
         .fp-role { margin-top: 10px; font-size: .73rem; letter-spacing: .12em; text-transform: uppercase; color: #c6a662; line-height: 1.7; }
+        /* "AI Filmmaker" → /art。不用下划线: 靠更亮的金色 + 一枚小 ↗ 表示可点, hover 再提亮并轻推箭头。 */
+        .fp-role-link { color: #e7c87e; text-decoration: none; white-space: nowrap; transition: color .2s; }
+        .fp-role-link:hover { color: #f6e3b4; }
+        .fp-role-arrow { display: inline-block; margin-left: .3em; font-size: .9em; opacity: .6; transition: opacity .2s, transform .2s; }
+        .fp-role-link:hover .fp-role-arrow { opacity: 1; transform: translate(1px, -1px); }
         .fp-side-label { margin-top: 40px; font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; color: #6b6557; }
         .fp-connect { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
         .fp-connect a { color: #cbc4b4; text-decoration: none; font-size: .98rem; width: max-content; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
@@ -571,9 +577,19 @@
         .fp-lede { margin-top: 26px; max-width: 40em; }
         .fp-lede p { font-size: 1.08rem; line-height: 1.75; color: #aaa394; margin-bottom: 16px; }
         .fp-lede p b { color: #e7e1d3; font-weight: 600; }
-        /* 简介"展开更多": 仅手机端折叠(见媒体查询)。桌面端显示全文、隐藏箭头。 */
-        .fp-lede-toggle { display: none; }
+        /* 简介"展开更多": 全端一致 —— 首句后跟一枚行内 "›", 点开中间两段自述,
+           结尾 "fast shipper" 一行始终可见。 */
+        .fp-lede.is-collapsed .fp-lede-rest { display: none; }
+        .fp-lede-toggle {
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-left: .25em; padding: 0 .25em; vertical-align: baseline;
+            background: none; border: 0; cursor: pointer; font: inherit;
+            font-size: 1.3rem; line-height: 1; color: #8c8676;
+            -webkit-tap-highlight-color: transparent; transition: color .2s;
+        }
+        .fp-lede-toggle:hover, .fp-lede-toggle:active { color: #e7c87e; }
         .fp-lede-chev { display: inline-block; line-height: 1; transition: transform .25s ease; }
+        .fp-lede:not(.is-collapsed) .fp-lede-chev { transform: rotate(90deg); }
         /* 项目列表: 极简编辑排版 — 细发丝分隔线, 小而轻的字, 不用金色底/金色边,
            hover 只做标题提亮 + 箭头浮现, 无位移无底色。 */
         .fp-projects { margin-top: 46px; }
@@ -597,18 +613,8 @@
             .fp-role { order: 2; }
             .fp-lede { order: 3; margin-top: 30px; }
             /* 手机端也保留加粗 (Columbia University 等) —— 与桌面一致 */
-            /* 折叠态: 只显示到 "one image", 其余(同段后半 + 后两段)藏起, 点箭头展开 */
-            .fp-lede.is-collapsed .fp-lede-tail,
-            .fp-lede.is-collapsed .fp-lede-rest { display: none; }
-            .fp-lede-toggle {
-                display: inline-flex; align-items: center; justify-content: center;
-                margin-top: 2px; padding: 6px 16px 6px 0;
-                background: none; border: 0; cursor: pointer; font: inherit;
-                font-size: 1.7rem; line-height: 1; color: #8c8676;
-                -webkit-tap-highlight-color: transparent; transition: color .2s;
-            }
-            .fp-lede-toggle:active { color: #e7c87e; }
-            .fp-lede:not(.is-collapsed) .fp-lede-chev { transform: rotate(90deg); }
+            /* 折叠规则同桌面端, 手机上只把 "›" 的点击热区做大一点 */
+            .fp-lede-toggle { font-size: 1.6rem; padding: 4px 12px; }
             .fp-projects { order: 4; }
             .fp-side-label { order: 8; margin-top: 60px; }
             .fp-connect { order: 9; }
@@ -708,7 +714,8 @@
     </div>
     <canvas id="pixelCanvas"></canvas>
     <div id="cosmosFlash"></div>
-    <div id="oneDSite">
+    <!-- tabindex="-1": 作品页是自己的滚动容器, 拿到焦点才吃得到空格/PgDn/方向键滚动 -->
+    <div id="oneDSite" tabindex="-1">
         <div class="fp-wrap" id="fpWrap"></div>
     </div>
     <!-- logo 放在 #oneDSite 外面: 否则树场景时 #oneDSite 的 opacity:0 会连它一起隐掉 -->
@@ -852,6 +859,15 @@
                 icon: "⚖️",
                 links: [
                     { label: "Try Choosely", url: "https://imjane.top/choosely" }
+                ]
+            },
+            {
+                id: 8,
+                title: "Art",
+                description: "I'm also an AI filmmaker.",
+                icon: "🎬",
+                links: [
+                    { label: "Enter the Gallery", url: "/art/" }
                 ]
             }
         ];
@@ -1801,7 +1817,7 @@
             // 高度 12→19 铺满冠层, 方位绕树一圈, 离树心的远近也拉开 (冠顶的靠近
             // 树心, 越往下越挂到冠缘 —— 树冠本身就是这个形状)。全排在同一圈半径上
             // 会看着挤在树中间。
-            // 方位角每 ~51° 一颗绕满一圈, 高度沿圆周高低交错 (不按方位顺序递减,
+            // 方位角每 45° 一颗绕满一圈, 高度沿圆周高低交错 (不按方位顺序递减,
             // 否则高的全挤在一侧, 侧面看就成了"只有上面有"), 离树心的远近跟着高度
             // 走 —— 冠顶的靠近树心, 越往下越挂到冠缘, 这是树冠本身的形状。
             // 每颗都放在"自己那个高度上冠层外缘的 ~85%"处 — 树冠越往上越窄
@@ -1809,12 +1825,13 @@
             // 埋进冠心的会被叶球挡住看不见, 所以宁可贴外缘。
             const applePositions = [
                 { x: 5.8, y: 18.6, z: 0.0 },     //   0°·冠顶
-                { x: 5.3, y: 12.4, z: 6.5 },     //  51°·下层
-                { x: -1.8, y: 15.8, z: 7.8 },    // 103°·中层
-                { x: -6.2, y: 17.5, z: 3.0 },    // 154°·上层
-                { x: -7.7, y: 13.2, z: -3.8 },   // 206°·下层
-                { x: -1.7, y: 16.6, z: -7.4 },   // 257°·中上层
-                { x: 5.3, y: 14.4, z: -6.5 }     // 309°·中层
+                { x: 5.9, y: 12.4, z: 5.9 },     //  45°·下层
+                { x: 0.0, y: 15.8, z: 7.9 },     //  90°·中层
+                { x: -4.9, y: 17.5, z: 4.9 },    // 135°·上层
+                { x: -8.6, y: 13.2, z: 0.0 },    // 180°·下层
+                { x: -5.3, y: 16.6, z: -5.3 },   // 225°·中上层
+                { x: 0.0, y: 14.0, z: -8.2 },    // 270°·中层
+                { x: 5.0, y: 17.0, z: -5.0 }     // 315°·上层 (Art)
             ];
 
             // 果皮贴图 (共用一张): 乘法贴图 — 底色压暗一点点, 撒上更亮的果点
@@ -3517,9 +3534,70 @@
         let isSwiping = false;
         let seasonChangeCooldown = false;
 
+        // ============================================================
+        // 全局快捷键
+        // 以前全站只有"方向键/空格切季节"一条, 弹窗和作品页都没有键盘出口 ——
+        // 项目弹窗只能点 Close, 作品页只能点右上角 logo (而它往下滚还会自动收起),
+        // 所以按 Esc 退不出去。现在 Esc 从最上层往下逐层退, 季节键则在有浮层/在
+        // 作品页/正在输入时让路 (否则空格会在作品页背后偷偷切季节, 而不是翻页)。
+        //   Esc            留言框 → 项目弹窗 → 触屏提示卡 → 作品页 → 旅程/特写复位
+        //   ← / → / 空格   切季节 (仅树场景)
+        //   ↑↓/空格/PgUp/PgDn  作品页原生滚动 (靠 #oneDSite 拿到焦点)
+        // ============================================================
+        function isTypingTarget(el) {
+            if (!el) return false;
+            return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ||
+                   el.tagName === 'SELECT' || el.isContentEditable;
+        }
+
+        // 只有落在 3D 画布上的点击才算"点树"。不能只看"此刻有没有浮层": 点 Close 时
+        // closeModal() 先跑完, 冒泡到 window 上再判断已经是"没有浮层"了, 于是弹窗背后
+        // 那颗被 hover 住的苹果又被打开 —— 表现就是弹窗关不掉。按事件源头判断才准。
+        function isTreeCanvasTarget(t) {
+            return !!(t && t.tagName === 'CANVAS' && t.closest && t.closest('#canvas-container'));
+        }
+
+        function isOverlayOpen() {
+            const msg = document.getElementById('msgModal');
+            const proj = document.getElementById('projectModal');
+            const pc = document.getElementById('pcModal');
+            return !!(msg && msg.classList.contains('open')) ||
+                   !!(proj && proj.classList.contains('active')) ||
+                   !!(pc && pc.classList.contains('show'));
+        }
+
+        // 逐层退出: 关掉最上面的一层就停, 返回是否真的关掉了东西
+        function escapeTopLayer() {
+            const msg = document.getElementById('msgModal');
+            if (msg && msg.classList.contains('open')) {
+                if (window.closeMsgModal) window.closeMsgModal();
+                return true;
+            }
+            const proj = document.getElementById('projectModal');
+            if (proj && proj.classList.contains('active')) { closeModal(); return true; }
+            const pc = document.getElementById('pcModal');
+            if (pc && pc.classList.contains('show')) { pc.classList.remove('show'); return true; }
+            const hire = document.getElementById('hireForm');            // 手机端展开的 Talk to Me
+            if (hire && hire.classList.contains('open')) { hire.classList.remove('open'); return true; }
+            if (oneDActive) { dismissLogoHint(); exitToTree(); return true; }
+            if (journeyTarget > 0.001 || treeZoomTarget > 0.001) {        // 半路的宇宙之旅/特写 → 回默认取景
+                journeyTarget = 0; treeZoomTarget = 0;
+                return true;
+            }
+            return false;
+        }
+
         function onKeyDown(e) {
+            // Esc 最优先: 季节切换冷却中也要能退出
+            if (e.key === 'Escape') {
+                if (escapeTopLayer()) e.preventDefault();
+                return;
+            }
+            // 组合键留给浏览器/系统; 输入框里、浮层开着、作品页上都不抢季节键
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            if (oneDActive || isOverlayOpen() || isTypingTarget(e.target)) return;
             if (seasonChangeCooldown) return;
-            
+
             if (e.code === 'Space' || e.code === 'ArrowRight') {
                 e.preventDefault();
                 if (currentSeason < 2) {
@@ -3585,6 +3663,9 @@
 
         function onTouchEnd(e) {
             isSwiping = false;
+            // 点在弹窗/作品页上的这一下是"点关闭", 不是"点树" —— 不然点 Close 的位置
+            // 正好有苹果时, 弹窗关掉的同一帧又被重新打开 (手机端最容易撞上)
+            if (!isTreeCanvasTarget(e.target) || oneDActive) return;
 
             // Single tap: detect short-duration, low-movement touch and raycast for project objects
             if (e.changedTouches.length === 1) {
@@ -3618,6 +3699,7 @@
         function onWheel(e) {
             // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
             if (oneDActive) return;
+            if (isOverlayOpen()) return;   // 弹窗开着时滚轮不推进宇宙之旅
             // 靠近树时, 横向滑动切换季节
             if (journey < 0.08 && Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
                 if (!seasonChangeCooldown) {
@@ -3993,6 +4075,14 @@
         const CLICK_TIME_THRESHOLD = 500; // 毫秒，快速点击判定（增加）
 
         function onMouseMove(event) {
+            // 浮层开着时不要再去 raycast 树: hoveredObject 会停在弹窗背后的那颗苹果上,
+            // 于是点 "Close" 的同一次点击又被 mouseup/click 当成"点了苹果"→ 弹窗立刻重开,
+            // 看上去就是"关不掉"。开着浮层就冻结悬停, 关掉后下一次移动自然刷新。
+            if (isOverlayOpen() || oneDActive) {
+                const hint = document.getElementById('clickHint');
+                if (hint) hint.classList.remove('visible');
+                return;
+            }
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -4132,7 +4222,8 @@
             }
             
             // 如果不是拖拽动物，且点击时间/距离在阈值内，打开项目
-            if (!wasDragging && dragDistance < DRAG_THRESHOLD) {
+            // (点在弹窗/作品页上的不算 —— 那是关闭弹窗的点, 不是点树)
+            if (!wasDragging && dragDistance < DRAG_THRESHOLD && isTreeCanvasTarget(event.target) && !oneDActive) {
                 if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
                     openProject(hoveredObject.userData.projectId);
                 }
@@ -4142,6 +4233,7 @@
         }
 
         function onClick(event) {
+            if (!isTreeCanvasTarget(event.target) || oneDActive) return;   // 同 onMouseUp: 别把"关弹窗"当成"点苹果"
             // 作为备用：如果 mouseUp 没有处理，这里也尝试打开项目
             if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
                 // 只有在没有拖拽的情况下才处理
@@ -4155,7 +4247,7 @@
         // 阻止浏览器右键菜单，并在点击位置做 raycast 打开苹果项目。
         // 作品集页(oneDActive)保留正常右键，方便复制文字。
         function onContextMenu(event) {
-            if (oneDActive) return;
+            if (oneDActive || isOverlayOpen()) return;
             event.preventDefault();
             if (isDragging) return;
             // 1) 若双指点在 DOM 控件(社交链接 / 季节圆点 / 季节切换按钮)上，转发为点击
@@ -4204,7 +4296,13 @@
                 });
             }
             
-            document.getElementById('projectModal').classList.add('active');
+            const modal = document.getElementById('projectModal');
+            modal.classList.add('active');
+            // 点弹窗外的暗色区域也能关 (和 Esc 一样, 别只留 Close 一个出口)
+            if (!modal.dataset.dismissWired) {
+                modal.dataset.dismissWired = '1';
+                modal.addEventListener('click', (ev) => { if (ev.target === modal) closeModal(); });
+            }
         }
 
         function closeModal() {
@@ -4523,21 +4621,22 @@
             const home = document.getElementById('fpHome');
             if (home) home.addEventListener('click', () => {
                 dismissLogoHint();
-                if (!oneDActive) {                                        // 树 → 作品页
-                    setOneDActive(true);
-                    return;
-                }
-                // 作品页 → 树
-                const site = document.getElementById('oneDSite');
-                if (site) site.style.transition = 'none';                 // 作品集页瞬间收起, 不淡出
-                // 背景先复位到季节色, 否则 j<0.05 的快照会把天空染成太空黑
-                if (scene.background && scene.background.isColor) scene.background.copy(seasonBgColor);
-                journey = 0; journeyTarget = 0;                            // 直接定位到树
-                treeZoom = 0; treeZoomTarget = 0;                          // 树部特写一并复位
-                setOneDActive(false);                                     // 手机端: journey 不再驱动站点开关, 显式关站
-                updateJourney(0);                                         // 本帧立即复位整个场景
-                if (site) requestAnimationFrame(() => { site.style.transition = ''; });
+                if (!oneDActive) setOneDActive(true);                     // 树 → 作品页
+                else exitToTree();                                        // 作品页 → 树
             });
+        }
+
+        // 作品页 → 树: 硬切回最初的树 (无倒带/特效)。logo 点击和 Esc 共用同一条路径。
+        function exitToTree() {
+            const site = document.getElementById('oneDSite');
+            if (site) site.style.transition = 'none';                     // 作品集页瞬间收起, 不淡出
+            // 背景先复位到季节色, 否则 j<0.05 的快照会把天空染成太空黑
+            if (scene.background && scene.background.isColor) scene.background.copy(seasonBgColor);
+            journey = 0; journeyTarget = 0;                                // 直接定位到树
+            treeZoom = 0; treeZoomTarget = 0;                              // 树部特写一并复位
+            setOneDActive(false);                                         // 手机端: journey 不再驱动站点开关, 显式关站
+            updateJourney(0);                                             // 本帧立即复位整个场景
+            if (site) requestAnimationFrame(() => { site.style.transition = ''; });
         }
 
         function setSurfaceOpacity(o) {
@@ -4594,8 +4693,20 @@
             }
             const site = document.getElementById('oneDSite');
             if (site) {
-                if (active) { site.classList.add('active'); site.scrollTop = 0; setTimeout(typeHero, 320); }
-                else { site.classList.remove('active'); }
+                if (active) {
+                    site.classList.add('active'); site.scrollTop = 0;
+                    setTimeout(typeHero, 320);
+                    // 键盘滚动要焦点在这个容器上 (body 不是滚动容器, 焦点在 body 上
+                    // 按空格/PgDn 什么都不会动)。这一刻 visibility 还是上一帧的
+                    // hidden, 直接 focus() 会被忽略, 所以等一帧; 淡入结束后再补一次,
+                    // 防止中途被别的元素抢走焦点。
+                    const grab = () => { if (oneDActive && !site.contains(document.activeElement)) site.focus({ preventScroll: true }); };
+                    requestAnimationFrame(grab);
+                    setTimeout(grab, 400);
+                } else {
+                    site.classList.remove('active');
+                    if (site.contains(document.activeElement)) document.activeElement.blur();
+                }
             }
             updateLogoVisibility();
         }
@@ -4829,7 +4940,7 @@
             track.innerHTML = `
                 <aside class="fp-side">
                     <div class="fp-name">Jane Zhang</div>
-                    <div class="fp-role">SWE · ML · AI Products</div>
+                    <div class="fp-role">Entrepreneur · SWE · <a class="fp-role-link" href="/art/">AI Filmmaker<span class="fp-role-arrow" aria-hidden="true">↗</span></a></div>
                     <div class="fp-side-label">Connect</div>
                     <div class="fp-connect">${links.map(l => `<a href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]}</a>`).join('')}<button type="button" class="fp-msg-btn fp-hire-toggle" id="hireToggle">Talk to Me</button></div>
                     <form id="hireForm" class="fp-hirebox">
@@ -4845,13 +4956,12 @@
                 <main class="fp-main">
                     <h1 class="fp-hero notranslate" translate="no">Hey, I'm Jane.</h1>
                     <div class="fp-lede is-collapsed">
-                        <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.</p>
-                        <p>Since I began keeping journals at seven, I've been haunted by one image<span class="fp-lede-tail">: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</span></p>
-                        <div class="fp-lede-rest">
+                        <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.<button type="button" class="fp-lede-toggle" id="ledeToggle" aria-expanded="false" aria-controls="ledeRest" aria-label="Show more"><span class="fp-lede-chev" aria-hidden="true">›</span></button></p>
+                        <div class="fp-lede-rest" id="ledeRest">
+                            <p>Since I began keeping journals at seven, I've been haunted by one image: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</p>
                             <p>That question — what lasts, what counts, and how small lives find meaning in vast time — has followed me from fiction and stream-of-consciousness writing into websites, experiments, and AI-native apps. Building is my way of answering it: turning strange ideas into something concrete that helps us thrive.</p>
-                            <p>I'm a <b>fast shipper</b>, a <b>creative thinker</b>, and an <b>active explorer</b> — curious about everything in the world.</p>
                         </div>
-                        <button type="button" class="fp-lede-toggle" id="ledeToggle" aria-expanded="false" aria-label="Show more"><span class="fp-lede-chev" aria-hidden="true">›</span></button>
+                        <p>I'm a <b>fast shipper</b>, a <b>creative thinker</b>, and an <b>active explorer</b> — curious about everything in the world.</p>
                     </div>
                     <section class="fp-projects">
                         <div class="fp-h2">Work Experience</div>
@@ -4964,14 +5074,15 @@
                 if (bg) { bg.removeAttribute('aria-hidden'); bg.inert = false; }
                 if (lastFocus && lastFocus.focus) lastFocus.focus();                       // 还焦点给触发按钮
             };
+            window.closeMsgModal = close;     // Esc 统一走全局 escapeTopLayer()
             if (btn) btn.addEventListener('click', open);
             const treeBtn = document.getElementById('treeMsgBtn');
             if (treeBtn) treeBtn.addEventListener('click', open);
             document.getElementById('msgClose').addEventListener('click', close);
             modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-            // 键盘: Esc 关闭; Tab/Shift+Tab 在弹窗内循环 (焦点陷阱)
+            // 键盘: Tab/Shift+Tab 在弹窗内循环 (焦点陷阱)。Esc 不在这里接 ——
+            // 这个监听挂在弹窗上, 焦点一旦跑到弹窗外 Esc 就失灵了; 交给全局那条链。
             modal.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') { close(); return; }
                 if (e.key !== 'Tab') return;
                 const f = box.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])');
                 const focusable = [...f].filter(el => !el.disabled && el.offsetParent !== null);
