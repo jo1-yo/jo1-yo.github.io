@@ -476,6 +476,9 @@
         #pixelCanvas {
             position: fixed; inset: 0; width: 100%; height: 100%;
             z-index: 1900; display: none; pointer-events: none;
+            /* 像素之间的缝隙 / 掉光后的空白露的是这层底色。原来没有底色 → 露的是
+               页面默认白, 坍塌过程会白闪; 这一段本来在太空里, 底色就该是太空色。 */
+            background: #06070d;
             image-rendering: pixelated; image-rendering: crisp-edges;  /* 最近邻放大 → 清晰方块, 不发虚(修 Retina 模糊) */
         }
         #cosmosFlash {
@@ -501,19 +504,34 @@
         .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
         /* "Hire Me" — Connect 里 GitHub 下方的高端内联表单框 (提交 → 直达手机)。
            全端折叠: 平时只是 Connect 里的一个链接 (与 LinkedIn/GitHub 同款), 点开才展开表单 */
-        .fp-hirebox { margin-top: 28px; padding: 20px 20px 22px; border: 1px solid rgba(231,225,211,.12); border-radius: 16px; background: rgba(255,255,255,.025); display: none; flex-direction: column; gap: 12px; max-width: 340px; }
+        /* Talk to Me 表单: 苹果式毛玻璃 —— 极薄的半透明白 + 顶部高光边 + 大范围柔和投影,
+           而不是"深色实心块 + 明显描边"。间距收紧 (gap 12→7, padding 20→13) 让整块变轻,
+           字段本身也从"框"退成"浅浅的凹陷", 视觉重量交给内容而不是边框。 */
+        .fp-hirebox { margin-top: 24px; padding: 13px; border: 1px solid rgba(255,255,255,.085); border-radius: 18px;
+            background: linear-gradient(180deg, rgba(255,255,255,.062), rgba(255,255,255,.028));
+            -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+            box-shadow: 0 10px 34px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.075);
+            display: none; flex-direction: column; gap: 7px; max-width: 340px; }
         .fp-hirebox.open { display: flex; }
         .fp-hirebox-h { display: none; }     /* 链接就叫 Talk to Me, 表单里不再重复 */
-        .fp-hirebox input, .fp-hirebox textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.04); border: 1px solid rgba(231,225,211,.13); border-radius: 10px; padding: 11px 13px; color: #e7e1d3; font-family: inherit; font-size: 16px; transition: border-color .2s, background .2s; }
-        .fp-hirebox textarea { resize: vertical; min-height: 88px; line-height: 1.5; }
+        .fp-hirebox input, .fp-hirebox textarea { width: 100%; box-sizing: border-box; background: rgba(255,255,255,.045);
+            border: 1px solid rgba(255,255,255,.06); border-radius: 11px; padding: 10px 12px; color: #e7e1d3;
+            font-family: inherit; font-size: 16px;   /* 16px 是 iOS 不缩放的下限, 别再调小 */
+            transition: border-color .2s, background .2s, box-shadow .2s; }
+        .fp-hirebox textarea { resize: vertical; min-height: 76px; line-height: 1.45; }
         .fp-hirebox textarea.is-template { color: #6b6557; }   /* 默认模板淡色; 聚焦后(去掉此类)变亮可改 */
-        .fp-hirebox input:focus, .fp-hirebox textarea:focus { outline: none; border-color: rgba(231,200,126,.55); background: rgba(255,255,255,.06); }
+        /* 聚焦: 不加粗描边, 而是加一圈极淡的暖光晕 (苹果的 focus ring 手法) */
+        .fp-hirebox input:focus, .fp-hirebox textarea:focus { outline: none; border-color: rgba(231,200,126,.42);
+            background: rgba(255,255,255,.07); box-shadow: 0 0 0 3px rgba(231,200,126,.10); }
         .fp-hirebox input::placeholder, .fp-hirebox textarea::placeholder { color: #6b6557; }
         .fp-hirebox .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-        .fp-hirebox-send { margin-top: 4px; background: #ece6d8; color: #1a1813; border: none; border-radius: 10px; padding: 12px; font-size: .96rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: background .2s, opacity .2s; }
+        .fp-hirebox-send { margin-top: 2px; background: #ece6d8; color: #1a1813; border: none; border-radius: 11px; padding: 11px; font-size: .92rem; font-weight: 600; font-family: inherit; letter-spacing: .01em; cursor: pointer; transition: background .2s, opacity .2s, transform .12s; }
         .fp-hirebox-send:hover { background: #f6f1e5; }
+        .fp-hirebox-send:active { transform: scale(.985); }
         .fp-hirebox-send:disabled { opacity: .6; cursor: default; }
-        .fp-hirebox-status { font-size: .8rem; line-height: 1.4; min-height: 1em; }
+        /* 没有状态文字时彻底不占位 —— 原来常驻一行空白, 是"笨重"的一部分 */
+        .fp-hirebox-status { font-size: .78rem; line-height: 1.4; }
+        .fp-hirebox-status:empty { display: none; }
         /* 留言弹窗: 深炭黑 + 暖米白 + 金强调, 与作品集页一致 */
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(8,7,5,.62); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
@@ -988,9 +1006,9 @@
             window.addEventListener('keydown', onKeyDown);
             
             // 添加季节点击切换
+            dbgInit();
             setupSeasonDotClicks();
             // 作品页往下滚时自动收起右上角 logo, 不遮正文
-            setupSiteScrollHide();
 
             // 初始构图，并在地址栏/内置浏览器 UI 稳定后再校正一次
             onWindowResize();
@@ -4348,6 +4366,9 @@
         // 垂直滚轮/双指捏合驱动 journey ∈ [0,1]; 平滑(丝滑)插值。
         // ============================================================
         let journey = 0, journeyTarget = 0;
+        // 树场景的自由旋转区间上界: j 小于它 = 还在看树, OrbitControls 归用户;
+        // 强制回正平视的起点也用它 (见 updateJourney 的 levelBlend), 两者必须一致。
+        const TREE_ORBIT_J = 0.08;
         // "地球缩小 → 宇宙定格变模糊 → 像素坍塌" 是重头戏, 但节奏始终交给用户的手:
         // 进入电影段后降低手势灵敏度 (星球成形段要滚 ~2 倍距离, 变模糊→坍塌段要滚
         // ~5 倍距离) — 快速一甩推不到底, 继续滚就继续走, 停手即停。回滚方向不降
@@ -4355,8 +4376,14 @@
         // 只拦触控板惯性甩动这类一次涌入巨量增量的输入 (变模糊全程仍 ≥ ~4s)。
         const CINE_FROM = 0.32;           // 电影段起点 (星球开始成形前一点)
         const CINE_SPLIT = 0.66;          // 两段的分界 (星球成形完毕, 相机停稳)
-        const CINE_DRAG_EARTH = 0.5;      // 0.32–0.66 前进手势灵敏度倍率
-        const CINE_DRAG_COSMOS = 0.2;     // 0.66–1.0 前进手势灵敏度倍率
+        const CINE_DRAG_EARTH = 0.38;     // 0.32–0.66 前进手势灵敏度倍率
+        const CINE_DRAG_COSMOS = 0.12;    // 0.66–1.0 前进手势灵敏度倍率
+        // 单次手势最多能"预存"多少进度 (前瞻上限)。没有这道闸时, 一次惯性猛滑会把
+        // journey Target 直接顶到 1, 之后即使松手, 动画也会自己一路播到世界坍塌 ——
+        // 用户根本没有在宇宙里停留的时间。有了它, 每次滑动只能往前推一小段, 想看完
+        // 整个坍塌必须继续滚 → "多翻几下才崩塌", 且真正做到停手即停。
+        const CINE_LOOKAHEAD_EARTH = 0.07;
+        const CINE_LOOKAHEAD_COSMOS = 0.05;
         const CINE_RATE_EARTH = 0.25;     // 兜底: 0.32–0.66 每秒最大推进量
         const CINE_RATE_COSMOS = 0.08;    // 兜底: 0.66–1.0 每秒最大推进量
         // 手势推进旅程统一走这里: 前进按电影段分段降灵敏度, 一次大增量跨段时逐段折算
@@ -4371,6 +4398,11 @@
                 const want = t + dj * scale;
                 if (want <= edge) { t = want; dj = 0; }
                 else { dj -= (edge - t) / scale; t = edge; if (t >= 1) dj = 0; }
+            }
+            // 前瞻闸: 目标不许跑到当前进度前面太多 (电影段才限, 树场景照旧灵敏)
+            if (t > CINE_FROM) {
+                const la = journey < CINE_SPLIT ? CINE_LOOKAHEAD_EARTH : CINE_LOOKAHEAD_COSMOS;
+                t = Math.min(t, Math.max(CINE_FROM, journey + la));
             }
             journeyTarget = clampN(t, 0, 1);
         }
@@ -4399,6 +4431,7 @@
         let planetMesh = null, planetAtmo = null, starField = null;
         let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
         let pixCanvas = null, pixCtx = null, pixSrc = null, pixTmp = null, pixCells = null, pixCaptured = false, pixNeedsCapture = false;
+        const PIX_IN = 0.71, PIX_OUT = 0.695;   // 像素坍塌的进入/退出阈值 (滞回, 见 updateJourney)
         const PIX_BLOCK = 20, PIX_GAP = 5;   // 方块间距 PIX_GAP → 看得出是一颗颗像素
         let planetTexSeason = -1;
         const seasonBgColor = new THREE.Color(0.95, 0.92, 0.93);
@@ -4463,6 +4496,63 @@
             if (pixCanvas) pixCtx = pixCanvas.getContext('2d');
             pixSrc = document.createElement('canvas');
             pixTmp = document.createElement('canvas');
+        }
+
+        // ============================================================
+        // 【临时调试】闪白定位 HUD —— 只在 URL 带 ?dbg=1 时启用, 平时零开销。
+        // 每帧算一次全屏平均亮度; 亮度突然跳高再跳回 = 闪了一帧白, 把当时的 journey
+        // 和各层状态"锁"在面板上, 这样一闪而过也能截图看到。查完这段可以整块删掉。
+        // ============================================================
+        const DBG = /[?&]dbg=1/.test(location.search);
+        let dbgEl = null, dbgCv = null, dbgCtx = null, dbgPrev = null, dbgHist = [];
+        let dbgFlash = '(还没抓到)', dbgFlashMax = 0, dbgT = 0, dbgN = 0, dbgFps = 0;
+        function dbgInit() {
+            if (!DBG) return;
+            dbgEl = document.createElement('div');
+            dbgEl.style.cssText = 'position:fixed;top:10px;left:10px;z-index:4000;pointer-events:none;' +
+                'background:rgba(0,0,0,.75);color:#8f8;font:11px/1.5 ui-monospace,Menlo,monospace;' +
+                'padding:9px 11px;border-radius:8px;white-space:pre;letter-spacing:0';
+            document.body.appendChild(dbgEl);
+            dbgCv = document.createElement('canvas'); dbgCv.width = 64; dbgCv.height = 40;
+            dbgCtx = dbgCv.getContext('2d', { willReadFrequently: true });
+        }
+        function dbgUpdate(dt) {
+            if (!dbgEl) return;
+            dbgT += dt; dbgN++;
+            if (dbgT > 0.5) { dbgFps = Math.round(dbgN / dbgT); dbgT = 0; dbgN = 0; }
+            // 取当前"用户真正看到的"那一层: 像素层活着就量它, 否则量 WebGL 画布
+            const W = dbgCv.width, H = dbgCv.height;
+            dbgCtx.clearRect(0, 0, W, H);
+            const usePix = pixCaptured && pixCanvas && pixCanvas.style.display === 'block';
+            try {
+                if (usePix) { dbgCtx.fillStyle = '#06070d'; dbgCtx.fillRect(0, 0, W, H); dbgCtx.drawImage(pixCanvas, 0, 0, W, H); }
+                else { const dc = renderer.domElement; dbgCtx.drawImage(dc, 0, 0, dc.width, dc.height, 0, 0, W, H); }
+            } catch (e) { /* 读不到就跳过这帧 */ }
+            const d = dbgCtx.getImageData(0, 0, W, H).data;
+            let sum = 0;
+            for (let i = 0; i < d.length; i += 4) sum += d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+            const lum = sum / (W * H);
+            dbgHist.push(Math.round(lum)); if (dbgHist.length > 8) dbgHist.shift();
+            if (dbgPrev !== null) {
+                const jump = lum - dbgPrev;
+                if (Math.abs(jump) > 10 && Math.abs(jump) > dbgFlashMax) {   // 抓最大的那一次跳变
+                    dbgFlashMax = Math.abs(jump);
+                    dbgFlash = 'j=' + journey.toFixed(4) + '  Δlum=' + (jump > 0 ? '+' : '') + jump.toFixed(0) +
+                        '  (' + dbgPrev.toFixed(0) + '→' + lum.toFixed(0) + ')  层=' + (usePix ? 'pix' : 'gl');
+                }
+            }
+            dbgPrev = lum;
+            const cc = document.getElementById('canvas-container');
+            dbgEl.textContent =
+                'journey  ' + journey.toFixed(4) + '  → ' + journeyTarget.toFixed(4) + '\n' +
+                'treeZoom ' + treeZoom.toFixed(3) + '   fps ' + dbgFps + '\n' +
+                'camDist  ' + camera.position.distanceTo(controls.target).toFixed(1) + '   fog.far ' + (scene.fog ? Math.round(scene.fog.far) : '-') + '\n' +
+                'ground   vis=' + (groundMesh ? +groundMesh.visible : '-') + ' op=' + (groundMesh && groundMesh.material ? groundMesh.material.opacity.toFixed(2) : '-') +
+                '   planet vis=' + (planetMesh ? +planetMesh.visible : '-') + '\n' +
+                'pix      captured=' + (+pixCaptured) + ' disp=' + (pixCanvas ? (pixCanvas.style.display === 'block' ? 1 : 0) : '-') +
+                ' glOpacity=' + (cc ? (cc.style.opacity || '1') : '-') + '\n' +
+                'lum      ' + lum.toFixed(0) + '   近8帧 [' + dbgHist.join(' ') + ']\n' +
+                '★最大跳变 ' + dbgFlash;
         }
 
         // 定格当前 WebGL 帧 → 采样成 PIX_BLOCK 网格的方块 (颜色/位置/坍塌延迟)
@@ -4660,32 +4750,17 @@
             });
         }
 
-        // logo 显隐统一入口: 树场景靠近树时显示(桌面端旅程途中淡出); 作品页平时显示,
-        // 但往下滚时自动隐藏、往上滚或回到顶部时再出现 —— 头像不再盖住正文。
-        let logoScrollHidden = false, lastSiteScroll = 0;
+        // logo 显隐统一入口: 树场景靠近树时显示(桌面端旅程途中淡出); 作品页全程常驻。
         function updateLogoVisibility() {
             const h = document.getElementById('fpHome');
             if (!h) return;
-            const show = oneDActive ? !logoScrollHidden : (journey < 0.06);
+            // 作品页: 头像常驻 (以前往下滑会隐藏, 现在不再隐藏 —— 它同时是"回到树"的出口)
+            const show = oneDActive ? true : (journey < 0.06);
             h.classList.toggle('show', show);
         }
-        function setupSiteScrollHide() {
-            const site = document.getElementById('oneDSite');
-            if (!site) return;
-            site.addEventListener('scroll', () => {
-                const y = site.scrollTop;
-                if (y < 40) logoScrollHidden = false;                       // 顶部附近始终显示
-                else if (y > lastSiteScroll + 4) logoScrollHidden = true;   // 往下滑 → 隐藏
-                else if (y < lastSiteScroll - 4) logoScrollHidden = false;  // 往上滑 → 再出现
-                lastSiteScroll = y;
-                updateLogoVisibility();
-            }, { passive: true });
-        }
-
         function setOneDActive(active) {
             if (active === oneDActive) return;
             oneDActive = active;
-            logoScrollHidden = false; lastSiteScroll = 0;   // 进/出作品页都从"显示"开始
             const home = document.getElementById('fpHome');
             if (home) {                                   // logo 双重身份: 树↔作品页
                 home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
@@ -4777,7 +4852,7 @@
             //                     双指捏合, 见 onTouchStart 的 touchGestureOrbit)。
             //   j > 0.71 像素坍塌 — 画面已定格, 旋转无意义, 关掉让单指滑动继续控制旅程。
             const freeOrbit = j > 0.50 && j < 0.71;
-            controls.enableRotate = j < 0.08 || freeOrbit;
+            controls.enableRotate = j < TREE_ORBIT_J || freeOrbit;
             // 宇宙参观时放开俯仰限制(可以绕到星球上方/下方); 回到树附近再恢复默认,
             // 中间留滞回带 —— 归途中 levelBlend 会先把俯仰平滑拉回平视, 再收紧限制,
             // 避免 OrbitControls 突然钳位导致视角跳变。
@@ -4794,11 +4869,14 @@
                 if (r > 0.001) {
                     const theta = Math.atan2(offset.x, offset.z);
                     const curPhi = Math.acos(clampN(offset.y / r, -1, 1));
-                    // 只在中段过渡强制"平视"(0.18–0.30 全力, 0.30–0.50 松手);
+                    // 只在中段过渡强制"平视"(0.26–0.30 全力, 0.30–0.50 松手);
                     // 进入宇宙阶段(>0.50)完全交还给用户旋转, 否则每帧都会把
                     // 用户拖出来的俯仰角拽回去, 变成"橡皮筋"。松手带放宽到 0.20,
                     // 归途中从大俯仰角回正时有 ~0.3s 缓冲, 不会猛地一甩。
-                    const levelBlend = smooth(seg(j, 0, 0.18)) * (1 - smooth(seg(j, 0.30, 0.50)));
+                    // 起点必须跟 TREE_ORBIT_J 对齐: 树场景(j < TREE_ORBIT_J)用户还能自由
+                    // 拖动, 若从 j=0 就开始回正, 稍微滚一点进旅程后拖动就会被每帧拽回
+                    // 平视 —— 正是"拖下去自己弹回来"那个 bug。
+                    const levelBlend = smooth(seg(j, TREE_ORBIT_J, 0.26)) * (1 - smooth(seg(j, 0.30, 0.50)));
                     const phi = lerpN(curPhi, Math.PI / 2, levelBlend);
                     camera.position.set(
                         controls.target.x + dist * Math.sin(phi) * Math.sin(theta),
@@ -4812,7 +4890,19 @@
             const space = smooth(seg(j, 0.42, 0.64));
             const bg = new THREE.Color().lerpColors(seasonBgColor, new THREE.Color(0x06070d), space);
             if (scene.background && scene.background.isColor) scene.background.copy(bg); else scene.background = bg.clone();
-            if (scene.fog) { scene.fog.color.copy(bg); scene.fog.far = lerpN(80, 100000, smooth(seg(j, 0.30, 0.50))); }
+            if (scene.fog) {
+                scene.fog.color.copy(bg);
+                // 雾的远端: 先跟着相机后退一起推远, 再用几何(对数)方式抬到"无雾"。
+                // 原来是 lerpN(80, 100000, t) 线性插值, 两个毛病:
+                //   1) range 太大 → j 刚过 0.30 一点点, far 就从 80 跳到 800+, 画面在
+                //      "整片惨白浓雾"和"完全无雾"之间瞬间横跳; 手停在 0.30 附近时,
+                //      journey 的细微抖动就会让屏幕反复白闪。
+                //   2) far 恒为 80 而相机一路后退到 56 → 越退越白, 树几乎糊成一片。
+                // 现在: dist=30(默认取景) 时 base 仍是 80 —— 树场景的观感一字不变。
+                const camDist = camera.position.distanceTo(controls.target) || 30;
+                const base = Math.max(80, camDist * 2.67);
+                scene.fog.far = base * Math.pow(100000 / base, smooth(seg(j, 0.30, 0.50)));
+            }
             if (starField) { const so = smooth(seg(j, 0.46, 0.66)); starField.material.opacity = so; starField.visible = so > 0.01; }
 
             // 地面淡出 (0.26→0.40); 大星球已铺在下方(草地色无缝) → 无灰平地中间态
@@ -4870,7 +4960,11 @@
             // 宇宙坍塌: 把"用户最后那一帧"3D 画面整屏定格 → 全屏变成二维像素方块 →
             // 像倒塌的墙一样从左上逐个掉落 → 作品集页 (不再是 3D 立体方块)
             if (bhGroup) bhGroup.visible = false;
-            const pix = j > 0.71;
+            // 进入/退出"像素坍塌"用两个阈值 (滞回)。原来只有 j > 0.71 单一判据: 手停在
+            // 阈值附近时 journey 的微小抖动会让每帧在"定格成像素层"和"复原 3D"之间反复
+            // 横跳 —— 每次复原都重置 pixCaptured 并重新抓帧(getImageData 是同步回读),
+            // 于是屏幕白闪 + 掉帧。进入仍是 0.71(视觉分段不变), 退出降到 0.695。
+            const pix = (pixCaptured || pixNeedsCapture) ? j > PIX_OUT : j > PIX_IN;
             if (pix) {
                 if (!pixCaptured) {
                     pixNeedsCapture = true;          // 本帧 3D 照常渲染, 渲染后再定格(见 animate)
@@ -5244,6 +5338,7 @@
             renderer.render(scene, camera);
             // 渲染后定格当前帧 → 二维像素方块 (preserveDrawingBuffer 保证可读取)
             if (pixNeedsCapture && !pixCaptured) { capturePixelFrame(); pixNeedsCapture = false; }
+            if (DBG) dbgUpdate(deltaTime);
         }
 
         // Initialize
