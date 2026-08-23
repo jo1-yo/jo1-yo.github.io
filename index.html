@@ -537,39 +537,38 @@
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(18,16,14,.26); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
         .msg-box {
-            position: relative; width: 100%; max-width: 400px; box-sizing: border-box;
-            padding: 30px 28px 24px; border-radius: 30px;
+            position: relative; width: 100%; max-width: 540px; box-sizing: border-box;
+            padding: 42px 44px 34px; border-radius: 34px;
             background: rgba(255,255,255,0.60);
             -webkit-backdrop-filter: blur(46px) saturate(180%); backdrop-filter: blur(46px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.32);
+            border: 1px solid rgba(255,255,255,0.20);   /* 细一档的白边: 只留一线高光, 不像描边 */
             box-shadow: 0 30px 80px rgba(20,22,34,0.16);
             color: #26262c;
         }
-        .msg-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: #8a8a92; font-size: 1.5rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .msg-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: #8a8a92; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .msg-close:hover { color: #45454d; }
-        .msg-box h3 { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: #1b1b1e; }
-        .msg-sub { margin-top: 8px; font-size: .89rem; color: #5b5b63; line-height: 1.46; }
-        #msgForm { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+        .msg-box h3 { font-size: 2rem; font-weight: 600; letter-spacing: -.025em; color: #1b1b1e; }
+        .msg-sub { margin-top: 10px; font-size: 1rem; color: #5b5b63; line-height: 1.5; max-width: 34em; }
+        #msgForm { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
         /* 输入框: 更亮一档的玻璃, 柔边无硬线, 聚焦时玻璃变亮 + 一圈极淡白光 */
         #msgForm input, #msgForm textarea {
-            width: 100%; box-sizing: border-box;
-            background: rgba(255,255,255,0.34); border: 1px solid rgba(255,255,255,0.40);
-            border-radius: 15px; padding: 12px 14px; color: #2c2c32;
-            font-family: inherit; font-size: 16px;
-            -webkit-backdrop-filter: blur(7px) saturate(140%); backdrop-filter: blur(7px) saturate(140%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+            display: block; width: 100%; box-sizing: border-box;
+            background: rgba(255,255,255,0.50); border: 1px solid rgba(255,255,255,0.30);
+            border-radius: 16px; padding: 14px 16px; color: #2c2c32;
+            font-family: inherit; font-size: 16px; line-height: 1.45;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
             transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
         }
-        #msgForm textarea { resize: vertical; min-height: 88px; }
-        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.52); border-color: rgba(255,255,255,0.78); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 0 0 4px rgba(255,255,255,0.22); }
+        /* resize 关掉: 原生拖拽角在圆角上画出第二条边, 看着像重影 */
+        #msgForm textarea { resize: none; min-height: 124px; }
+        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.66); border-color: rgba(255,255,255,0.62); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 0 0 4px rgba(255,255,255,0.20); }
         #msgForm input::placeholder, #msgForm textarea::placeholder { color: #86868e; }
         #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
         /* 主按钮: 同族玻璃, 比输入框再亮一点撑起主次; hover/点按下沉 (和 .pc-ok 一致的触感) */
         .msg-send {
-            margin-top: 4px; border: 1px solid rgba(255,255,255,0.48); border-radius: 15px; padding: 12px; cursor: pointer;
-            background: rgba(255,255,255,0.62); color: #2b2b31;
-            font-family: inherit; font-size: 1rem; font-weight: 600; letter-spacing: .01em;
-            -webkit-backdrop-filter: blur(7px) saturate(140%); backdrop-filter: blur(7px) saturate(140%);
+            margin-top: 6px; border: 1px solid rgba(255,255,255,0.38); border-radius: 16px; padding: 15px; cursor: pointer;
+            background: rgba(255,255,255,0.68); color: #2b2b31;
+            font-family: inherit; font-size: 1.05rem; font-weight: 600; letter-spacing: .01em;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
             -webkit-tap-highlight-color: transparent;
             transition: background .18s ease, transform .12s ease, box-shadow .18s ease, color .18s ease, opacity .2s ease;
@@ -584,6 +583,13 @@
         #msgModal .msg-status { margin-top: 2px; color: #5b5b63; }
         #msgModal .msg-status.ok { color: #3c7a4b; }
         #msgModal .msg-status.err { color: #a8503a; }
+        @media (max-width: 560px) {
+            .msg-box { max-width: 420px; padding: 30px 26px 24px; border-radius: 30px; }
+            .msg-box h3 { font-size: 1.55rem; }
+            .msg-sub { font-size: .92rem; }
+            #msgForm { margin-top: 18px; }
+            #msgForm textarea { min-height: 96px; }
+        }
         /* 坍塌后的软件工程作品集: 深炭黑 + 暖米白 + 克制金 + 现代无衬线 */
         #oneDSite {
             position: fixed; inset: 0; z-index: 3000;
@@ -3583,6 +3589,9 @@
         let touchStartY = 0;
         let isSwiping = false;
         let seasonChangeCooldown = false;
+        // 切季节的最小间隔。以前 800ms —— 连按 → / ← 时大部分按键被直接丢掉, 像卡住;
+        // 260ms 够 transitionSeason() 跑完一轮, 又能跟上按住不放的系统重复频率。
+        const SEASON_COOLDOWN_MS = 260;
 
         // ============================================================
         // 全局快捷键
@@ -3637,28 +3646,75 @@
             return false;
         }
 
+        // WASD 环视: 按住持续转, 松手滑一下停 —— 记住按下的键, 真正的转动在每帧
+        // updateKeyboardOrbit() 里做 (在 keydown 里一次转一点会跟着系统的按键重复频率
+        // 走, 手感一顿一顿; 每帧积分才连续)。
+        const heldOrbitKeys = new Set();
+        const ORBIT_KEYS = { KeyA: 'left', KeyD: 'right', KeyW: 'up', KeyS: 'down' };
+
+        function clearHeldOrbitKeys() { heldOrbitKeys.clear(); }
+        window.addEventListener('blur', clearHeldOrbitKeys);
+        window.addEventListener('keyup', (e) => { heldOrbitKeys.delete(e.code); });
+
         function onKeyDown(e) {
             // Esc 最优先: 季节切换冷却中也要能退出
             if (e.key === 'Escape') {
                 if (escapeTopLayer()) e.preventDefault();
                 return;
             }
-            // 组合键留给浏览器/系统; 输入框里、浮层开着、作品页上都不抢季节键
+            // 组合键留给浏览器/系统; 输入框里、浮层开着、作品页上都不抢键
             if (e.metaKey || e.ctrlKey || e.altKey) return;
-            if (oneDActive || isOverlayOpen() || isTypingTarget(e.target)) return;
+            if (oneDActive || isOverlayOpen() || isTypingTarget(e.target)) { clearHeldOrbitKeys(); return; }
+
+            // WASD 必须在季节冷却之前处理 —— 否则刚切完季节的那几百毫秒里镜头会卡住
+            if (ORBIT_KEYS[e.code]) {
+                heldOrbitKeys.add(e.code);
+                e.preventDefault();
+                return;
+            }
+
             if (seasonChangeCooldown) return;
 
+            // ← / → 循环切季节 (走到头会绕回去, 不再撞墙); 空格保持原来的"下一个"
             if (e.code === 'Space' || e.code === 'ArrowRight') {
                 e.preventDefault();
-                if (currentSeason < 2) {
-                    changeSeason(1);
-                }
+                changeSeason(1);
             } else if (e.code === 'ArrowLeft') {
                 e.preventDefault();
-                if (currentSeason > 0) {
-                    changeSeason(-1);
-                }
+                changeSeason(-1);
             }
+        }
+
+        // 每帧把按住的 WASD 积分成绕 controls.target 的方位角/俯仰角变化。
+        // 角速度做指数平滑: 起步不瞬冲、松手滑一下再停, 轻点一下就是小幅微调。
+        const KEY_ORBIT_SPEED = 1.25;   // rad/s 满速 (约 2.5 秒转一圈半)
+        const KEY_ORBIT_RAMP = 0.13;    // s 加速/减速时间常数
+        let keyAzVel = 0, keyPolVel = 0;
+
+        function updateKeyboardOrbit(dt) {
+            if (!controls || !camera) return;
+            // 能不能转跟鼠标拖动同一个开关: 树场景和宇宙参观段可以, 中间过渡段不行
+            const live = controls.enableRotate && !oneDActive && !isOverlayOpen();
+            const azWant = live ? ((heldOrbitKeys.has('KeyD') ? 1 : 0) - (heldOrbitKeys.has('KeyA') ? 1 : 0)) : 0;
+            const polWant = live ? ((heldOrbitKeys.has('KeyS') ? 1 : 0) - (heldOrbitKeys.has('KeyW') ? 1 : 0)) : 0;
+            const k = Math.min(1, dt / KEY_ORBIT_RAMP);
+            keyAzVel += (azWant * KEY_ORBIT_SPEED - keyAzVel) * k;
+            keyPolVel += (polWant * KEY_ORBIT_SPEED - keyPolVel) * k;
+            if (Math.abs(keyAzVel) < 1e-4 && Math.abs(keyPolVel) < 1e-4) { keyAzVel = keyPolVel = 0; return; }
+
+            const off = camera.position.clone().sub(controls.target);
+            const r = off.length();
+            if (r < 1e-4) return;
+            const theta = Math.atan2(off.x, off.z) + keyAzVel * dt;
+            // 俯仰钳在 OrbitControls 当前的限制内(留一点余量), 免得贴边后卡住或翻面
+            const lo = controls.minPolarAngle + 0.02, hi = controls.maxPolarAngle - 0.02;
+            const phi = clampN(Math.acos(clampN(off.y / r, -1, 1)) + keyPolVel * dt, lo, hi);
+            camera.position.set(
+                controls.target.x + r * Math.sin(phi) * Math.sin(theta),
+                controls.target.y + r * Math.cos(phi),
+                controls.target.z + r * Math.sin(phi) * Math.cos(theta)
+            );
+            camera.lookAt(controls.target);
         }
 
         let touchStartSingleX = 0;
@@ -3776,17 +3832,19 @@
 
         function changeSeason(direction) {
             if (seasonChangeCooldown) return;
-            
-            targetSeason = Math.max(0, Math.min(2, currentSeason + direction));
+
+            // 循环: 秋天再往右回春天, 春天往左到秋天 (以前在两头是死路, 按了没反应)
+            const n = seasons.length;
+            targetSeason = ((currentSeason + direction) % n + n) % n;
             if (targetSeason !== currentSeason) {
                 seasonChangeCooldown = true;
                 currentSeason = targetSeason;
                 updateSeasonUI();
                 transitionSeason();
-                
+
                 setTimeout(() => {
                     seasonChangeCooldown = false;
-                }, 800);
+                }, SEASON_COOLDOWN_MS);
             }
         }
         
@@ -3799,10 +3857,10 @@
             currentSeason = seasonIndex;
             updateSeasonUI();
             transitionSeason();
-            
+
             setTimeout(() => {
                 seasonChangeCooldown = false;
-            }, 800);
+            }, SEASON_COOLDOWN_MS);
         }
         
         // 设置季节点击切换
@@ -5365,6 +5423,7 @@
             });
 
             updateJourney(deltaTime);
+            updateKeyboardOrbit(deltaTime);
 
             controls.update();
             renderer.render(scene, camera);
