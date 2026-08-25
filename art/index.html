@@ -15,7 +15,7 @@
      crossorigin is required, not cosmetic: TextureLoader requests images as
      anonymous-CORS, and a preload without it is a cache miss + a second fetch -->
 <link rel="preload" as="image" href="assets/prev/hg-5.jpg" crossorigin />
-<link rel="preload" as="image" href="assets/prev/hg-1.jpg" crossorigin />
+<link rel="preload" as="image" href="assets/prev/hg-3.jpg" crossorigin />
 
 <style>
   :root{
@@ -36,7 +36,8 @@
   body.ready{opacity:1}
   a{color:inherit}
 
-  #stage{position:fixed;inset:0;z-index:1;display:block;}
+  /* CSS owns the element's size; the drawing buffer is synced to it in the loop */
+  #stage{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block;}
 
   /* ---------- film overlays ---------- */
   #vignette{position:fixed;inset:0;z-index:5;pointer-events:none;
@@ -111,7 +112,19 @@
   #caption{position:fixed;z-index:10;left:40px;bottom:14vh;max-width:360px;opacity:0;transform:translateY(14px);transition:opacity .6s .15s,transform .6s .15s;pointer-events:none;}
   body.cinema #caption{opacity:1;transform:none;}
   #caption .ser{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--warm);font-family:var(--mono),var(--cjk);}
-  #caption h2{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.06;margin:12px 0 6px;}  #caption .exit{margin-top:18px;font-size:9.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
+  #caption h2{font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.06;margin:12px 0 6px;}
+  /* a piece that is also a film — one click straight to it */
+  #caption .play{display:none;margin-top:16px;align-items:center;gap:10px;font-size:10px;letter-spacing:.26em;line-height:1.6;
+    text-transform:uppercase;color:var(--warm);font-family:var(--mono),var(--cjk);pointer-events:none;cursor:pointer;transition:opacity .25s;}
+  #caption .play.on{display:inline-flex;}
+  body.cinema #caption .play{pointer-events:auto;}
+  #caption .play:hover{opacity:.72}
+  #caption .play:hover .tri{background:rgba(231,201,160,.14)}
+  #caption .play .tri{width:19px;height:19px;flex:none;border:1px solid rgba(231,201,160,.5);border-radius:50%;position:relative;transition:background .25s;}
+  #caption .play .tri::after{content:"";position:absolute;left:53%;top:50%;transform:translate(-50%,-50%);border-left:6px solid var(--warm);border-top:4px solid transparent;border-bottom:4px solid transparent;}
+  body.rtl #caption .play{flex-direction:row-reverse;}
+  body.rtl #caption .play .tri::after{left:47%;transform:translate(-50%,-50%) scaleX(-1);}
+  #caption .exit{margin-top:18px;font-size:9.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;font-family:var(--mono),var(--cjk);}
 
   body.rtl #caption{left:auto;right:40px;text-align:right;}
   body.rtl #brand{left:auto;right:30px;text-align:right;}
@@ -160,7 +173,9 @@
 
 <div id="caption" class="hud">
   <div class="ser"></div>
-  <h2></h2>  <div class="exit"></div>
+  <h2></h2>
+  <div class="play"><span class="tri"></span><span class="pt"></span></div>
+  <div class="exit"></div>
 </div>
 
 <script type="importmap">
@@ -177,23 +192,23 @@ const LANGS = [
 ];
 const L = {
   en:{ role:'AI Artist · Filmmaker', sec:['The Scallion Next Door','Fair Is Foul','In Progress'],
-       hint:'Scroll to walk the gallery', exit:'Scroll or press Esc to step back', tk:'Selected Toolkit' },
+       hint:'Scroll to walk the gallery', exit:'Scroll or press Esc to step back', tk:'Selected Toolkit', watch:'Watch the film' },
   zh:{ role:'AI艺术家｜AI电影创作者', sec:['隔壁老葱','门楣','敬请期待'],
-       hint:'滚动以漫步展厅', exit:'滚动或按 Esc 返回', tk:'创作工具精选' },
+       hint:'滚动以漫步展厅', exit:'滚动或按 Esc 返回', tk:'创作工具精选', watch:'观看影片' },
   ja:{ role:'AIアーティスト｜AI映画作家', sec:['隣のネギ','きれいは汚い','ご期待ください'],
-       hint:'スクロールしてギャラリーを巡る', exit:'スクロール、または Esc で戻る', tk:'厳選ツール' },
+       hint:'スクロールしてギャラリーを巡る', exit:'スクロール、または Esc で戻る', tk:'厳選ツール', watch:'本編を見る' },
   ko:{ role:'AI 아티스트｜AI 영화 창작자', sec:['옆집 파','고운 것은 더럽다','기대해 주세요'],
-       hint:'스크롤하여 갤러리 둘러보기', exit:'스크롤 또는 Esc로 돌아가기', tk:'엄선한 도구' },
+       hint:'스크롤하여 갤러리 둘러보기', exit:'스크롤 또는 Esc로 돌아가기', tk:'엄선한 도구', watch:'영상 보기' },
   ar:{ role:'فنّ الذكاء الاصطناعي · صناعة الأفلام', sec:['بصلة الجيران','الجميل قبيح','قريبًا'],
-       hint:'مرّر للتجوّل في المعرض', exit:'مرّر أو اضغط Esc للرجوع', tk:'أدوات مختارة' },
+       hint:'مرّر للتجوّل في المعرض', exit:'مرّر أو اضغط Esc للرجوع', tk:'أدوات مختارة', watch:'شاهد الفيلم' },
   es:{ role:'Artista de IA · Cineasta', sec:['La Cebolleta de al Lado','Lo Bello Es Feo','Próximamente'],
-       hint:'Desplázate para recorrer la galería', exit:'Desplázate o pulsa Esc para volver', tk:'Herramientas Seleccionadas' },
+       hint:'Desplázate para recorrer la galería', exit:'Desplázate o pulsa Esc para volver', tk:'Herramientas Seleccionadas', watch:'Ver la película' },
   fr:{ role:'Artiste IA · Cinéaste', sec:['L’Oignon Vert d’à Côté','Le Beau Est Affreux','Prochainement'],
-       hint:'Faites défiler pour parcourir la galerie', exit:'Défilez ou appuyez sur Échap pour revenir', tk:'Outils Sélectionnés' },
+       hint:'Faites défiler pour parcourir la galerie', exit:'Défilez ou appuyez sur Échap pour revenir', tk:'Outils Sélectionnés', watch:'Voir le film' },
   ru:{ role:'ИИ-художник · кинорежиссёр', sec:['Зелёный лук по соседству','Добро есть зло','Скоро'],
-       hint:'Прокрутите, чтобы пройти по галерее', exit:'Прокрутите или нажмите Esc, чтобы вернуться', tk:'Избранные инструменты' },
+       hint:'Прокрутите, чтобы пройти по галерее', exit:'Прокрутите или нажмите Esc, чтобы вернуться', tk:'Избранные инструменты', watch:'Смотреть фильм' },
   de:{ role:'KI-Kunstschaffende · Filmschaffende', sec:['Die Zwiebel von nebenan','Schön ist wüst','Demnächst'],
-       hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', tk:'Ausgewählte Werkzeuge' },
+       hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', tk:'Ausgewählte Werkzeuge', watch:'Film ansehen' },
 };
 let lang = 'en';
 
@@ -201,7 +216,8 @@ let lang = 'en';
 /* section names come from L[lang].sec[index]; titles stay English (proper names) */
 const SECTIONS = [
   { key:'scallion', works:[
-    {id:'hg-5'}, {id:'hg-1'}, {id:'hg-2'}, {id:'hg-3'}, {id:'hg-4'},
+    {id:'hg-5', video:'https://youtu.be/jlw8xKBksJk'},
+    {id:'hg-3', video:'https://youtu.be/E5ZxeJD2BzE'},
   ]},
   { key:'fair', works:[
     {id:'fz-1'}, {id:'fz-2'}, {id:'fz-3'},
@@ -248,7 +264,7 @@ const SIDE_X = 3.45, ROT = Math.PI/6;
 const canvas = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+renderer.setSize(innerWidth, innerHeight, false);   // false: no inline width/height
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -424,11 +440,29 @@ function focusPose(w){
 }
 
 /* --------------------------------------------------------------- events ---- */
-addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+/* The drawing buffer follows the canvas's CSS box, re-checked every frame rather
+   than only on `resize`. That event fires late or not at all for a collapsing
+   mobile URL bar, a docked devtools pane, a pinch zoom, or a monitor swap that
+   changes devicePixelRatio — and each of those left a black band along the edge
+   where the buffer no longer reached. */
+let vw=0, vh=0, vdpr=0;
+function syncSize(){
+  const w=canvas.clientWidth||innerWidth, h=canvas.clientHeight||innerHeight, d=Math.min(devicePixelRatio||1,2);
+  if(w===vw&&h===vh&&d===vdpr) return;
+  vw=w; vh=h; vdpr=d;
+  renderer.setPixelRatio(d); renderer.setSize(w,h,false);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize',syncSize);
+addEventListener('orientationchange',syncSize);
+if(window.visualViewport) visualViewport.addEventListener('resize',syncSize);
 addEventListener('pointermove',(e)=>{ mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-((e.clientY/innerHeight)*2-1); ptr.x=mouse.x; ptr.y=mouse.y; });
 
 let hovered=null; const tip=document.getElementById('tip');
-function updateHover(){ if(mode!=='scroll'){ setHover(null); return; } ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0]; setHover(hit?hit.object.userData.work:null); }
+function pickAt(){ ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0]; return hit?hit.object.userData.work:null; }
+function updateHover(){ setHover(mode==='scroll' ? pickAt() : null); }
+/* full frame on a film: the piece itself is the play button, the surround is the way out */
+function updateFocusCursor(){ canvas.style.cursor=(focusWork.video&&pickAt()===focusWork)?'pointer':'default'; }
 function setHover(w){
   if(hovered===w) return;
   if(hovered) hovered._mat.color.setHex(0xbdb8ae);
@@ -440,23 +474,37 @@ function setHover(w){
 addEventListener('pointermove',e=>{ if(hovered&&workTitle(hovered)){ tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px'; }});
 
 canvas.addEventListener('click',()=>{
-  if(mode==='focus'){ exitFocus(); return; }
-  ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0];
-  if(hit) enterFocus(hit.object.userData.work);
+  const hit=pickAt();
+  if(mode==='focus'){
+    /* the tail of a double-click shouldn't be read as the next click */
+    if(performance.now()-focusAt<420) return;
+    /* a second click on the piece itself plays its film; anywhere else steps back */
+    if(focusWork.video&&hit===focusWork){ openFilm(focusWork.video); return; }
+    exitFocus(); return;
+  }
+  if(hit) enterFocus(hit);
 });
 addEventListener('keydown',e=>{ if(e.key==='Escape'&&mode==='focus') exitFocus(); });
 
 const capEl=document.getElementById('caption');
+const playEl=capEl.querySelector('.play');
+let capVideo=null;
+function openFilm(u){ open(u,'_blank','noopener'); }
+playEl.addEventListener('click',e=>{ e.stopPropagation(); if(capVideo) openFilm(capVideo); });
 function fillCaption(w){
   capEl.querySelector('.ser').textContent=secName(w.si);
   const h2=capEl.querySelector('h2');
   const t=workTitle(w);
   if(t){ h2.textContent=t; h2.style.display=''; }
   else { h2.style.display='none'; }
+  capVideo = w.video || null;
+  if(capVideo){ playEl.querySelector('.pt').textContent=L[lang].watch; playEl.classList.add('on'); }
+  else playEl.classList.remove('on');
   capEl.querySelector('.exit').textContent=L[lang].exit;
 }
-function enterFocus(w){ mode='focus'; focusWork=w; want(w,'full'); document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
-function exitFocus(){ mode='scroll'; focusWork=null; document.body.classList.remove('cinema'); }
+let focusAt=0;
+function enterFocus(w){ mode='focus'; focusWork=w; focusAt=performance.now(); want(w,'full'); document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
+function exitFocus(){ mode='scroll'; focusWork=null; canvas.style.cursor='default'; document.body.classList.remove('cinema'); }
 
 /* input: wheel + touch + keys drive targetT */
 let scrolled=false;
@@ -532,8 +580,9 @@ function prefetchNear(){
 }
 
 function frame(){
+  syncSize();
   curT+=(targetT-curT)*0.075;
-  if(mode==='scroll'){ scrollPose(); updateHover(); } else focusPose(focusWork);
+  if(mode==='scroll'){ scrollPose(); updateHover(); } else { focusPose(focusWork); updateFocusCursor(); }
   camera.position.lerp(desiredPos,0.09); smoothLook.lerp(desiredLook,0.09);
   camera.lookAt(smoothLook);
   prefetchNear();
