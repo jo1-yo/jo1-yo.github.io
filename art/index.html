@@ -139,6 +139,39 @@
     #caption{left:20px;right:20px;max-width:none;bottom:16vh}#caption h2{font-size:27px}
     body.rtl #brand{right:16px}body.rtl #lang{right:16px}body.rtl #toolkit{left:16px}
   }
+
+  /* ---------- touch navigation ----------
+     A phone doesn't get the continuous corridor. It gets a list of places to
+     stand: one swipe steps to the next piece, which arrives already framed.
+     The pill is the same move for a thumb that would rather not guess. */
+  #mnav{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);transform:translateX(-50%);
+    z-index:14;display:none;align-items:center;gap:2px;padding:5px;border-radius:999px;
+    background:rgba(14,14,16,.74);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--line);box-shadow:0 18px 46px rgba(0,0,0,.55);}
+  body.touchnav #mnav{display:flex;}
+  #mnav button{all:unset;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:var(--soft);cursor:pointer;-webkit-tap-highlight-color:transparent;
+    transition:background .2s,color .2s,opacity .2s;}
+  #mnav button:active{background:rgba(255,255,255,.09);color:var(--ink);}
+  #mnav button[disabled]{opacity:.25;}
+  #mnav svg{width:17px;height:17px;display:block;}
+  #mnav .idx{min-width:66px;text-align:center;font-family:var(--mono),var(--cjk);
+    font-size:11px;letter-spacing:.16em;color:var(--soft);}
+  body.rtl #mnav svg{transform:scaleX(-1);}
+
+  /* the rest of the HUD re-stacks so nothing important sits under a thumb */
+  body.touchnav #tip{display:none;}
+  /* no wheel to talk about, and the swipe copy is long enough in German to wrap */
+  body.touchnav #hint{bottom:calc(env(safe-area-inset-bottom,0px) + 84px);
+    max-width:82vw;letter-spacing:.16em;line-height:1.7;text-align:center;}
+  body.touchnav #hint .wheel{display:none;}
+  body.touchnav #caption{bottom:calc(env(safe-area-inset-bottom,0px) + 98px);}
+  body.touchnav.cinema #bar-top,body.touchnav.cinema #bar-bot{height:6vh;}
+  /* the film link becomes a real button — small caps on a line is not a tap target */
+  body.touchnav #caption .play.on{padding:11px 18px 11px 11px;font-size:10.5px;
+    border:1px solid rgba(231,201,160,.4);border-radius:999px;background:rgba(231,201,160,.08);}
+  body.touchnav #caption .play .tri{width:24px;height:24px;}
+  body.touchnav #caption .exit{margin-top:14px;}
 </style>
 
 </head>
@@ -170,6 +203,13 @@
 </div>
 
 <div id="hint"><span class="wheel"></span> <span id="hintText"></span></div>
+
+<!-- phone navigation: one piece per swipe, or per tap on the pill -->
+<div id="mnav">
+  <button id="mPrev" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg></button>
+  <span class="idx" id="mIdx">1 / 1</span>
+  <button id="mNext" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></button>
+</div>
 
 <div id="caption" class="hud">
   <div class="ser"></div>
@@ -211,6 +251,26 @@ const L = {
        hint:'Scrollen, um durch die Galerie zu gehen', exit:'Scrollen oder Esc drücken, um zurückzugehen', tk:'Ausgewählte Werkzeuge', watch:'Film ansehen' },
 };
 let lang = 'en';
+
+/* A phone reads the desktop copy and is told to scroll and press Esc, neither of
+   which it has. Same two lines, said the way a thumb works. */
+const T = {
+  en:{ hint:'Swipe up to walk forward', exit:'Swipe up for the next piece' },
+  zh:{ hint:'向上滑动前进', exit:'向上滑动看下一件' },
+  ja:{ hint:'上にスワイプして進む', exit:'上にスワイプで次の作品へ' },
+  ko:{ hint:'위로 쓸어 넘겨 앞으로', exit:'위로 쓸어 다음 작품으로' },
+  ar:{ hint:'اسحب لأعلى للتقدّم', exit:'اسحب لأعلى للعمل التالي' },
+  es:{ hint:'Desliza hacia arriba para avanzar', exit:'Desliza hacia arriba para la siguiente' },
+  fr:{ hint:'Glissez vers le haut pour avancer', exit:'Glissez vers le haut pour la suivante' },
+  ru:{ hint:'Проведите вверх, чтобы идти вперёд', exit:'Проведите вверх — следующая работа' },
+  de:{ hint:'Nach oben wischen, um weiterzugehen', exit:'Nach oben wischen für das nächste Werk' },
+};
+
+/* Touch-primary devices only. A narrow desktop window still has a wheel and a
+   cursor, so it keeps the continuous walk. */
+const MOBILE = matchMedia('(pointer:coarse)').matches || (('ontouchstart' in window) && innerWidth <= 900);
+if(MOBILE) document.body.classList.add('touchnav');
+const say = k => (MOBILE && T[lang] && T[lang][k]) ? T[lang][k] : L[lang][k];
 
 /* ------------------------------------------------------------------ data -- */
 /* section names come from L[lang].sec[index]; titles stay English (proper names) */
@@ -259,6 +319,13 @@ const works = [], marks = [];
 }
 const START_Z = 10.5, END_Z = LAST_Z + 2.5, OUTRO_Z = LAST_Z - 7;
 const SIDE_X = 3.45, ROT = Math.PI/6;
+
+/* the phone itinerary: the doorway, every piece in order, then the fin card.
+   one swipe = one entry, so there is never a place to get stranded between two. */
+const STOPS = [{ kind:'start', z:START_Z }]
+  .concat(works.map(w=>({ kind:'work', z:w.z, work:w })))
+  .concat([{ kind:'end', z:END_Z }]);
+let stopIdx = 0;
 
 /* --------------------------------------------------------------- three ----- */
 const canvas = document.getElementById('stage');
@@ -435,7 +502,9 @@ function scrollPose(){ const z=zForT(curT); desiredPos.set(mouse.x*0.55,EYE_Y+mo
 function focusPose(w){
   const n=new THREE.Vector3(Math.sin(w._group.rotation.y),0,Math.cos(w._group.rotation.y));
   const fovV=THREE.MathUtils.degToRad(camera.fov);
-  const need=(Math.max((w._h||ART_H)*1.16, ((w._w||3.6)/camera.aspect)*1.16))/(2*Math.tan(fovV/2));
+  /* a phone in portrait already loses height to the aspect — don't also spend it on margin */
+  const pad=MOBILE?1.08:1.16;
+  const need=(Math.max((w._h||ART_H)*pad, ((w._w||3.6)/camera.aspect)*pad))/(2*Math.tan(fovV/2));
   const c=w._group.position; desiredPos.set(c.x+n.x*need, c.y+0.02, c.z+n.z*need); desiredLook.copy(c);
 }
 
@@ -456,11 +525,14 @@ function syncSize(){
 addEventListener('resize',syncSize);
 addEventListener('orientationchange',syncSize);
 if(window.visualViewport) visualViewport.addEventListener('resize',syncSize);
-addEventListener('pointermove',(e)=>{ mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-((e.clientY/innerHeight)*2-1); ptr.x=mouse.x; ptr.y=mouse.y; });
+/* a touch fires pointermove too, which would leave the parallax — and the pick
+   ray — parked wherever the last finger happened to lift */
+addEventListener('pointermove',(e)=>{ if(e.pointerType==='touch') return;
+  mouse.x=(e.clientX/innerWidth)*2-1; mouse.y=-((e.clientY/innerHeight)*2-1); ptr.x=mouse.x; ptr.y=mouse.y; });
 
 let hovered=null; const tip=document.getElementById('tip');
 function pickAt(){ ray.setFromCamera(ptr,camera); const hit=ray.intersectObjects(pickables,false)[0]; return hit?hit.object.userData.work:null; }
-function updateHover(){ setHover(mode==='scroll' ? pickAt() : null); }
+function updateHover(){ setHover((mode==='scroll' && !MOBILE) ? pickAt() : null); }
 /* full frame on a film: the piece itself is the play button, the surround is the way out */
 function updateFocusCursor(){ canvas.style.cursor=(focusWork.video&&pickAt()===focusWork)?'pointer':'default'; }
 function setHover(w){
@@ -471,9 +543,11 @@ function setHover(w){
     const t=workTitle(w); if(t){ tip.textContent=t; tip.style.opacity='1'; } else { tip.style.opacity='0'; } }
   else { canvas.style.cursor='default'; tip.style.opacity='0'; }
 }
-addEventListener('pointermove',e=>{ if(hovered&&workTitle(hovered)){ tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px'; }});
+addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return;
+  if(hovered&&workTitle(hovered)){ tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px'; }});
 
 canvas.addEventListener('click',()=>{
+  if(MOBILE) return;    // taps are resolved on touchend, where the coordinates still exist
   const hit=pickAt();
   if(mode==='focus'){
     /* the tail of a double-click shouldn't be read as the next click */
@@ -500,7 +574,7 @@ function fillCaption(w){
   capVideo = w.video || null;
   if(capVideo){ playEl.querySelector('.pt').textContent=L[lang].watch; playEl.classList.add('on'); }
   else playEl.classList.remove('on');
-  capEl.querySelector('.exit').textContent=L[lang].exit;
+  capEl.querySelector('.exit').textContent=say('exit');
 }
 let focusAt=0;
 function enterFocus(w){ mode='focus'; focusWork=w; focusAt=performance.now(); want(w,'full'); document.body.classList.add('cinema'); setHover(null); fillCaption(w); focusPose(w); }
@@ -512,12 +586,60 @@ function nudged(){ if(!scrolled){ scrolled=true; document.body.classList.add('hi
 addEventListener('wheel',(e)=>{ e.preventDefault(); nudged();
   if(mode==='focus'){ exitFocus(); return; }
   targetT=clamp01(targetT+e.deltaY*0.00058); },{passive:false});
-let touchY=null;
-addEventListener('touchstart',e=>{ touchY=e.touches[0].clientY; },{passive:true});
-addEventListener('touchmove',e=>{ nudged(); e.preventDefault();
+/* ---- touch -----------------------------------------------------------------
+   Two behaviours. A phone commits on release: swipe up walks one piece forward,
+   swipe down walks one back, a tap opens whatever it landed on. Everything else
+   keeps the old free drag. */
+let touchY=null, tx0=0, ty0=0, tt0=0, tMulti=false;
+addEventListener('touchstart',e=>{
+  tMulti = e.touches.length>1;
+  touchY=e.touches[0].clientY; tx0=e.touches[0].clientX; ty0=touchY; tt0=performance.now();
+},{passive:true});
+addEventListener('touchmove',e=>{ e.preventDefault();
+  if(MOBILE) return;                       // no mid-drag travel — the swipe is read on lift
+  nudged();
   if(mode==='focus'){ exitFocus(); touchY=e.touches[0].clientY; return; }
   if(touchY!=null){ const dy=touchY-e.touches[0].clientY; targetT=clamp01(targetT+dy*0.0012); touchY=e.touches[0].clientY; } },{passive:false});
+addEventListener('touchend',e=>{
+  if(!MOBILE||tMulti) return;
+  /* the pill and the menus own their own taps */
+  if(e.target&&e.target.closest&&e.target.closest('#mnav,#lang,#toolkit,#caption .play')) return;
+  const t=e.changedTouches[0]; if(!t) return;
+  const dx=t.clientX-tx0, dy=t.clientY-ty0, dt=performance.now()-tt0;
+  if(Math.abs(dy)>34 && Math.abs(dy)>Math.abs(dx)){ goStop(stopIdx + (dy<0?1:-1)); return; }
+  if(e.target===canvas && Math.abs(dx)<14 && Math.abs(dy)<14 && dt<450) tapAt(t.clientX,t.clientY);
+},{passive:true});
+
+/* the pick ray has no cursor to follow on a phone, so the tap hands it one */
+function tapAt(x,y){
+  ptr.x=(x/innerWidth)*2-1; ptr.y=-((y/innerHeight)*2-1);
+  const hit=pickAt();
+  if(mode==='focus'){ if(hit===focusWork&&focusWork.video) openFilm(focusWork.video); return; }
+  if(hit){ const i=STOPS.findIndex(s=>s.work===hit); if(i>=0) goStop(i); }
+}
+
+const mIdx=document.getElementById('mIdx'), mPrev=document.getElementById('mPrev'), mNext=document.getElementById('mNext');
+function goStop(i){
+  i = i<0 ? 0 : i>STOPS.length-1 ? STOPS.length-1 : i;
+  const s=STOPS[i]; stopIdx=i; nudged();
+  targetT=tForZ(s.z);
+  if(s.kind==='work') enterFocus(s.work);
+  else if(mode==='focus') exitFocus();
+  syncNav();
+}
+function syncNav(){
+  mIdx.textContent=(stopIdx+1)+' / '+STOPS.length;
+  mPrev.disabled=stopIdx===0;
+  mNext.disabled=stopIdx===STOPS.length-1;
+}
+mPrev.addEventListener('click',()=>goStop(stopIdx-1));
+mNext.addEventListener('click',()=>goStop(stopIdx+1));
+
 addEventListener('keydown',e=>{
+  if(MOBILE){
+    if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){ goStop(stopIdx+1); e.preventDefault(); return; }
+    if(e.key==='ArrowUp'||e.key==='PageUp'){ goStop(stopIdx-1); e.preventDefault(); return; }
+  }
   const step=e.shiftKey?0.09:0.035;
   if(e.key==='ArrowDown'||e.key==='PageDown'||e.key===' '){ nudged(); if(mode==='focus')exitFocus(); targetT=clamp01(targetT+step); e.preventDefault(); }
   else if(e.key==='ArrowUp'||e.key==='PageUp'){ nudged(); if(mode==='focus')exitFocus(); targetT=clamp01(targetT-step); e.preventDefault(); }
@@ -549,7 +671,7 @@ tkBtn.onclick=(e)=>{ e.stopPropagation(); langEl.classList.remove('open'); tkEl.
 addEventListener('click',()=>{ langEl.classList.remove('open'); tkEl.classList.remove('open'); });
 
 function setHintText(){
-  document.getElementById('hintText').textContent = L[lang].hint;
+  document.getElementById('hintText').textContent = say('hint');
 }
 
 function setLang(code){
@@ -582,7 +704,7 @@ function prefetchNear(){
 function frame(){
   syncSize();
   curT+=(targetT-curT)*0.075;
-  if(mode==='scroll'){ scrollPose(); updateHover(); } else { focusPose(focusWork); updateFocusCursor(); }
+  if(mode==='scroll'){ scrollPose(); updateHover(); } else { focusPose(focusWork); if(!MOBILE) updateFocusCursor(); }
   camera.position.lerp(desiredPos,0.09); smoothLook.lerp(desiredLook,0.09);
   camera.lookAt(smoothLook);
   prefetchNear();
@@ -598,7 +720,7 @@ let started=false;
 Promise.race([fontsReady, new Promise(r=>setTimeout(r,1200))]).then(start).catch(start);
 function start(){
   if(started) return; started=true;
-  buildTitles(); buildOutro(); setLang('en'); tick();
+  buildTitles(); buildOutro(); setLang('en'); syncNav(); tick();
   requestAnimationFrame(()=>document.body.classList.add('ready'));
   fontsReady.then(()=>refreshTitles()).catch(()=>{});
 }
