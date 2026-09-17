@@ -51,10 +51,20 @@
         html {
             scroll-behavior: smooth;
             min-height: 100%;
-            /* ONE uniform flat color fills both the page canvas and the elastic overscroll
-               gap. Because it's a single solid color (no gradient), pulling the page up or
-               down past the edge reveals the exact same color as the page background. */
+            /* The page must read as one endless canvas: pulling past either edge may never
+               reveal a color the page doesn't already have there.
+               1) Most browsers simply don't bounce any more.
+               2) iOS Safari ignores that, so the canvas background is a single tile twice
+                  the document's height: the strip revealed BELOW the page is the footer's
+                  pink, and the tile wraps so the strip revealed ABOVE it is the page cream. */
+            overscroll-behavior-y: none;
             background-color: var(--canvas);
+            background-image: linear-gradient(to bottom,
+                var(--canvas)   0    50%,    /* behind the page itself */
+                var(--rose-400) 50%  75%,    /* revealed below the pink footer */
+                var(--canvas)   75%  100%);  /* wraps around: revealed above the header */
+            background-size: 100% 200%;
+            background-repeat: repeat-y;
         }
 
         body {
