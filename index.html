@@ -969,7 +969,7 @@
         const hintTexts = [
             'Click the apples to explore',
             'Click the animals to discover',
-            'Click the falling leaves'
+            ''                                  // 秋天不提示
         ];
 
         function init() {
@@ -1612,6 +1612,31 @@
         // ============================================
         // 地面系统 (支持冬季雪地切换)
         // ============================================
+        // 河流路径 (x, z) — 地面草丛、花丛和 createRiver() 共用这一份控制点。
+        // 每个点到原点的距离都 < GROUND_CONFIG.radius 减去最宽河岸的半宽 (7.5)，
+        // 这样河面和河岸永远压在地面圆盘上，不会探出地平线飘在天上。
+        const RIVER_PATH = [
+            [-30, 22], [-20, 18], [-10, 13], [0, 10],
+            [10, 7], [16, -1], [22, -10], [28, -18], [30, -22]
+        ];
+
+        // 点 (x, z) 是否落在河道内 (含缓冲区)，用来把草和花挡在水面外
+        function isInRiverArea(x, z, buffer = 14) {
+            for (let i = 0; i < RIVER_PATH.length - 1; i++) {
+                const [x1, z1] = RIVER_PATH[i];
+                const [x2, z2] = RIVER_PATH[i + 1];
+                const dx = x2 - x1;
+                const dz = z2 - z1;
+                const segLenSq = dx * dx + dz * dz;
+                const t = Math.max(0, Math.min(1, ((x - x1) * dx + (z - z1) * dz) / segLenSq));
+                const closestX = x1 + t * dx;
+                const closestZ = z1 + t * dz;
+                const dist = Math.hypot(x - closestX, z - closestZ);
+                if (dist < buffer) return true;
+            }
+            return false;
+        }
+
         const GROUND_CONFIG = {
             radius: 50,
             segments: 64,
@@ -1649,43 +1674,6 @@
             // 避开河流区域
             grassMeshes = [];
             const grassCount = 200;
-            
-            // 检查点是否在河流区域内 (使用多段线段近似曲线)
-            function isInRiverArea(x, z) {
-                // 河流路径关键点 (与 createRiver 中的 curvePoints 对应)
-                const riverPoints = [
-                    [-50, 35], [-30, 28], [-15, 18], [0, 12],
-                    [12, 8], [18, -2], [25, -12], [35, -25], [50, -40]
-                ];
-                const riverWidth = 14; // 河流宽度 + 缓冲区
-                
-                // 检查点到河流每段线段的最短距离
-                for (let i = 0; i < riverPoints.length - 1; i++) {
-                    const [x1, z1] = riverPoints[i];
-                    const [x2, z2] = riverPoints[i + 1];
-                    
-                    // 线段向量
-                    const dx = x2 - x1;
-                    const dz = z2 - z1;
-                    const segLen = Math.sqrt(dx * dx + dz * dz);
-                    
-                    // 点到线段起点的向量
-                    const px = x - x1;
-                    const pz = z - z1;
-                    
-                    // 投影参数 t
-                    const t = Math.max(0, Math.min(1, (px * dx + pz * dz) / (segLen * segLen)));
-                    
-                    // 线段上最近点
-                    const closestX = x1 + t * dx;
-                    const closestZ = z1 + t * dz;
-                    
-                    // 距离
-                    const dist = Math.sqrt((x - closestX) ** 2 + (z - closestZ) ** 2);
-                    if (dist < riverWidth) return true;
-                }
-                return false;
-            }
             
             let created = 0;
             let attempts = 0;
@@ -2042,16 +2030,20 @@
                 });
             }
 
-            // Flowers around the tree
-            for (let i = 0; i < 40; i++) {
-                const flower = createFlower();
+            // Flowers around the tree (跳过河道, 否则秋天会有花开在水面上)
+            let flowersPlaced = 0;
+            let flowerAttempts = 0;
+            while (flowersPlaced < 40 && flowerAttempts < 400) {
+                flowerAttempts++;
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 3 + Math.random() * 8;
-                flower.position.set(
-                    Math.cos(angle) * radius,
-                    0.1,
-                    Math.sin(angle) * radius
-                );
+                const fx = Math.cos(angle) * radius;
+                const fz = Math.sin(angle) * radius;
+                if (isInRiverArea(fx, fz, 8)) continue;
+                flowersPlaced++;
+
+                const flower = createFlower();
+                flower.position.set(fx, 0.1, fz);
                 flower.userData.type = 'decoration';
                 flower.userData.season = 'spring';
                 flower.visible = true;
@@ -2152,13 +2144,14 @@
             // Animals (clickable projects)
             const animalConfigs = [
                 { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
-                { type: 'rabbit', pos: { x: -5, y: 0.5, z: 4 } },
+                { type: 'rabbit', pos: { x: -4, y: 0.5, z: 3 } },   // 树干左前方的草地上
                 { type: 'fox', pos: { x: 6, y: 0.15, z: -4 } }
             ];
 
             animalConfigs.forEach((config, i) => {
                 const animal = createAnimal(config.type);
                 animal.position.set(config.pos.x, config.pos.y, config.pos.z);
+                animal.userData.restY = config.pos.y;   // 动画的基准高度
                 animal.userData.type = 'summer';
                 animal.userData.projectId = i;
                 animal.userData.animalType = config.type;
@@ -3210,17 +3203,9 @@
             
             // === 1. 创建蜿蜒的样条曲线路径 ===
             // 河流从场景远处蜿蜒穿过，延伸到雾中消失
-            const curvePoints = [
-                new THREE.Vector3(-50, 0, 35),    // 远处起点 (被雾隐藏)
-                new THREE.Vector3(-30, 0, 28),
-                new THREE.Vector3(-15, 0, 18),
-                new THREE.Vector3(0, 0, 12),
-                new THREE.Vector3(12, 0, 8),      // 靠近树的位置
-                new THREE.Vector3(18, 0, -2),
-                new THREE.Vector3(25, 0, -12),
-                new THREE.Vector3(35, 0, -25),
-                new THREE.Vector3(50, 0, -40)     // 远处终点 (被雾隐藏)
-            ];
+            // 控制点来自 RIVER_PATH: 两端都收在地面圆盘内，靠着色器的 edgeFade
+            // 和雾色淡出收尾，而不是伸出地平线。
+            const curvePoints = RIVER_PATH.map(([x, z]) => new THREE.Vector3(x, 0, z));
             
             riverCurve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
             
@@ -3257,7 +3242,7 @@
                         opacity: 0.9 - layer * 0.15
                     });
                     const bank = new THREE.Mesh(bankGeo, bankMat);
-                    bank.position.y = 0.01 - layer * 0.005; // 河岸略高于地面
+                    bank.position.y = 0.014 - layer * 0.004; // 河岸略高于地面 (最低一层也不与地面共面, 否则闪烁)
                     bank.receiveShadow = true;
                     bank.userData.type = 'river';
                     bank.userData.season = 'autumn';
@@ -3351,8 +3336,9 @@
                     float fogFactor = smoothstep(uFogNear, uFogFar, fogDistance);
                     finalColor = mix(finalColor, uFogColor, fogFactor);
                     
-                    // 边缘淡出 (河流起始和终点)
-                    float edgeFade = smoothstep(0.0, 0.1, vUv.y) * smoothstep(1.0, 0.9, vUv.y);
+                    // 边缘淡出 (河流起始和终点) —— 河道现在收在地面圆盘内, 两端靠这段
+                    // 较长的淡出溶进雾里, 而不是在草地上留一道硬邦邦的横切口
+                    float edgeFade = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.78, vUv.y);
                     float finalOpacity = uOpacity * edgeFade;
                     
                     gl_FragColor = vec4(finalColor, finalOpacity);
@@ -3893,7 +3879,9 @@
             });
 
             // Update hint text
-            document.getElementById('hintText').textContent = hintTexts[currentSeason];
+            const hintEl = document.getElementById('hintText');
+            hintEl.textContent = hintTexts[currentSeason];
+            hintEl.style.visibility = hintTexts[currentSeason] ? 'visible' : 'hidden';
         }
 
         // ============================================
@@ -5354,8 +5342,10 @@
                         // 松鼠尾巴摆动
                         animal.position.y += Math.sin(windTime * 4 + i) * 0.008;
                     } else if (type === 'rabbit') {
-                        // 兔子轻微跳动
-                        animal.position.y += Math.abs(Math.sin(windTime * 3 + i)) * 0.015;
+                        // 兔子轻微跳动 — 必须以落地高度为基准重新赋值。
+                        // 之前是 position.y += |sin(...)|, 每帧都加一个非负数, 兔子会一路飘上天。
+                        const restY = animal.userData.restY !== undefined ? animal.userData.restY : 0.5;
+                        animal.position.y = restY + Math.abs(Math.sin(windTime * 3 + i)) * 0.22;
                     } else if (type === 'fox') {
                         // 狐狸轻微晃动
                         animal.rotation.y = Math.sin(windTime * 0.3) * 0.05;
