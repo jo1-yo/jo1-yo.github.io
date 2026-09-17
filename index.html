@@ -4921,6 +4921,9 @@
             else dist = 95;
             controls.minDistance = controls.maxDistance = dist;
 
+            // 树/星球的缩放比例 (河流、地面/星球的防穿模钳位共用它)
+            const morph = smooth(seg(j, 0.38, 0.68));
+
             // 旋转策略分三段:
             //   j < 0.08        树场景 — OrbitControls 正常旋转(原有行为);
             //   0.08–0.50 过渡  — 禁止旋转(手机单指上滑推进旅程会被 OrbitControls 当成
@@ -4941,6 +4944,29 @@
                 controls.minPolarAngle = Math.PI / 4;
                 controls.maxPolarAngle = Math.PI / 1.8;
             }
+
+            // ---- 防穿模: 相机永远待在"地面"上方 ----
+            // 树场景的地面是 y=0 的圆盘; j>0.28 之后换成一颗北极顶在 y=0 的星球
+            // (半径先是 24×20=480, 看着就是一块平地, 再慢慢收到 24)。两者都只渲染正面,
+            // 相机一旦滑到下面, 背面被剔除 → 地面和星球整个消失, 只剩一棵树浮在星空里。
+            // 所以这里按当前表面算出俯仰角上限: 星球缩小之后限制自然放开, 那时相机离得
+            // 够远, 绕到星球下方看是真的能看到球体, 不会再穿模。
+            const surfaceClear = 1.5;   // 相机离表面至少留出的高度
+            const groundShown = (1 - smooth(seg(j, 0.26, 0.40))) > 0.01;
+            const planetRNow = (j > 0.28) ? PLANET_R * lerpN(20, 1, morph) : 0;
+            let phiLimit = Math.PI - 0.05;
+            if (groundShown) {          // 平地: 相机高度不低于 surfaceClear
+                phiLimit = Math.min(phiLimit,
+                    Math.acos(clampN((surfaceClear - controls.target.y) / dist, -1, 1)));
+            }
+            if (planetRNow > 0) {       // 球面: 相机到球心的距离不小于 R + surfaceClear
+                const K = controls.target.y + planetRNow;
+                const cosMin = ((planetRNow + surfaceClear) * (planetRNow + surfaceClear)
+                    - dist * dist - K * K) / (2 * dist * K);
+                phiLimit = Math.min(phiLimit, Math.acos(clampN(cosMin, -1, 1)));
+            }
+            phiLimit = Math.max(phiLimit, controls.minPolarAngle + 0.01);
+            controls.maxPolarAngle = Math.min(controls.maxPolarAngle, phiLimit);
             {
                 const offset = camera.position.clone().sub(controls.target);
                 const r = offset.length();
@@ -4955,7 +4981,9 @@
                     // 拖动, 若从 j=0 就开始回正, 稍微滚一点进旅程后拖动就会被每帧拽回
                     // 平视 —— 正是"拖下去自己弹回来"那个 bug。
                     const levelBlend = smooth(seg(j, TREE_ORBIT_J, 0.26)) * (1 - smooth(seg(j, 0.30, 0.50)));
-                    const phi = lerpN(curPhi, Math.PI / 2, levelBlend);
+                    // 上限同时作用在当前相机上: 归途中星球变大、限制收紧时, 相机会被
+                    // 平滑推回地平线以上, 而不是等用户自己拖回来。
+                    const phi = Math.min(lerpN(curPhi, Math.PI / 2, levelBlend), phiLimit);
                     camera.position.set(
                         controls.target.x + dist * Math.sin(phi) * Math.sin(theta),
                         controls.target.y + dist * Math.cos(phi),
@@ -4985,8 +5013,6 @@
 
             // 地面淡出 (0.26→0.40); 大星球已铺在下方(草地色无缝) → 无灰平地中间态
             setSurfaceOpacity(1 - smooth(seg(j, 0.26, 0.40)));
-            // 树/星球的缩放比例 (河流共用它 → 河流与树同比例, 不再独立塌缩)
-            const morph = smooth(seg(j, 0.38, 0.68));
             // 河流系统(只秋季): 与树用同一比例缩放, 并随地面一起淡出(不再独立缩成0) → 自然
             // → 地面/河流淡完(j≈0.40)远早于进入太空, 仍不会有绿色河带 bug
             {
@@ -5131,8 +5157,8 @@
                     <div class="fp-lede is-collapsed">
                         <p>I'm a sophomore at <b>Columbia University</b> studying <b>Computer Science</b> and <b>Cognitive Science</b>.<button type="button" class="fp-lede-toggle" id="ledeToggle" aria-expanded="false" aria-controls="ledeRest" aria-label="Show more"><span class="fp-lede-chev" aria-hidden="true">›</span></button></p>
                         <div class="fp-lede-rest" id="ledeRest">
-                            <p>Since I began keeping journals at seven, I've been haunted by one image: from the backseat of my father's car, somewhere between Beijing and Inner Mongolia, I watched a patch of grass glitter against a sunlit roadside cliff and wondered whether a single blade could matter if nobody ever noticed it. Maybe only its neighbors would know it had lived; after a few seasons, even that witness would be gone.</p>
-                            <p>That question — what lasts, what counts, and how small lives find meaning in vast time — has followed me from fiction and stream-of-consciousness writing into websites, experiments, and AI-native apps. Building is my way of answering it: turning strange ideas into something concrete that helps us thrive.</p>
+                            <p>I've kept a journal since I was seven. One image has stayed with me: sitting in the backseat of my father's car, somewhere between Beijing and Inner Mongolia, watching a patch of grass catch the sunlight on a roadside cliff. I wondered whether a single blade mattered if no one ever noticed it. Perhaps only the grass around it would know it had lived, and in a few seasons, that too would be gone.</p>
+                            <p>I still wonder what it means to exist in a universe so vast. Focusing on the present helps. I find joy in learning, building, writing, thinking, talking, running, working out, laughing with friends.</p>
                         </div>
                         <p>I'm a <b>fast shipper</b>, a <b>creative thinker</b>, and an <b>active explorer</b> — curious about everything in the world.</p>
                     </div>
