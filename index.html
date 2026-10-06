@@ -1613,11 +1613,12 @@
         // 地面系统 (支持冬季雪地切换)
         // ============================================
         // 河流路径 (x, z) — 地面草丛、花丛和 createRiver() 共用这一份控制点。
-        // 每个点到原点的距离都 < GROUND_CONFIG.radius 减去最宽河岸的半宽 (7.5)，
-        // 这样河面和河岸永远压在地面圆盘上，不会探出地平线飘在天上。
+        // 两端故意伸出地面圆盘 (r > GROUND_CONFIG.radius)，几何体保持原样，由着色器把
+        // 圆盘外的部分裁掉 (clipToGround) —— 河道顺着原方向一直流到地平线才收口。
         const RIVER_PATH = [
             [-30, 22], [-20, 18], [-10, 13], [0, 10],
-            [10, 7], [16, -1], [22, -10], [28, -18], [30, -22]
+            [10, 7], [16, -1], [22, -10], [28, -18], [30, -22],
+            [34, -30], [39, -40]
         ];
 
         // 点 (x, z) 是否落在河道内 (含缓冲区)，用来把草和花挡在水面外
@@ -1627,6 +1628,7 @@
                 const [x2, z2] = RIVER_PATH[i + 1];
                 const dx = x2 - x1;
                 const dz = z2 - z1;
+            [-52, 31], [-41, 26.5],
                 const segLenSq = dx * dx + dz * dz;
                 const t = Math.max(0, Math.min(1, ((x - x1) * dx + (z - z1) * dz) / segLenSq));
                 const closestX = x1 + t * dx;
@@ -3060,7 +3062,7 @@
         // ============================================
         const RIVER_CONFIG = {
             width: 10,                // 河流宽度 (加宽)
-            segments: 100,            // 沿样条曲线的分段数
+            segments: 160,            // 沿样条曲线的分段数 (河道伸到地平线后变长了)
             flowSpeed1: 0.025,        // 第一层法线流速
             flowSpeed2: 0.06,         // 第二层法线流速
             normalScale: 0.3,         // 法线强度
@@ -3209,16 +3211,32 @@
             
             riverCurve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
             
+        // 给河床/河岸材质注入裁切: 局部坐标半径超出地面圆盘就 discard。
+        // 不去挪顶点 —— 挪顶点会让河在边缘顺着圆周被掰出一道弯。
+        const RIVER_CLIP_RADIUS = GROUND_CONFIG.radius - 0.15; // 圆盘是多边形, 往里收一点
+        function clipToGround(material) {
+            material.onBeforeCompile = (shader) => {
+                shader.uniforms.uClipRadius = { value: RIVER_CLIP_RADIUS };
+                shader.vertexShader = 'varying float vClipR;\n' + shader.vertexShader.replace(
+                    '#include <begin_vertex>',
+                    '#include <begin_vertex>\n vClipR = length(position.xz);');
+                shader.fragmentShader = 'uniform float uClipRadius;\nvarying float vClipR;\n' + shader.fragmentShader.replace(
+                    'void main() {',
+                    'void main() {\n if (vClipR > uClipRadius) discard;');
+            };
+            return material;
+        }
+
             // === 2. 沿样条曲线生成河流几何体 ===
             const riverGeo = createRiverGeometry(riverCurve, cfg.width, cfg.segments);
             
             // === 3. 河床几何体 (略宽，在水面下方) ===
             const riverbedGeo = createRiverGeometry(riverCurve, cfg.width + 3, cfg.segments);
-            const riverbedMat = new THREE.MeshStandardMaterial({
+            const riverbedMat = clipToGround(new THREE.MeshStandardMaterial({
                 color: 0x2a1a0a,
                 roughness: 0.95,
                 metalness: 0
-            });
+            }));
             riverbedMesh = new THREE.Mesh(riverbedGeo, riverbedMat);
             riverbedMesh.position.y = -0.08; // 河床贴近地面
             riverbedMesh.receiveShadow = true;
@@ -3234,13 +3252,13 @@
                 for (let layer = 0; layer < 3; layer++) {
                     const bankWidth = cfg.width + 2 + layer * 1.5;
                     const bankGeo = createRiverGeometry(riverCurve, bankWidth, cfg.segments);
-                    const bankMat = new THREE.MeshStandardMaterial({
+                    const bankMat = clipToGround(new THREE.MeshStandardMaterial({
                         color: bankColors[layer],
                         roughness: 0.85,
                         metalness: 0,
                 transparent: true,
                         opacity: 0.9 - layer * 0.15
-                    });
+                    }));
                     const bank = new THREE.Mesh(bankGeo, bankMat);
                     bank.position.y = 0.014 - layer * 0.004; // 河岸略高于地面 (最低一层也不与地面共面, 否则闪烁)
                     bank.receiveShadow = true;
@@ -3276,9 +3294,11 @@
             `;
             
             const waterFragmentShader = `
+                varying float vRadius;
                 uniform sampler2D uNormal1;
                 uniform sampler2D uNormal2;
                 uniform vec2 uOffset1;
+                    vRadius = length(position.xz); // 局部坐标 → 与地面圆盘同一尺度
                 uniform vec2 uOffset2;
                 uniform vec3 uShallowColor;
                 uniform vec3 uDeepColor;
@@ -3299,10 +3319,12 @@
                     vec2 uv2 = vUv * vec2(4.0, 20.0) + uOffset2;
                     
                     vec3 n1 = texture2D(uNormal1, uv1).rgb * 2.0 - 1.0;
+                uniform float uGroundRadius;
                     vec3 n2 = texture2D(uNormal2, uv2).rgb * 2.0 - 1.0;
                     
                     // 混合法线 (第二层权重较小)
                     vec3 normal = normalize(vec3(
+                varying float vRadius;
                         n1.x * uNormalScale + n2.x * uNormalScale * 0.5,
                         n1.y * uNormalScale + n2.y * uNormalScale * 0.5,
                         1.0
@@ -3331,14 +3353,16 @@
                     finalColor += vec3(1.0) * spec;
                     finalColor += vec3(1.0) * flowStreak;
                     
-                    // === 雾效淡出 (使河流端点融入雾中) ===
+                    // === 雾效: 与场景雾 (THREE.Fog, 线性) 完全一致, 每帧同步 near/far/color ===
+                    // 以前用自己更浓的 25→60 雾, 远处的河先变成奶白色而草地还是绿的,
+                    // 看起来就像河在半路突然消失了
                     float fogDistance = length(vWorldPos - cameraPosition);
-                    float fogFactor = smoothstep(uFogNear, uFogFar, fogDistance);
+                    float fogFactor = clamp((fogDistance - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0);
                     finalColor = mix(finalColor, uFogColor, fogFactor);
                     
-                    // 边缘淡出 (河流起始和终点) —— 河道现在收在地面圆盘内, 两端靠这段
-                    // 较长的淡出溶进雾里, 而不是在草地上留一道硬邦邦的横切口
-                    float edgeFade = smoothstep(0.0, 0.22, vUv.y) * smoothstep(1.0, 0.78, vUv.y);
+                    // 边缘淡出: 只在地面圆盘最外一圈淡掉, 河一直流到地平线
+                    if (vRadius > uGroundRadius) discard;
+                    float edgeFade = smoothstep(uGroundRadius, uGroundRadius - 2.5, vRadius);
                     float finalOpacity = uOpacity * edgeFade;
                     
                     gl_FragColor = vec4(finalColor, finalOpacity);
@@ -3357,8 +3381,9 @@
                     uOpacity: { value: cfg.opacity },
                     uNormalScale: { value: cfg.normalScale },
                     uFresnelPower: { value: 2.2 },
-                    uFogNear: { value: 25 },
-                    uFogFar: { value: 60 }
+                    uFogNear: { value: 20 },
+                    uFogFar: { value: 80 },
+                    uGroundRadius: { value: RIVER_CLIP_RADIUS }
                 },
                 vertexShader: waterVertexShader,
                 fragmentShader: waterFragmentShader,
@@ -3571,6 +3596,13 @@
         const IS_TOUCH = window.matchMedia('(pointer: coarse)').matches ||
             'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
+
+            // 跟场景雾保持一致 (颜色随季节/宇宙之旅变化, far 随相机距离变化)
+            if (scene.fog) {
+                uniforms.uFogColor.value.copy(scene.fog.color);
+                uniforms.uFogNear.value = scene.fog.near;
+                uniforms.uFogFar.value = scene.fog.far;
+            }
         let touchStartX = 0;
         let touchStartY = 0;
         let isSwiping = false;
