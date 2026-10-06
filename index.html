@@ -89,7 +89,7 @@
             100% { opacity: 0; transform: translateX(-50%) scale(1); }
         }
 
-        /* 手机端一次性提示: 一只线稿手指从头像下方抬起轻点, 头像外圈同步泛一圈涟漪,
+        /* 手机端一次性提示: 一只 emoji 手指从头像下方抬起轻点, 头像外圈同步泛一圈涟漪,
            引导用户点右上角头像进作品页。关掉弹窗 2s 后出现, 停留约 6s 淡出 (见 showLogoHint),
            点了头像也会立刻消失。容器与 #fpHome 同位同宽, 涟漪正好套在头像上。 */
         .logo-hint {
@@ -113,18 +113,20 @@
             opacity: 0;
             animation: logoHintRing 2s cubic-bezier(.25,.6,.3,1) infinite;
         }
-        /* 苹果式指向手 (hand.point.up 风格): 白色剪影 + 极淡描边 + 柔和投影; 从头像下方抬起 → 轻按 → 落回 */
+        /* 手指用系统 emoji 👆 (iPhone 上即 Apple 自家的表情手指), 柔和投影; 从头像下方抬起 → 轻按 → 落回 */
         .logo-hint .lh-hand {
-            position: absolute; top: 73px; left: 50%;
-            width: 48px; height: 48px; margin-left: -19px;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,.32));
+            position: absolute; top: 74px; left: 50%;
+            width: 1.3em; margin-left: -0.65em;
+            font-size: 44px; line-height: 1; text-align: center;
+            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,.28));
             animation: logoHintTap 2s ease-in-out infinite;
         }
         @keyframes logoHintTap {
-            0%        { transform: rotate(-8deg) translateY(0) scale(1); }
-            32%       { transform: rotate(-8deg) translateY(-12px) scale(.96); }
-            46%       { transform: rotate(-8deg) translateY(-12px) scale(.96); }
-            78%, 100% { transform: rotate(-8deg) translateY(0) scale(1); }
+            0%        { transform: translateY(0) scale(1); }
+            32%       { transform: translateY(-12px) scale(.96); }
+            46%       { transform: translateY(-12px) scale(.96); }
+            78%, 100% { transform: translateY(0) scale(1); }
         }
         @keyframes logoHintRing {
             0%, 30%   { opacity: 0;  transform: scale(.82); }
@@ -699,7 +701,7 @@
             #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
             .logo-hint { right: 22px; width: 62px; }
             .logo-hint .lh-ring { height: 62px; }
-            .logo-hint .lh-hand { top: 67px; }
+            .logo-hint .lh-hand { top: 68px; }
         }
     </style>
 </head>
@@ -713,15 +715,10 @@
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
 
-    <!-- 手机端: 引导点右上角头像进作品页的一次性提示 —— 头像外圈涟漪 + 线稿食指轻点 -->
+    <!-- 手机端: 引导点右上角头像进作品页的一次性提示 —— 头像外圈涟漪 + emoji 食指轻点 -->
     <div class="logo-hint" id="logoHint" aria-hidden="true">
         <span class="lh-ring"></span>
-        <svg class="lh-hand" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#fff" stroke="rgba(42,36,32,.42)" stroke-width="1.4" stroke-linejoin="round"
-                  d="M19 8.5A6.5 6.5 0 0 1 32 8.5V30C32 27.5 34.5 25.5 38 25.5C41.5 25.5 44 28 44 31C44 29 46.5 27.5 49.5 27.5C52.5 27.5 55 30.5 55 34.5C55 32 57 30.5 59 30.8C61.5 31.2 62.5 34.5 62 38L60.5 52C60 57.5 56.5 61 51 61H22C17 61 13.5 57.5 13 52L12.5 47C10.5 43.5 6 39.5 6.5 35.5C7 32 10.5 30.5 13.8 32C16 33.2 17.8 35.5 19 38Z"/>
-            <path fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round"
-                  d="M32.3 31C32 36 33 40 35 43M44 31.5C43.7 35 44.8 38 47 40.5M55 35C54.7 37.8 55.6 40 57.2 42M19 38.5C18 42.5 16 45.5 13 48"/>
-        </svg>
+        <span class="lh-hand">👆</span>
     </div>
 
     <div id="pcModal" role="dialog" aria-modal="true" aria-labelledby="pcCardH">
