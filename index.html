@@ -89,49 +89,42 @@
             100% { opacity: 0; transform: translateX(-50%) scale(1); }
         }
 
-        /* 手机端一次性提示: 一只 emoji 手指从头像下方抬起轻点, 头像外圈同步泛一圈涟漪,
-           引导用户点右上角头像进作品页。关掉弹窗 2s 后出现, 停留约 6s 淡出 (见 showLogoHint),
-           点了头像也会立刻消失。容器与 #fpHome 同位同宽, 涟漪正好套在头像上。 */
+        /* 手机端一次性提示: iOS Tips 式小气泡, 小三角指向右上角头像, 写 "Tap to see my work"。
+           关掉弹窗 2s 后弹出, 停 5s 淡出 (见 showLogoHint); 点头像或点气泡本身都立刻收起并进作品页。
+           容器与 #fpHome 同位同宽, 三角正对头像中心, 气泡右边缘与头像右边缘对齐、向左伸展。 */
         .logo-hint {
             position: fixed;
-            top: 22px; right: 26px;
-            width: 68px; height: 130px;
+            top: 22px; right: 22px;
+            width: 62px; height: 130px;
             z-index: 3300;
             pointer-events: none;
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity .55s ease, transform .55s cubic-bezier(.22,.61,.36,1);
+            transform: translateY(-6px) scale(.92);
+            transform-origin: 50% 0;
+            transition: opacity .35s ease, transform .45s cubic-bezier(.22,.9,.32,1.1);
         }
         .logo-hint.visible { opacity: 1; transform: none; }
-        /* 头像外圈涟漪: 手指按下的瞬间亮起, 扩散后消失 */
-        .logo-hint .lh-ring {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 68px;
-            border-radius: 50%;
-            border: 1.5px solid rgba(42,36,32,.6);
-            box-shadow: 0 0 0 1.5px rgba(255,255,255,.85), inset 0 0 0 1px rgba(255,255,255,.6);
-            opacity: 0;
-            animation: logoHintRing 2s cubic-bezier(.25,.6,.3,1) infinite;
+        /* 只给手机版; 桌面布局 (>760px) 连 DOM 都不显示, JS 里 showLogoHint 也按同一断点拦 */
+        @media (min-width: 761px) { .logo-hint { display: none; } }
+        /* 材质: 实心白 (.96), 不描边不磨砂 —— 不透背景, 哪怕压到树冠也只是干净地盖住, 不会像穿模 */
+        .logo-hint .lh-bubble, .logo-hint .lh-caret {
+            position: absolute; box-sizing: border-box;
+            background: rgba(255,255,255,.96);
         }
-        /* 手指用系统 emoji 👆 (iPhone 上即 Apple 自家的表情手指), 柔和投影; 从头像下方抬起 → 轻按 → 落回 */
-        .logo-hint .lh-hand {
-            position: absolute; top: 74px; left: 50%;
-            width: 1.3em; margin-left: -0.65em;
-            font-size: 44px; line-height: 1; text-align: center;
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,.28));
-            animation: logoHintTap 2s ease-in-out infinite;
+        .logo-hint .lh-bubble {
+            top: 72px; right: 0;
+            padding: 9px 13px; border-radius: 13px; white-space: nowrap;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+            font-size: 14px; font-weight: 500; letter-spacing: -.005em; line-height: 1.2; color: #333338;
+            box-shadow: 0 6px 20px rgba(20,22,34,.14), 0 1px 3px rgba(20,22,34,.06);
+            pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent;
         }
-        @keyframes logoHintTap {
-            0%        { transform: translateY(0) scale(1); }
-            32%       { transform: translateY(-12px) scale(.96); }
-            46%       { transform: translateY(-12px) scale(.96); }
-            78%, 100% { transform: translateY(0) scale(1); }
-        }
-        @keyframes logoHintRing {
-            0%, 30%   { opacity: 0;  transform: scale(.82); }
-            34%       { opacity: .9; transform: scale(.88); }
-            80%, 100% { opacity: 0;  transform: scale(1.5); }
+        /* 小三角: 旋转 45° 的小方块, 只保留露在气泡上沿之外的上半截 (半透明时下半截会和气泡叠出一块更白的菱形) */
+        .logo-hint .lh-caret {
+            top: 67px; left: 50%;
+            width: 12px; height: 12px; margin-left: -6px;
+            border-radius: 2px; transform: rotate(45deg);
+            clip-path: polygon(0 0, 100% 0, 0 100%);
         }
 
         /* 首次进入的提示弹窗 (仅触屏): Apple 风柔和磨砂玻璃卡片, 点 "Got it" 关闭。 */
@@ -699,9 +692,6 @@
             #oneDSite.active .fp-name, #oneDSite.active .fp-role { opacity: 1; transform: none; transition-delay: .08s; }
             #oneDSite.active .fp-side-label, #oneDSite.active .fp-connect, #oneDSite.active .fp-hirebox { opacity: 1; transform: none; transition-delay: .55s; }
             #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
-            .logo-hint { right: 22px; width: 62px; }
-            .logo-hint .lh-ring { height: 62px; }
-            .logo-hint .lh-hand { top: 68px; }
         }
     </style>
 </head>
@@ -715,10 +705,10 @@
         <div class="season-name autumn" id="autumnTitle">Autumn</div>
     </div>
 
-    <!-- 手机端: 引导点右上角头像进作品页的一次性提示 —— 头像外圈涟漪 + emoji 食指轻点 -->
+    <!-- 手机端: 引导点右上角头像进作品页的一次性提示 —— iOS Tips 式气泡, 小三角指向头像 -->
     <div class="logo-hint" id="logoHint" aria-hidden="true">
-        <span class="lh-ring"></span>
-        <span class="lh-hand">👆</span>
+        <span class="lh-bubble">Tap to see my work</span>
+        <span class="lh-caret"></span>
     </div>
 
     <div id="pcModal" role="dialog" aria-modal="true" aria-labelledby="pcCardH">
@@ -1070,7 +1060,7 @@
                     setTimeout(() => pm.classList.add('show'), 450);
                     ok.addEventListener('click', () => {
                         pm.classList.remove('show');
-                        setTimeout(showLogoHint, 2000);       // 关掉弹窗 2s 后就指引点头像
+                        setTimeout(showLogoHint, 2000);       // 关掉弹窗 2s 后弹出指向头像的气泡
                     });
                 } else {
                     setTimeout(showLogoHint, 2000);
@@ -4528,15 +4518,16 @@
         let treeZoom = 0, treeZoomTarget = 0;
         let logoHintTimer = null;
 
-        // 手机端一次性提示: 关掉弹窗 2s 后, 一只手指轻点右上角头像, 停留约 6 秒后淡出,
+        // 手机端一次性提示: 关掉弹窗 2s 后, 右上角头像下弹出 "Tap to see my work" 气泡, 停 5s 淡出,
         // 引导用户点 logo 进作品页。点了 logo(或已在作品页)会立刻撤掉。桌面端不出现。
         function showLogoHint() {
-            if (!IS_TOUCH) return;
+            // 只在手机布局 (触屏且 ≤760px) 出现; 桌面版和平板宽度不用
+            if (!IS_TOUCH || !window.matchMedia('(max-width: 760px)').matches) return;
             const el = document.getElementById('logoHint');
             if (!el || oneDActive) return;
             el.classList.add('visible');
             clearTimeout(logoHintTimer);
-            logoHintTimer = setTimeout(() => el.classList.remove('visible'), 6000);
+            logoHintTimer = setTimeout(() => el.classList.remove('visible'), 5000);
         }
 
         function dismissLogoHint() {
@@ -4832,6 +4823,9 @@
                 if (!oneDActive) setOneDActive(true);                     // 树 → 作品页
                 else exitToTree();                                        // 作品页 → 树
             });
+            // 气泡上写着 "Tap to see my work", 点气泡等于点头像
+            const bubble = document.querySelector('.logo-hint .lh-bubble');
+            if (bubble && home) bubble.addEventListener('click', () => home.click());
         }
 
         // 作品页 → 树: 硬切回最初的树 (无倒带/特效)。logo 点击和 Esc 共用同一条路径。
