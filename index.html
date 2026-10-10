@@ -610,7 +610,11 @@
             overflow-y: auto; overflow-x: hidden;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
+            /* 不要滚动条: 系统设为"始终显示"或插着鼠标时, 默认白底灰条像多了一道框,
+               还会占掉右侧宽度让内容偏左。隐藏后滚轮/触控板/键盘照常滚动, 内容按整屏居中 */
+            scrollbar-width: none;
         }
+        #oneDSite::-webkit-scrollbar { display: none; }
         #oneDSite.active { opacity: 1; visibility: visible; }
         #oneDSite:focus { outline: none; }   /* 为键盘滚动而聚焦, 不该画出焦点框 */
         /* 入场: 内容自下而上、分层淡入 (高级感) */
