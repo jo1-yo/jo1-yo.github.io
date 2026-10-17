@@ -583,21 +583,20 @@
         #msgForm .msg-invalid, #msgForm .msg-invalid:focus { border-color: rgba(200,72,52,0.50); }
         #msgForm input::placeholder, #msgForm textarea::placeholder { color: #8e8e93; }
         #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-        /* 主按钮: 深石墨实心 + 顶部内高光 + 双层投影, 是整张卡片里唯一"凸起"的东西 → 主次一眼分明 */
+        /* 主按钮: 同族白色玻璃, 比输入框亮一档撑起主次; hover/点按下沉 (和 .pc-ok 一致的触感) */
         .msg-send {
-            margin-top: 6px; border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
-            background: linear-gradient(180deg, #3a3a3f 0%, #1d1d1f 100%); color: #fff;
+            margin-top: 6px; border: 1px solid rgba(255,255,255,0.38); border-radius: 14px; padding: 15px; cursor: pointer;
+            background: rgba(255,255,255,0.68); color: #2b2b31;
             font-family: inherit; font-size: 1.02rem; font-weight: 600; letter-spacing: .01em;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 1px 2px rgba(0,0,0,0.22), 0 8px 20px rgba(29,29,31,0.20);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
             -webkit-tap-highlight-color: transparent;
-            transition: transform .14s ease, box-shadow .18s ease, filter .18s ease, opacity .2s ease;
+            transition: background .18s ease, transform .12s ease, box-shadow .18s ease, color .18s ease, opacity .2s ease;
         }
-        .msg-send:hover { filter: brightness(1.12); transform: translateY(-1px);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.20), 0 12px 26px rgba(29,29,31,0.24); }
-        .msg-send:active { transform: translateY(0) scale(.985); filter: brightness(.96);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 1px rgba(0,0,0,0.20), 0 3px 8px rgba(29,29,31,0.16); }
-        .msg-send:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(118,118,128,0.22), 0 8px 20px rgba(29,29,31,0.20); }
-        .msg-send:disabled { opacity: .6; cursor: default; transform: none; filter: none; }
+        .msg-send:hover { background: rgba(255,255,255,0.76); color: #1f1f24; transform: translateY(1px) scale(.99); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
+        .msg-send:active { transform: translateY(1.5px) scale(.975); background: rgba(255,255,255,0.84); box-shadow: inset 0 2px 5px rgba(0,0,0,0.06); }
+        .msg-send:focus { outline: none; }
+        .msg-send:focus-visible { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 0 0 3px rgba(60,60,67,0.18); }
+        .msg-send:disabled { opacity: .6; cursor: default; transform: none; }
         .msg-status { font-size: .9rem; min-height: 1.1em; line-height: 1.4; }
         .msg-status.ok { color: #9bc48a; }
         .msg-status.err { color: #d98a6a; }
