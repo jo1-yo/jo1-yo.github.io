@@ -565,23 +565,22 @@
         .msg-box h3 { font-size: 2rem; font-weight: 600; letter-spacing: -.025em; color: #1b1b1e; }
         .msg-sub { margin-top: 10px; font-size: 1rem; color: #5b5b63; line-height: 1.5; max-width: 34em; }
         #msgForm { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
-        /* 输入框: 苹果的做法是"凹进去"而不是"白块盖上去" —— 比卡片略深的灰色填充 + 顶部内阴影 +
-           底边一线白高光, 像刻在玻璃上的槽; 聚焦时槽被"填亮"并出现一圈柔和的环 */
+        /* 输入框: 极淡的白 + 一条发丝灰边, 不做凹槽/内阴影 (压在模糊背景上会发脏)。
+           聚焦只把边加深一档、底色微微提亮 —— 点进去的变化要小, 不跳成一块纯白 */
         #msgForm input, #msgForm textarea {
             display: block; width: 100%; box-sizing: border-box;
-            background: rgba(118,118,128,0.09); border: 1px solid rgba(0,0,0,0.045);
+            background: rgba(255,255,255,0.34); border: 1px solid rgba(60,60,67,0.12);
             border-radius: 14px; padding: 14px 16px; color: #1d1d1f;
             font-family: inherit; font-size: 16px; line-height: 1.45;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 1px 0 rgba(255,255,255,0.7);
+            box-shadow: none;
             -webkit-appearance: none; appearance: none;
-            transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
+            transition: background .2s ease, border-color .2s ease;
         }
         /* resize 关掉: 原生拖拽角在圆角上画出第二条边, 看着像重影 */
         #msgForm textarea { resize: none; min-height: 124px; }
-        #msgForm input:hover, #msgForm textarea:hover { background: rgba(118,118,128,0.12); }
-        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.10);
-            box-shadow: 0 0 0 4px rgba(118,118,128,0.14), 0 1px 2px rgba(0,0,0,0.04); }
-        #msgForm .msg-invalid, #msgForm .msg-invalid:focus { border-color: rgba(200,72,52,0.45); box-shadow: 0 0 0 4px rgba(200,72,52,0.12); }
+        #msgForm input:hover, #msgForm textarea:hover { border-color: rgba(60,60,67,0.18); }
+        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.42); border-color: rgba(60,60,67,0.30); box-shadow: none; }
+        #msgForm .msg-invalid, #msgForm .msg-invalid:focus { border-color: rgba(200,72,52,0.50); }
         #msgForm input::placeholder, #msgForm textarea::placeholder { color: #8e8e93; }
         #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
         /* 主按钮: 深石墨实心 + 顶部内高光 + 双层投影, 是整张卡片里唯一"凸起"的东西 → 主次一眼分明 */
@@ -732,6 +731,9 @@
         .cr-lang button[aria-pressed="true"] { color: #f4efe3; background: rgba(231,225,211,.1); }
         .cr-close { background: none; border: 0; cursor: pointer; color: #8c8676; font-size: 1.6rem; line-height: 1; padding: 4px 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .cr-close:hover, .cr-lang button:hover { color: #e7c87e; }
+        /* 鼠标点击不出浏览器的蓝色焦点框; 键盘 Tab 时才显示一圈低调的金色框 */
+        #creed button:focus { outline: none; }
+        #creed button:focus-visible { outline: 1px solid rgba(198,166,98,.6); outline-offset: 4px; border-radius: 6px; }
         .cr-wrap { max-width: 720px; margin: 0 auto; padding: 6vh 48px 16vh; opacity: 0; transform: translateY(18px); transition: opacity .85s ease .1s, transform .85s cubic-bezier(.22,.61,.36,1) .1s; }
         #creed.open .cr-wrap { opacity: 1; transform: none; }
         .cr-title { font-size: clamp(1.7rem, 1.3rem + .8vw, 2.2rem); font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
@@ -1024,9 +1026,9 @@
 
         // 兔子: 不在 projects 列表里 (苹果按下标对应 projects), 单独一条; Contact 直接打开 Talk to Me 弹窗
         const BUSINESS = {
-            title: "My Small Business",
+            title: "Jane's Sideline",
             description: "I'm also a small business owner. I help international students apply to US colleges. If you're interested in my work, feel free to contact me.",
-            icon: "🎓",
+            icon: "🌲",
             links: [{ label: "Contact", action: "contact" }],
             msgPlaceholder: "Tell me about your college application"
         };
@@ -1800,7 +1802,9 @@
             // 200 根草合成一个 InstancedMesh (每根颜色/高度不同 → instanceColor + 缩放)。
             // grassMeshes 里只放这一个 mesh, 原有的 forEach 显隐/透明度逻辑不用改。
             grassMeshes = [];
-            const grassCount = 200;
+            // 原来 200 根撒在半径 5–30 的大圈里, 拉远看外圈零零散散一撮撮很乱;
+            // 现在只留在树附近 (半径 4–18), 总数减到 60, 密度比原来略稀
+            const grassCount = 60;
             const grassMat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
             const grassInst = new THREE.InstancedMesh(new THREE.ConeGeometry(0.1, 1, 4), grassMat, grassCount);
             const grassDummy = new THREE.Object3D();
@@ -1811,7 +1815,7 @@
             while (created < grassCount && attempts < 1000) {
                 attempts++;
                 const angle = Math.random() * Math.PI * 2;
-                const radius = 5 + Math.random() * 25;
+                const radius = 4 + Math.random() * 14;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
                 
@@ -4605,23 +4609,23 @@
                 items: [
                     { t: 'Some of my friends faithfully believe in god. I Am My Own God.',
                       b: ["I don't place my faith in gods, higher powers, or anything outside myself. My faith is in me."],
-                      q: '“Heaven’s movement is ever vigorous; thus the superior person strives without ceasing.”', s: 'The Book of Changes', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                      q: '“Heaven’s movement is ever vigorous; thus the superior person strives without ceasing.”', s: 'The Book of Changes' },
                     { t: 'Give Your All. Let Go of the Rest.',
                       b: ['Do everything within your power. Then let life unfold. Never give up on what you can influence; learn to make peace with what you cannot.'],
-                      q: '“Do your utmost, then entrust the outcome to fate.”', s: 'A traditional Chinese maxim, famously expressed in Flowers in the Mirror (《镜花缘》)', u: 'https://zh.wikisource.org/wiki/鏡花緣/第006回' },
+                      q: '“Do your utmost, then entrust the outcome to fate.”', s: 'A traditional Chinese maxim, famously expressed in Flowers in the Mirror (《镜花缘》)' },
                     { t: 'Make My Actions Worthy of My Thoughts.',
                       b: ['My mind always wanders, leaps, and imagines infinite possibilities. I want my actions to live up to my thoughts and my words to mean something. True freedom is the courage to turn imagination into reality.'],
-                      q: '“Knowledge is the beginning of action; action is the completion of knowledge.”', s: 'Wang Yangming, Instructions for Practical Living', u: 'https://zh.wikisource.org/wiki/傳習錄/卷上' },
+                      q: '“Knowledge is the beginning of action; action is the completion of knowledge.”', s: 'Wang Yangming, Instructions for Practical Living' },
                     { t: 'Simplicity.',
                       b: ['Seek the essence. Eliminate the unnecessary.',
                           'For instance, in communication, I value clarity, concision, and effectiveness. Talk is cheap.'],
-                      q: '“Less brings gain; excess brings confusion.”', s: 'Tao Te Ching, Chapter 22', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#二十二章' },
+                      q: '“Less brings gain; excess brings confusion.”', s: 'Tao Te Ching, Chapter 22' },
                     { t: 'No Regrets.',
                       b: ['I’ve played [Go](https://en.wikipedia.org/wiki/Go_%28game%29) (围棋) since elementary school. “落子无悔”, a move once made is never taken back, is one of the top principles of Go and of my life.'],
-                      q: '“Do not resent Heaven or blame others.”', s: 'The Analects', u: 'https://zh.wikisource.org/wiki/論語/憲問第十四' },
+                      q: '“Do not resent Heaven or blame others.”', s: 'The Analects' },
                     { t: "I Don't Chase. I Attract.",
                       b: ['I focus on growing, creating, and becoming someone I genuinely admire. Work speaks for itself.'],
-                      q: '“Like calls to like; kindred spirits seek one another.”', s: 'The Book of Changes', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                      q: '“Like calls to like; kindred spirits seek one another.”', s: 'The Book of Changes' },
                     { t: 'Demystification.',
                       b: ['Growth is learning to see things as they are. People I once idolized, achievements I once considered unattainable, and institutions I once placed on a pedestal may look very different once I get closer.',
                           'Less looking up from a distance. More getting my hands dirty.'] }
@@ -4631,24 +4635,24 @@
                 title: 'Jane の信条', ref: '出处', dash: '——',
                 items: [
                     { t: '我始终坚定不移地相信自己', b: ['他人信神拜佛，我信我自己。'],
-                      q: '天行健，君子以自强不息。', s: '《周易》', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                      q: '天行健，君子以自强不息。', s: '《周易》' },
                     { t: '命里有时终须有，尽全力以后 go with the flow 就好了', b: ['谋事在人，成事在天。'],
-                      q: '尽人事以听天命。', s: '李汝珍《镜花缘》第六回', u: 'https://zh.wikisource.org/wiki/鏡花緣/第006回' },
+                      q: '尽人事以听天命。', s: '李汝珍《镜花缘》第六回' },
                     { t: '知行合一',
                       b: ['我一直有很多很跳脱、天马行空的想法。我希望我能说到做到，说的、想的和做的保持一致，不能让大脑成为囚笼困住我。'],
-                      q: '知者行之始，行者知之成。', s: '王阳明《传习录》', u: 'https://zh.wikisource.org/wiki/傳習錄/卷上' },
+                      q: '知者行之始，行者知之成。', s: '王阳明《传习录》' },
                     { t: '大道至简', b: ['追求本质，拒绝冗余。', '比如简洁有效的沟通。'],
-                      q: '少则得，多则惑。', s: '《道德经》第二十二章', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#二十二章' },
+                      q: '少则得，多则惑。', s: '《道德经》第二十二章' },
                     { t: '落子无悔', b: ['我从小学开始下[围棋](https://zh.wikipedia.org/wiki/围棋)，落子无悔既是围棋的准则，也是我人生的原则。'],
-                      q: '不怨天，不尤人。', s: '《论语·宪问》', u: 'https://zh.wikisource.org/wiki/論語/憲問第十四' },
+                      q: '不怨天，不尤人。', s: '《论语·宪问》' },
                     { t: '不追逐，只吸引',
                       b: ['我不靠迎合获取认可，不靠追逐证明自己的价值。',
                           '永远专注于自我成长、创造，努力成为自己欣赏的人。用实力说话，志同道合的伙伴自然会被我吸引。'],
-                      q: '同声相应，同气相求。', s: '《周易·乾卦·文言》', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                      q: '同声相应，同气相求。', s: '《周易·乾卦·文言》' },
                     { t: '成长是一个不断祛魅的过程',
                       b: ['曾经以为高不可攀的人、事、成就与光环，在真正靠近之后，也许会显露出它们平凡普通的一面。',
                           '不轻易神化或美化任何人或事，有自己的判断、执行和思考。'],
-                      q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》', u: 'https://zh.wikisource.org/wiki/冬夜讀書示子聿' }
+                      q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》' }
                 ]
             }
         };
