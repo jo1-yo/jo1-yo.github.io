@@ -730,16 +730,16 @@
         .cr-lang button[aria-pressed="true"] { color: #f4efe3; background: rgba(231,225,211,.1); }
         .cr-close { background: none; border: 0; cursor: pointer; color: #8c8676; font-size: 1.6rem; line-height: 1; padding: 4px 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .cr-close:hover, .cr-lang button:hover { color: #e7c87e; }
-        .cr-wrap { max-width: 680px; margin: 0 auto; padding: 6vh 7vw 16vh; opacity: 0; transform: translateY(18px); transition: opacity .85s ease .1s, transform .85s cubic-bezier(.22,.61,.36,1) .1s; }
+        .cr-wrap { max-width: 720px; margin: 0 auto; padding: 6vh 48px 16vh; opacity: 0; transform: translateY(18px); transition: opacity .85s ease .1s, transform .85s cubic-bezier(.22,.61,.36,1) .1s; }
         #creed.open .cr-wrap { opacity: 1; transform: none; }
-        .cr-title { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
+        .cr-title { font-size: clamp(1.7rem, 1.3rem + .8vw, 2.2rem); font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
         .cr-list { margin-top: 46px; border-top: 1px solid rgba(231,225,211,.08); }
         .cr-item { padding: 26px 2px 24px; border-bottom: 1px solid rgba(231,225,211,.06); }
         .cr-head { display: flex; align-items: baseline; gap: 16px; }
         .cr-i { font-size: .64rem; color: #57513f; font-variant-numeric: tabular-nums; min-width: 20px; letter-spacing: .08em; }
-        .cr-t { flex: 1; font-size: 1.02rem; font-weight: 500; line-height: 1.5; letter-spacing: .005em; color: #ddd5c5; }
+        .cr-t { flex: 1; font-size: clamp(1.02rem, .84rem + .38vw, 1.3rem); font-weight: 500; line-height: 1.5; letter-spacing: .005em; color: #ddd5c5; }
         .cr-body { margin-left: 36px; }
-        .cr-body p { margin-top: 10px; font-size: .95rem; line-height: 1.75; color: #aaa394; }
+        .cr-body p { margin-top: 10px; font-size: clamp(.95rem, .82rem + .28vw, 1.14rem); line-height: 1.75; color: #aaa394; }
         .cr-body p.cr-strong { color: #e7e1d3; font-weight: 600; }
         .cr-ref-btn { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-size: .64rem; letter-spacing: .22em; text-transform: uppercase; color: #6b6557; display: inline-flex; align-items: center; gap: 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .cr-ref-btn:hover { color: #e7c87e; }
@@ -748,7 +748,7 @@
         .cr-ref { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
         .cr-item.ref-open .cr-ref { grid-template-rows: 1fr; }
         .cr-ref > div { overflow: hidden; }
-        .cr-q { margin-top: 12px; padding-left: 14px; border-left: 1px solid rgba(198,166,98,.45); font-size: .95rem; line-height: 1.7; color: #e7e1d3; }
+        .cr-q { margin-top: 12px; padding-left: 14px; border-left: 1px solid rgba(198,166,98,.45); font-size: clamp(.95rem, .82rem + .28vw, 1.14rem); line-height: 1.7; color: #e7e1d3; }
         .cr-s { margin-top: 6px; padding-left: 14px; font-size: .8rem; color: #7d7665; }
         /* 外链: 新标签页打开 (原页面留着, 关掉就回来)。正文里的词条是细下划线, 出处是一行 "书名 ↗" */
         .cr-body a { color: inherit; text-decoration: underline; text-decoration-color: rgba(198,166,98,.55); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color .2s, text-decoration-color .2s; }
@@ -757,6 +757,13 @@
         .cr-s a:hover .cr-s-t { text-decoration: underline; text-underline-offset: 3px; }
         .cr-s-arrow { margin-left: 5px; font-size: .72rem; color: #8c7a4f; }
         #creed[lang="zh"] .cr-t { letter-spacing: .02em; }
+        /* 宽屏: 和作品页 .fp-wrap 同一套两栏 —— 左栏标题 (滚动时停住), 右栏列表; 字号随屏宽 clamp 放大。
+           原来是单栏 max-width 680 + 7vw 内边距, 屏越宽内边距越大、正文反而越窄, 两边空一大片。 */
+        @media (min-width: 1000px) {
+            .cr-wrap { max-width: 1440px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 9vw; padding: 8vh 10vw 16vh 4vw; }
+            .cr-title { position: sticky; top: 13vh; align-self: start; }
+            .cr-list { margin-top: 0; }
+        }
         @media (max-width: 760px) {
             .cr-bar { padding: 18px 18px; }
             .cr-wrap { padding: 3vh 7vw 13vh; }
@@ -4593,10 +4600,7 @@
                       q: '“Like calls to like; kindred spirits seek one another.”', s: 'The Book of Changes', u: 'https://zh.wikisource.org/wiki/周易/乾' },
                     { t: 'Demystification.',
                       b: ['Growth is learning to see things as they are. People I once idolized, achievements I once considered unattainable, and institutions I once placed on a pedestal may look very different once I get closer.',
-                          'Less looking up from a distance. More getting my hands dirty.'] },
-                    { t: 'Be Like Water.',
-                      b: ['Whatever I go through, whatever I learn about the darkness of human nature or society, I want to remain kind and genuine.'],
-                      q: '“The highest goodness is like water.”', s: 'Tao Te Ching, Chapter 8', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#八章' }
+                          'Less looking up from a distance. More getting my hands dirty.'] }
                 ]
             },
             zh: {
@@ -4620,10 +4624,7 @@
                     { t: '成长是一个不断祛魅的过程',
                       b: ['曾经以为高不可攀的人、事、成就与光环，在真正靠近之后，也许会显露出它们平凡普通的一面。',
                           '不轻易神化或美化任何人或事，有自己的判断、执行和思考。'],
-                      q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》', u: 'https://zh.wikisource.org/wiki/冬夜讀書示子聿' },
-                    { t: '做像水一样的女人',
-                      b: ['无论经历什么，无论见识过多少人性或社会的阴暗面，我都希望自己依然善良、真诚。'],
-                      q: '上善若水。', s: '《道德经》第八章', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#八章' }
+                      q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》', u: 'https://zh.wikisource.org/wiki/冬夜讀書示子聿' }
                 ]
             }
         };
