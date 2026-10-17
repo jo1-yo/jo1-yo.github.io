@@ -932,6 +932,8 @@
 
         // Scene setup
         let scene, camera, renderer, controls;
+        // leaves: 轻量 Object3D 代理 (只存位置/相位), 真正渲染的是一个 InstancedMesh (leafInstanced)
+        let leafInstanced = null, leafMaterial = null;
         let tree, leaves = [], flowers = [], animals = [], fallingLeaves = [], snowflakes = [];
         let interactiveObjects = [];
         let currentSeason = 0;
@@ -985,11 +987,13 @@
             camera.lookAt(0, 10, 0);
 
             // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+            // 触屏: 像素比封顶 1.5 (3x 屏要画的像素少一半多)、阴影用 PCF、不保留绘制缓冲
+            // (像素定格 capturePixelFrame 只在桌面宇宙之旅里用, 且是渲染后同帧读取)
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: !IS_TOUCH, powerPreference: 'high-performance' });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, IS_TOUCH ? 1.5 : 2));
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.shadowMap.type = IS_TOUCH ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
@@ -1590,25 +1594,41 @@
                 leafPositions.push({ x, y, z });
             }
 
-            // Create leaf clusters
+            // Create leaf clusters — 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
+            // 每帧 ~2000 次 draw call (含阴影 pass), 手机上是卡顿主因; 现在 1 次。
+            leafMaterial = new THREE.MeshStandardMaterial({
+                color: 0x5f8f34,
+                roughness: 0.8,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.9
+            });
+            leafInstanced = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 6, 4), leafMaterial, leafCount);
+            leafInstanced.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+            leafInstanced.castShadow = true;
+            leafInstanced.frustumCulled = false;   // 包围球只按单个球算, 会被误裁
             leafPositions.forEach((pos, i) => {
-                const leafGeom = new THREE.SphereGeometry(0.25 + Math.random() * 0.2, 6, 4);
-                const leafMat = new THREE.MeshStandardMaterial({
-                    color: 0x5f8f34,
-                    roughness: 0.8,
-                    metalness: 0.1,
-                    transparent: true,
-                    opacity: 0.9
-                });
-                const leaf = new THREE.Mesh(leafGeom, leafMat);
+                const leaf = new THREE.Object3D();
+                const radius = 0.25 + Math.random() * 0.2;
+                leaf.scale.setScalar(radius);
                 leaf.position.set(pos.x, pos.y, pos.z);
-                leaf.castShadow = true;
+                leaf.userData.radius = radius;
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
                 leaf.userData.phase = Math.random() * Math.PI * 2;
                 leaves.push(leaf);
-                parent.add(leaf);
             });
+            syncLeafInstances();
+            parent.add(leafInstanced);
+        }
+
+        function syncLeafInstances() {
+            if (!leafInstanced) return;
+            for (let i = 0; i < leaves.length; i++) {
+                leaves[i].updateMatrix();
+                leafInstanced.setMatrixAt(i, leaves[i].matrix);
+            }
+            leafInstanced.instanceMatrix.needsUpdate = true;
         }
 
         // ============================================
@@ -1676,8 +1696,14 @@
 
             // 创建草丛 (存储引用以便冬季隐藏)
             // 避开河流区域
+            // 200 根草合成一个 InstancedMesh (每根颜色/高度不同 → instanceColor + 缩放)。
+            // grassMeshes 里只放这一个 mesh, 原有的 forEach 显隐/透明度逻辑不用改。
             grassMeshes = [];
             const grassCount = 200;
+            const grassMat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
+            const grassInst = new THREE.InstancedMesh(new THREE.ConeGeometry(0.1, 1, 4), grassMat, grassCount);
+            const grassDummy = new THREE.Object3D();
+            const grassColor = new THREE.Color();
             
             let created = 0;
             let attempts = 0;
@@ -1691,19 +1717,18 @@
                 // 跳过河流区域
                 if (isInRiverArea(x, z)) continue;
 
-                const grassGeom = new THREE.ConeGeometry(0.1, 0.4 + Math.random() * 0.3, 4);
-                const grassMat = new THREE.MeshStandardMaterial({
-                    color: new THREE.Color().setHSL(0.28, 0.6 + Math.random() * 0.2, 0.35 + Math.random() * 0.15),
-                    roughness: 0.9
-                });
-                const grass = new THREE.Mesh(grassGeom, grassMat);
-                grass.position.set(x, 0.15, z);
-                grass.rotation.x = (Math.random() - 0.5) * 0.2;
-                grass.userData.isGrass = true;
-                scene.add(grass);
-                grassMeshes.push(grass);
+                grassDummy.position.set(x, 0.15, z);
+                grassDummy.rotation.x = (Math.random() - 0.5) * 0.2;
+                grassDummy.scale.set(1, 0.4 + Math.random() * 0.3, 1);
+                grassDummy.updateMatrix();
+                grassInst.setMatrixAt(created, grassDummy.matrix);
+                grassInst.setColorAt(created, grassColor.setHSL(0.28, 0.6 + Math.random() * 0.2, 0.35 + Math.random() * 0.15));
                 created++;
             }
+            grassInst.count = created;
+            grassInst.userData.isGrass = true;
+            scene.add(grassInst);
+            grassMeshes.push(grassInst);
             
             // 预创建雪地材质和几何体
             createSnowGroundMaterial();
@@ -2019,7 +2044,7 @@
                 springApples.forEach(ap => {
                     const apR = 0.445 * ap.scale.x + 0.28;
                     leaves.forEach(lf => {
-                        const lr = lf.geometry.parameters.radius;
+                        const lr = lf.userData.radius;
                         const dv = new THREE.Vector3(lf.userData.originalX, lf.userData.originalY, lf.position.z).sub(ap.position);
                         const d = dv.length();
                         const minD = apR + lr;
@@ -2113,35 +2138,41 @@
             shadow.position.z = -0.32 * 0.555;
             flower.add(shadow);
 
-            // Petals
+            // 花瓣 ×5 + 花心 + 花茎 合并成一个顶点色 mesh: 每朵花 7 次 draw call → 1 次
+            const parts = [];
             for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI * 2;
                 const petalGeom = new THREE.SphereGeometry(0.15, 8, 6);
                 petalGeom.scale(1, 0.3, 1);
-                const petalMat = new THREE.MeshStandardMaterial({
-                    color: color,
-                    roughness: 0.7
-                });
-                const petal = new THREE.Mesh(petalGeom, petalMat);
-                const angle = (i / 5) * Math.PI * 2;
-                petal.position.set(Math.cos(angle) * 0.15, 0.3, Math.sin(angle) * 0.15);
-                flower.add(petal);
+                petalGeom.translate(Math.cos(angle) * 0.15, 0.3, Math.sin(angle) * 0.15);
+                parts.push([petalGeom, color]);
             }
-
-            // Center
-            const centerGeom = new THREE.SphereGeometry(0.08, 8, 6);
-            const centerMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-            const center = new THREE.Mesh(centerGeom, centerMat);
-            center.position.y = 0.3;
-            flower.add(center);
-
-            // Stem
-            const stemGeom = new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6);
-            const stemMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-            const stem = new THREE.Mesh(stemGeom, stemMat);
-            stem.position.y = 0.15;
-            flower.add(stem);
+            parts.push([new THREE.SphereGeometry(0.08, 8, 6).translate(0, 0.3, 0), 0xffff00]);              // Center
+            parts.push([new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6).translate(0, 0.15, 0), 0x228b22]);   // Stem
+            const body = new THREE.Mesh(mergeColoredGeometries(parts),
+                new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }));
+            flower.add(body);
 
             return flower;
+        }
+
+        // [[geometry, hexColor], ...] → 一个非索引 BufferGeometry (position/normal/color)
+        function mergeColoredGeometries(parts) {
+            const pos = [], nor = [], col = [];
+            const c = new THREE.Color();
+            parts.forEach(([g, hex]) => {
+                const ng = g.index ? g.toNonIndexed() : g;
+                c.set(hex);
+                pos.push(...ng.attributes.position.array);
+                nor.push(...ng.attributes.normal.array);
+                for (let i = 0; i < ng.attributes.position.count; i++) col.push(c.r, c.g, c.b);
+                g.dispose(); if (ng !== g) ng.dispose();
+            });
+            const out = new THREE.BufferGeometry();
+            out.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            out.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+            out.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+            return out;
         }
 
         function createSummerElements() {
@@ -4104,9 +4135,7 @@
             scene.fog.color = new THREE.Color(colors.bg[0], colors.bg[1], colors.bg[2]);
 
             // Update leaves color
-            leaves.forEach(leaf => {
-                leaf.material.color.setHex(colors.leaves);
-            });
+            if (leafMaterial) leafMaterial.color.setHex(colors.leaves);
 
             // Toggle seasonal elements
             // Spring elements
@@ -4159,7 +4188,7 @@
             if (currentSeason === 3) {
                 // 冬季：隐藏整棵树，显示雪人
                 if (tree) tree.visible = false;
-                leaves.forEach(leaf => leaf.visible = false);
+                if (leafInstanced) leafInstanced.visible = false;
                 snowShells.forEach(snow => snow.visible = false);
                 branchMeshes.forEach(branch => branch.visible = false);
                 if (trunkMesh) trunkMesh.visible = false;
@@ -4173,10 +4202,8 @@
             } else {
                 // 非冬季：显示树，隐藏雪人
                 if (tree) tree.visible = true;
-                leaves.forEach(leaf => {
-                    leaf.visible = true;
-                    leaf.material.opacity = 0.9;
-                });
+                if (leafInstanced) leafInstanced.visible = true;
+                if (leafMaterial) leafMaterial.opacity = 0.9;
                 
                 snowShells.forEach(snow => {
                     snow.visible = false;
@@ -5383,6 +5410,7 @@
                 leaf.position.y = leaf.userData.originalY + windEffect;
                 leaf.position.x = leaf.userData.originalX + Math.sin(windTime * 0.5 + leaf.userData.phase) * 0.05;
             });
+            syncLeafInstances();
             }
 
             // Animate animals
