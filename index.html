@@ -314,6 +314,8 @@
             transition: all 0.3s ease;
         }
 
+        button.modal-link { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
         .modal-link:hover {
             background: rgba(255,255,255,0.2);
             border-color: #fff;
@@ -1019,6 +1021,15 @@
                 ]
             }
         ];
+
+        // 兔子: 不在 projects 列表里 (苹果按下标对应 projects), 单独一条; Contact 直接打开 Talk to Me 弹窗
+        const BUSINESS = {
+            title: "My Small Business",
+            description: "I'm also a small business owner. I help international students apply to US colleges. If you're interested in my work, feel free to contact me.",
+            icon: "🎓",
+            links: [{ label: "Contact", action: "contact" }],
+            msgPlaceholder: "Tell me about your college application"
+        };
 
         // Scene setup
         let scene, camera, renderer, controls;
@@ -2278,8 +2289,8 @@
                 animal.position.set(config.pos.x, config.pos.y, config.pos.z);
                 animal.userData.restY = config.pos.y;   // 动画的基准高度
                 animal.userData.type = 'summer';
-                // 蝴蝶 → "Jane's Creed", 狐狸 → AI Filmmaker 作品页 /art/ (openProject 里分流)
-                animal.userData.projectId = config.type === 'butterfly' ? 'creed' : config.type === 'fox' ? 'art' : i;
+                // 蝴蝶 → "Jane's Creed", 狐狸 → AI Filmmaker 作品页 /art/, 兔子 → 留学申请小生意 (openProject 里分流)
+                animal.userData.projectId = { butterfly: 'creed', fox: 'art', rabbit: 'business' }[config.type] ?? i;
                 animal.userData.animalType = config.type;
                 animal.userData.originalScale = 1;
                 if (config.type === 'fox') {
@@ -4534,7 +4545,7 @@
         function openProject(id) {
             if (id === 'creed') { openCreed(); return; }
             if (id === 'art') { window.location.href = '/art/'; return; }
-            const project = projects[id];
+            const project = id === 'business' ? BUSINESS : projects[id];
             document.getElementById('modalIcon').textContent = project.icon;
             document.getElementById('modalTitle').textContent = project.title;
             document.getElementById('modalDescription').textContent = project.description;
@@ -4548,6 +4559,19 @@
             linksEl.innerHTML = '';
             if (project.links && project.links.length > 0) {
                 project.links.forEach(link => {
+                    if (link.action === 'contact') {
+                        // 关掉项目卡片, 换成 Talk to Me 留言弹窗
+                        const b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'modal-link';
+                        b.textContent = link.label;
+                        b.addEventListener('click', () => {
+                            closeModal();
+                            if (window.openMsgModal) window.openMsgModal(null, { placeholder: project.msgPlaceholder });
+                        });
+                        linksEl.appendChild(b);
+                        return;
+                    }
                     const a = document.createElement('a');
                     a.href = link.url;
                     a.target = '_blank';
@@ -5585,9 +5609,12 @@
             const box = modal.querySelector('.msg-box');
             const bg = document.getElementById('oneDSite');     // 背景内容, 弹窗开时设为 inert
             let lastFocus = null;                                 // 记住触发元素, 关闭时还焦点
-            const open = (e) => {
-                if (e) e.preventDefault();
+            const defaultPlaceholder = ta ? ta.placeholder : '';
+            const open = (e, opts) => {
+                if (e && e.preventDefault) e.preventDefault();
                 lastFocus = (e && e.currentTarget) || document.activeElement;
+                // 从兔子 (留学申请) 进来时换成对应的提示语, 其它入口恢复默认
+                if (ta && !ta.value) ta.placeholder = (opts && opts.placeholder) || defaultPlaceholder;
                 modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
                 if (bg) { bg.setAttribute('aria-hidden', 'true'); bg.inert = true; }
                 if (ta) setTimeout(() => ta.focus(), 60);
@@ -5599,6 +5626,7 @@
                 if (lastFocus && lastFocus.focus) lastFocus.focus();                       // 还焦点给触发按钮
             };
             window.closeMsgModal = close;     // Esc 统一走全局 escapeTopLayer()
+            window.openMsgModal = open;       // 兔子卡片的 Contact 按钮用
             if (btn) btn.addEventListener('click', open);
             const treeBtn = document.getElementById('treeMsgBtn');
             if (treeBtn) treeBtn.addEventListener('click', open);
