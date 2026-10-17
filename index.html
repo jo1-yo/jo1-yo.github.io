@@ -547,46 +547,56 @@
         /* Talk to Me: 和 "Best on desktop" 卡片同一套 Apple 磨砂玻璃 (浅色玻璃 + 重模糊 + 大软投影) */
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(18,16,14,.26); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
+        /* 卡片: 三层投影 (贴边细影 + 中距 + 远处大柔影) 做出"浮起来"的厚度, 顶部一线内高光像玻璃的倒角 */
         .msg-box {
             position: relative; width: 100%; max-width: 540px; box-sizing: border-box;
             padding: 42px 44px 34px; border-radius: 34px;
-            background: rgba(255,255,255,0.60);
+            background: linear-gradient(180deg, rgba(255,255,255,0.74), rgba(255,255,255,0.58));
             -webkit-backdrop-filter: blur(46px) saturate(180%); backdrop-filter: blur(46px) saturate(180%);
-            border: 1px solid rgba(255,255,255,0.20);   /* 细一档的白边: 只留一线高光, 不像描边 */
-            box-shadow: 0 30px 80px rgba(20,22,34,0.16);
-            color: #26262c;
+            border: 1px solid rgba(255,255,255,0.55);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 0 0 0.5px rgba(0,0,0,0.04),
+                        0 2px 6px rgba(20,22,34,0.06), 0 24px 60px rgba(20,22,34,0.18), 0 60px 120px rgba(20,22,34,0.10);
+            color: #1d1d1f;
         }
         .msg-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: #8a8a92; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .msg-close:hover { color: #45454d; }
         .msg-box h3 { font-size: 2rem; font-weight: 600; letter-spacing: -.025em; color: #1b1b1e; }
         .msg-sub { margin-top: 10px; font-size: 1rem; color: #5b5b63; line-height: 1.5; max-width: 34em; }
         #msgForm { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
-        /* 输入框: 更亮一档的玻璃, 柔边无硬线, 聚焦时玻璃变亮 + 一圈极淡白光 */
+        /* 输入框: 苹果的做法是"凹进去"而不是"白块盖上去" —— 比卡片略深的灰色填充 + 顶部内阴影 +
+           底边一线白高光, 像刻在玻璃上的槽; 聚焦时槽被"填亮"并出现一圈柔和的环 */
         #msgForm input, #msgForm textarea {
             display: block; width: 100%; box-sizing: border-box;
-            background: rgba(255,255,255,0.50); border: 1px solid rgba(255,255,255,0.30);
-            border-radius: 16px; padding: 14px 16px; color: #2c2c32;
+            background: rgba(118,118,128,0.09); border: 1px solid rgba(0,0,0,0.045);
+            border-radius: 14px; padding: 14px 16px; color: #1d1d1f;
             font-family: inherit; font-size: 16px; line-height: 1.45;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05), 0 1px 0 rgba(255,255,255,0.7);
+            -webkit-appearance: none; appearance: none;
             transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
         }
         /* resize 关掉: 原生拖拽角在圆角上画出第二条边, 看着像重影 */
         #msgForm textarea { resize: none; min-height: 124px; }
-        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.66); border-color: rgba(255,255,255,0.62); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 0 0 4px rgba(255,255,255,0.20); }
-        #msgForm input::placeholder, #msgForm textarea::placeholder { color: #86868e; }
+        #msgForm input:hover, #msgForm textarea:hover { background: rgba(118,118,128,0.12); }
+        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.10);
+            box-shadow: 0 0 0 4px rgba(118,118,128,0.14), 0 1px 2px rgba(0,0,0,0.04); }
+        #msgForm .msg-invalid, #msgForm .msg-invalid:focus { border-color: rgba(200,72,52,0.45); box-shadow: 0 0 0 4px rgba(200,72,52,0.12); }
+        #msgForm input::placeholder, #msgForm textarea::placeholder { color: #8e8e93; }
         #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-        /* 主按钮: 同族玻璃, 比输入框再亮一点撑起主次; hover/点按下沉 (和 .pc-ok 一致的触感) */
+        /* 主按钮: 深石墨实心 + 顶部内高光 + 双层投影, 是整张卡片里唯一"凸起"的东西 → 主次一眼分明 */
         .msg-send {
-            margin-top: 6px; border: 1px solid rgba(255,255,255,0.38); border-radius: 16px; padding: 15px; cursor: pointer;
-            background: rgba(255,255,255,0.68); color: #2b2b31;
-            font-family: inherit; font-size: 1.05rem; font-weight: 600; letter-spacing: .01em;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+            margin-top: 6px; border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+            background: linear-gradient(180deg, #3a3a3f 0%, #1d1d1f 100%); color: #fff;
+            font-family: inherit; font-size: 1.02rem; font-weight: 600; letter-spacing: .01em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 1px 2px rgba(0,0,0,0.22), 0 8px 20px rgba(29,29,31,0.20);
             -webkit-tap-highlight-color: transparent;
-            transition: background .18s ease, transform .12s ease, box-shadow .18s ease, color .18s ease, opacity .2s ease;
+            transition: transform .14s ease, box-shadow .18s ease, filter .18s ease, opacity .2s ease;
         }
-        .msg-send:hover { background: rgba(255,255,255,0.74); color: #1f1f24; transform: translateY(1px) scale(.99); box-shadow: inset 0 1px 0 rgba(255,255,255,0.6); }
-        .msg-send:active { transform: translateY(1.5px) scale(.975); background: rgba(255,255,255,0.82); box-shadow: inset 0 2px 5px rgba(0,0,0,0.06); }
-        .msg-send:disabled { opacity: .6; cursor: default; transform: none; }
+        .msg-send:hover { filter: brightness(1.12); transform: translateY(-1px);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 4px rgba(0,0,0,0.20), 0 12px 26px rgba(29,29,31,0.24); }
+        .msg-send:active { transform: translateY(0) scale(.985); filter: brightness(.96);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 1px 1px rgba(0,0,0,0.20), 0 3px 8px rgba(29,29,31,0.16); }
+        .msg-send:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(118,118,128,0.22), 0 8px 20px rgba(29,29,31,0.20); }
+        .msg-send:disabled { opacity: .6; cursor: default; transform: none; filter: none; }
         .msg-status { font-size: .9rem; min-height: 1.1em; line-height: 1.4; }
         .msg-status.ok { color: #9bc48a; }
         .msg-status.err { color: #d98a6a; }
@@ -628,7 +638,9 @@
             .fp-side, .fp-hero, .fp-lede, .fp-projects,
             .fp-name, .fp-role, .fp-side-label, .fp-connect, .fp-hirebox { transition: opacity .4s ease; transform: none; }
         }
-        .fp-wrap { max-width: 1240px; margin: 0 auto; padding: 13vh 7vw 16vh; display: grid; grid-template-columns: 300px 1fr; gap: 9vw; }
+        /* 左右内边距不对称 (4vw / 10vw): 右栏内容多、左栏空, 几何居中时整体看着偏右,
+           往左挪 3vw 做视觉居中 */
+        .fp-wrap { max-width: 1240px; margin: 0 auto; padding: 13vh 10vw 16vh 4vw; display: grid; grid-template-columns: 300px 1fr; gap: 9vw; }
         .fp-side { position: sticky; top: 13vh; align-self: start; }
         .fp-name { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
         .fp-role { margin-top: 10px; font-size: .73rem; letter-spacing: .12em; text-transform: uppercase; color: #c6a662; line-height: 1.7; }
@@ -697,6 +709,62 @@
             #oneDSite.active .fp-side-label, #oneDSite.active .fp-connect, #oneDSite.active .fp-hirebox { opacity: 1; transform: none; transition-delay: .55s; }
             #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
         }
+
+        /* Jane's Creed (蝴蝶点开): 与极简作品页同一套视觉 —— 深炭黑 + 暖米白 + 克制金、
+           系统无衬线、细发丝分隔线。条目常显, 出处(Reference)点开才出现。 */
+        #creed {
+            position: fixed; inset: 0; z-index: 3400;
+            background: radial-gradient(118% 78% at 26% -6%, #1d1b13 0%, #15140f 50%, #110f09 100%);
+            color: #e7e1d3; opacity: 0; visibility: hidden;
+            transition: opacity .6s ease, visibility .6s ease;
+            overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            -webkit-font-smoothing: antialiased; scrollbar-width: none;
+        }
+        #creed::-webkit-scrollbar { display: none; }
+        #creed.open { opacity: 1; visibility: visible; }
+        .cr-bar { position: sticky; top: 0; z-index: 1; display: flex; justify-content: flex-end; align-items: center; gap: 22px; padding: 22px 26px;
+            background: linear-gradient(#141310 62%, rgba(20,19,16,0)); }   /* 滚动时正文从栏下穿过, 不和按钮叠在一起 */
+        .cr-lang { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(231,225,211,.06); }
+        .cr-lang button { background: none; border: 0; cursor: pointer; font: inherit; font-size: .72rem; letter-spacing: .08em; color: #8c8676; padding: 6px 12px; border-radius: 999px; transition: color .2s, background .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-lang button[aria-pressed="true"] { color: #f4efe3; background: rgba(231,225,211,.1); }
+        .cr-close { background: none; border: 0; cursor: pointer; color: #8c8676; font-size: 1.6rem; line-height: 1; padding: 4px 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-close:hover, .cr-lang button:hover { color: #e7c87e; }
+        .cr-wrap { max-width: 680px; margin: 0 auto; padding: 6vh 7vw 16vh; opacity: 0; transform: translateY(18px); transition: opacity .85s ease .1s, transform .85s cubic-bezier(.22,.61,.36,1) .1s; }
+        #creed.open .cr-wrap { opacity: 1; transform: none; }
+        .cr-title { font-size: 1.7rem; font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
+        .cr-list { margin-top: 46px; border-top: 1px solid rgba(231,225,211,.08); }
+        .cr-item { padding: 26px 2px 24px; border-bottom: 1px solid rgba(231,225,211,.06); }
+        .cr-head { display: flex; align-items: baseline; gap: 16px; }
+        .cr-i { font-size: .64rem; color: #57513f; font-variant-numeric: tabular-nums; min-width: 20px; letter-spacing: .08em; }
+        .cr-t { flex: 1; font-size: 1.02rem; font-weight: 500; line-height: 1.5; letter-spacing: .005em; color: #ddd5c5; }
+        .cr-body { margin-left: 36px; }
+        .cr-body p { margin-top: 10px; font-size: .95rem; line-height: 1.75; color: #aaa394; }
+        .cr-body p.cr-strong { color: #e7e1d3; font-weight: 600; }
+        .cr-ref-btn { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-size: .64rem; letter-spacing: .22em; text-transform: uppercase; color: #6b6557; display: inline-flex; align-items: center; gap: 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-ref-btn:hover { color: #e7c87e; }
+        .cr-ref-chev { display: inline-block; font-size: .9rem; letter-spacing: 0; transition: transform .25s ease; }
+        .cr-item.ref-open .cr-ref-chev { transform: rotate(90deg); }
+        .cr-ref { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+        .cr-item.ref-open .cr-ref { grid-template-rows: 1fr; }
+        .cr-ref > div { overflow: hidden; }
+        .cr-q { margin-top: 12px; padding-left: 14px; border-left: 1px solid rgba(198,166,98,.45); font-size: .95rem; line-height: 1.7; color: #e7e1d3; }
+        .cr-s { margin-top: 6px; padding-left: 14px; font-size: .8rem; color: #7d7665; }
+        /* 外链: 新标签页打开 (原页面留着, 关掉就回来)。正文里的词条是细下划线, 出处是一行 "书名 ↗" */
+        .cr-body a { color: inherit; text-decoration: underline; text-decoration-color: rgba(198,166,98,.55); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color .2s, text-decoration-color .2s; }
+        .cr-body a:hover { color: #e7c87e; text-decoration-color: #e7c87e; }
+        .cr-s a { text-decoration: none; }
+        .cr-s a:hover .cr-s-t { text-decoration: underline; text-underline-offset: 3px; }
+        .cr-s-arrow { margin-left: 5px; font-size: .72rem; color: #8c7a4f; }
+        #creed[lang="zh"] .cr-t { letter-spacing: .02em; }
+        @media (max-width: 760px) {
+            .cr-bar { padding: 18px 18px; }
+            .cr-wrap { padding: 3vh 7vw 13vh; }
+            .cr-body { margin-left: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .cr-wrap { transition: opacity .4s ease; transform: none; }
+        }
     </style>
 </head>
 <body>
@@ -755,12 +823,27 @@
         </div>
     </div>
 
+    <!-- Jane's Creed: 蝴蝶点开。内容由 CREED 数据渲染 (见 renderCreed) -->
+    <div id="creed" role="dialog" aria-modal="true" aria-labelledby="crTitle" lang="en">
+        <div class="cr-bar">
+            <div class="cr-lang" role="group" aria-label="Language">
+                <button type="button" data-lang="en" aria-pressed="true">EN</button>
+                <button type="button" data-lang="zh" aria-pressed="false">中文</button>
+            </div>
+            <button type="button" class="cr-close" id="crClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="cr-wrap">
+            <h2 class="cr-title" id="crTitle"></h2>
+            <div class="cr-list" id="crList"></div>
+        </div>
+    </div>
+
     <div id="msgModal" aria-hidden="true">
         <div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
             <button class="msg-close" id="msgClose" type="button" aria-label="Close">&times;</button>
             <h3 id="msgTitle">Talk to Me</h3>
             <p class="msg-sub">Your message reaches me directly and I'll get right back to you.</p>
-            <form id="msgForm">
+            <form id="msgForm" novalidate>
                 <input type="text" name="from_name" placeholder="Your name" autocomplete="name">
                 <input type="text" name="reply_to" placeholder="Email to reach you back" autocomplete="email">
                 <textarea name="message" rows="4" placeholder="What are you building / hiring for?" required maxlength="600"></textarea>
@@ -1903,8 +1986,8 @@
                 { x: -4.9, y: 17.5, z: 4.9 },    // 135°·上层
                 { x: -8.6, y: 13.2, z: 0.0 },    // 180°·下层
                 { x: -5.3, y: 16.6, z: -5.3 },   // 225°·中上层
-                { x: 0.0, y: 14.0, z: -8.2 },    // 270°·中层
-                { x: 5.0, y: 17.0, z: -5.0 }     // 315°·上层 (Art)
+                { x: 0.0, y: 14.0, z: -8.2 }     // 270°·中层
+                // 315° 原来是 Art 苹果, 已移到夏天的狐狸 (点狐狸直接进 /art/)
             ];
 
             // 果皮贴图 (共用一张): 乘法贴图 — 底色压暗一点点, 撒上更亮的果点
@@ -2179,7 +2262,7 @@
             // Animals (clickable projects)
             const animalConfigs = [
                 { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
-                { type: 'rabbit', pos: { x: -4, y: 0.5, z: 3 } },   // 树干左前方的草地上
+                { type: 'rabbit', pos: { x: -4, y: 0.65, z: 3 } },  // 树干左前方的草地上 (0.5 太低; 0.8 会和影子脱开, 像悬空)
                 { type: 'fox', pos: { x: 6, y: 0.15, z: -4 } }
             ];
 
@@ -2188,9 +2271,18 @@
                 animal.position.set(config.pos.x, config.pos.y, config.pos.z);
                 animal.userData.restY = config.pos.y;   // 动画的基准高度
                 animal.userData.type = 'summer';
-                animal.userData.projectId = i;
+                // 蝴蝶 → "Jane's Creed", 狐狸 → AI Filmmaker 作品页 /art/ (openProject 里分流)
+                animal.userData.projectId = config.type === 'butterfly' ? 'creed' : config.type === 'fox' ? 'art' : i;
                 animal.userData.animalType = config.type;
                 animal.userData.originalScale = 1;
+                if (config.type === 'fox') {
+                    // 狐狸坐在地上、屏幕上很小, 手机上很难点中 → 加一个看不见的大一圈点击球
+                    // (material.visible=false 不渲染, 但 raycaster 仍能命中)
+                    const hit = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 8),
+                        new THREE.MeshBasicMaterial({ visible: false }));
+                    hit.position.y = 0.45;
+                    animal.add(hit);
+                }
                 animal.visible = false;
                 animals.push(animal);
                 scene.add(animal);
@@ -3671,7 +3763,9 @@
             const msg = document.getElementById('msgModal');
             const proj = document.getElementById('projectModal');
             const pc = document.getElementById('pcModal');
-            return !!(msg && msg.classList.contains('open')) ||
+            const creed = document.getElementById('creed');
+            return !!(creed && creed.classList.contains('open')) ||
+                   !!(msg && msg.classList.contains('open')) ||
                    !!(proj && proj.classList.contains('active')) ||
                    !!(pc && pc.classList.contains('show'));
         }
@@ -3685,6 +3779,8 @@
             }
             const proj = document.getElementById('projectModal');
             if (proj && proj.classList.contains('active')) { closeModal(); return true; }
+            const creed = document.getElementById('creed');
+            if (creed && creed.classList.contains('open')) { closeCreed(); return true; }
             const pc = document.getElementById('pcModal');
             if (pc && pc.classList.contains('show')) { pc.classList.remove('show'); return true; }
             const hire = document.getElementById('hireForm');            // 手机端展开的 Talk to Me
@@ -4280,7 +4376,7 @@
                 // 根据动物类型设置不同的Y高度
                 let targetY = 0.5; // 默认地面高度
                 if (animalType === 'squirrel') targetY = 0.5;
-                else if (animalType === 'rabbit') targetY = 0.5;
+                else if (animalType === 'rabbit') targetY = 0.65;
                 else if (animalType === 'deer') targetY = 1.5;
                 else if (animalType === 'bird') targetY = intersectPoint.y + 2; // 鸟在空中
                 else if (animalType === 'butterfly') targetY = intersectPoint.y + 3;
@@ -4429,6 +4525,8 @@
         }
 
         function openProject(id) {
+            if (id === 'creed') { openCreed(); return; }
+            if (id === 'art') { window.location.href = '/art/'; return; }
             const project = projects[id];
             document.getElementById('modalIcon').textContent = project.icon;
             document.getElementById('modalTitle').textContent = project.title;
@@ -4464,6 +4562,167 @@
 
         function closeModal() {
             document.getElementById('projectModal').classList.remove('active');
+        }
+
+        // ============================================
+        // Jane's Creed (蝴蝶)
+        // b: 段落 (以 '!' 开头的段落加粗显示); q/s: 出处, 点 Reference 才展开
+        // ============================================
+        const CREED = {
+            en: {
+                title: "Jane's Creed", ref: 'Reference', dash: '— ',
+                items: [
+                    { t: 'Some of my friends faithfully believe in god. I Am My Own God.',
+                      b: ["I don't place my faith in gods, higher powers, or anything outside myself. My faith is in me."],
+                      q: '“Heaven’s movement is ever vigorous; thus the superior person strives without ceasing.”', s: 'The Book of Changes', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                    { t: 'Give Your All. Let Go of the Rest.',
+                      b: ['Do everything within your power. Then let life unfold. Never give up on what you can influence; learn to make peace with what you cannot.'],
+                      q: '“Do your utmost, then entrust the outcome to fate.”', s: 'A traditional Chinese maxim, famously expressed in Flowers in the Mirror (《镜花缘》)', u: 'https://zh.wikisource.org/wiki/鏡花緣/第006回' },
+                    { t: 'Make My Actions Worthy of My Thoughts.',
+                      b: ['My mind always wanders, leaps, and imagines infinite possibilities. I want my actions to live up to my thoughts and my words to mean something. True freedom is the courage to turn imagination into reality.'],
+                      q: '“Knowledge is the beginning of action; action is the completion of knowledge.”', s: 'Wang Yangming, Instructions for Practical Living', u: 'https://zh.wikisource.org/wiki/傳習錄/卷上' },
+                    { t: 'Simplicity.',
+                      b: ['Seek the essence. Eliminate the unnecessary.',
+                          'For instance, in communication, I value clarity, concision, and effectiveness. Talk is cheap.'],
+                      q: '“Less brings gain; excess brings confusion.”', s: 'Tao Te Ching, Chapter 22', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#二十二章' },
+                    { t: 'No Regrets.',
+                      b: ['I’ve played [Go](https://en.wikipedia.org/wiki/Go_%28game%29) (围棋) since elementary school. “落子无悔”, a move once made is never taken back, is one of the top principles of Go and of my life.'],
+                      q: '“Do not resent Heaven or blame others.”', s: 'The Analects', u: 'https://zh.wikisource.org/wiki/論語/憲問第十四' },
+                    { t: "I Don't Chase. I Attract.",
+                      b: ['I focus on growing, creating, and becoming someone I genuinely admire. Work speaks for itself.'],
+                      q: '“Like calls to like; kindred spirits seek one another.”', s: 'The Book of Changes', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                    { t: 'Demystification.',
+                      b: ['Growth is learning to see things as they are. People I once idolized, achievements I once considered unattainable, and institutions I once placed on a pedestal may look very different once I get closer.',
+                          'Less looking up from a distance. More getting my hands dirty.'] },
+                    { t: 'Be Like Water.',
+                      b: ['Whatever I go through, whatever I learn about the darkness of human nature or society, I want to remain kind and genuine.'],
+                      q: '“The highest goodness is like water.”', s: 'Tao Te Ching, Chapter 8', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#八章' }
+                ]
+            },
+            zh: {
+                title: 'Jane の信条', ref: '出处', dash: '——',
+                items: [
+                    { t: '我始终坚定不移地相信自己', b: ['他人信神拜佛，我信我自己。'],
+                      q: '天行健，君子以自强不息。', s: '《周易》', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                    { t: '命里有时终须有，尽全力以后 go with the flow 就好了', b: ['谋事在人，成事在天。'],
+                      q: '尽人事以听天命。', s: '李汝珍《镜花缘》第六回', u: 'https://zh.wikisource.org/wiki/鏡花緣/第006回' },
+                    { t: '知行合一',
+                      b: ['我一直有很多很跳脱、天马行空的想法。我希望我能说到做到，说的、想的和做的保持一致，不能让大脑成为囚笼困住我。'],
+                      q: '知者行之始，行者知之成。', s: '王阳明《传习录》', u: 'https://zh.wikisource.org/wiki/傳習錄/卷上' },
+                    { t: '大道至简', b: ['追求本质，拒绝冗余。', '比如简洁有效的沟通。'],
+                      q: '少则得，多则惑。', s: '《道德经》第二十二章', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#二十二章' },
+                    { t: '落子无悔', b: ['我从小学开始下[围棋](https://zh.wikipedia.org/wiki/围棋)，落子无悔既是围棋的准则，也是我人生的原则。'],
+                      q: '不怨天，不尤人。', s: '《论语·宪问》', u: 'https://zh.wikisource.org/wiki/論語/憲問第十四' },
+                    { t: '不追逐，只吸引',
+                      b: ['我不靠迎合获取认可，不靠追逐证明自己的价值。',
+                          '永远专注于自我成长、创造，努力成为自己欣赏的人。用实力说话，志同道合的伙伴自然会被我吸引。'],
+                      q: '同声相应，同气相求。', s: '《周易·乾卦·文言》', u: 'https://zh.wikisource.org/wiki/周易/乾' },
+                    { t: '成长是一个不断祛魅的过程',
+                      b: ['曾经以为高不可攀的人、事、成就与光环，在真正靠近之后，也许会显露出它们平凡普通的一面。',
+                          '不轻易神化或美化任何人或事，有自己的判断、执行和思考。'],
+                      q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》', u: 'https://zh.wikisource.org/wiki/冬夜讀書示子聿' },
+                    { t: '做像水一样的女人',
+                      b: ['无论经历什么，无论见识过多少人性或社会的阴暗面，我都希望自己依然善良、真诚。'],
+                      q: '上善若水。', s: '《道德经》第八章', u: 'https://zh.wikisource.org/wiki/道德經_(王弼本)#八章' }
+                ]
+            }
+        };
+        let creedLang = 'en';
+        try { if (localStorage.getItem('creedLang') === 'zh') creedLang = 'zh'; } catch (e) {}
+
+        function extLink(url) {
+            const a = document.createElement('a');
+            a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+            return a;
+        }
+        // 正文里的 [文字](链接) → 外链, 其余按纯文本插入
+        function appendRich(el, txt) {
+            const re = /\[([^\]]+)\]\((https?:\/\/[^\s]+?)\)(?=[\s，。,.;:!?）)]|$)/g;
+            let last = 0, m;
+            while ((m = re.exec(txt))) {
+                el.appendChild(document.createTextNode(txt.slice(last, m.index)));
+                const a = extLink(m[2]); a.textContent = m[1]; el.appendChild(a);
+                last = re.lastIndex;
+            }
+            el.appendChild(document.createTextNode(txt.slice(last)));
+        }
+
+        function renderCreed() {
+            const d = CREED[creedLang];
+            const root = document.getElementById('creed');
+            root.setAttribute('lang', creedLang === 'zh' ? 'zh' : 'en');
+            document.getElementById('crTitle').textContent = d.title;
+            root.querySelectorAll('.cr-lang button').forEach(b =>
+                b.setAttribute('aria-pressed', String(b.dataset.lang === creedLang)));
+            const list = document.getElementById('crList');
+            list.innerHTML = '';
+            d.items.forEach((it, i) => {
+                const item = document.createElement('div');
+                item.className = 'cr-item';
+                const head = document.createElement('div');
+                head.className = 'cr-head';
+                head.innerHTML = '<span class="cr-i"></span><span class="cr-t"></span>';
+                head.firstChild.textContent = String(i + 1).padStart(2, '0');
+                head.lastChild.textContent = it.t;
+                item.appendChild(head);
+                const body = document.createElement('div');
+                body.className = 'cr-body';
+                it.b.forEach(txt => {
+                    const p = document.createElement('p');
+                    if (txt[0] === '!') { p.className = 'cr-strong'; txt = txt.slice(1); }
+                    appendRich(p, txt);
+                    body.appendChild(p);
+                });
+                if (it.q) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'cr-ref-btn';
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.innerHTML = '<span></span><span class="cr-ref-chev">›</span>';
+                    btn.firstChild.textContent = d.ref;
+                    btn.addEventListener('click', () => {
+                        const open = item.classList.toggle('ref-open');
+                        btn.setAttribute('aria-expanded', String(open));
+                    });
+                    const ref = document.createElement('div');
+                    ref.className = 'cr-ref';
+                    ref.innerHTML = '<div><div class="cr-q"></div><div class="cr-s"></div></div>';
+                    ref.querySelector('.cr-q').textContent = it.q;
+                    const src = ref.querySelector('.cr-s');
+                    src.textContent = d.dash;
+                    if (it.u) {
+                        const a = extLink(it.u);
+                        a.innerHTML = '<span class="cr-s-t"></span><span class="cr-s-arrow" aria-hidden="true">↗</span>';
+                        a.firstChild.textContent = it.s;
+                        src.appendChild(a);
+                    } else src.appendChild(document.createTextNode(it.s));
+                    body.appendChild(btn);
+                    body.appendChild(ref);
+                }
+                item.appendChild(body);
+                list.appendChild(item);
+            });
+        }
+
+        function openCreed() {
+            const root = document.getElementById('creed');
+            if (!root.dataset.wired) {
+                root.dataset.wired = '1';
+                document.getElementById('crClose').addEventListener('click', closeCreed);
+                root.querySelectorAll('.cr-lang button').forEach(b => b.addEventListener('click', () => {
+                    if (b.dataset.lang === creedLang) return;
+                    creedLang = b.dataset.lang;
+                    try { localStorage.setItem('creedLang', creedLang); } catch (e) {}
+                    renderCreed();
+                }));
+            }
+            renderCreed();
+            root.scrollTop = 0;
+            root.classList.add('open');
+        }
+
+        function closeCreed() {
+            document.getElementById('creed').classList.remove('open');
         }
 
         // ============================================
@@ -5372,7 +5631,13 @@
                 contact: (fd.get('reply_to') || '').toString().trim(),
                 message: (fd.get('message') || '').toString().trim()
             };
-            if (!payload.message) { status.textContent = 'Please write a message first.'; status.className = 'msg-status err'; return; }
+            if (!payload.message) {
+                // 页内提示代替浏览器原生气泡: 文本框描红 + 聚焦, 一输入就恢复
+                const ta = form.querySelector('textarea[name="message"]');
+                ta.classList.add('msg-invalid'); ta.focus();
+                ta.addEventListener('input', () => ta.classList.remove('msg-invalid'), { once: true });
+                status.textContent = 'Please write a message first.'; status.className = 'msg-status err'; return;
+            }
             if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.indexOf('PASTE_') === 0) { status.textContent = "Messaging isn't connected yet."; status.className = 'msg-status err'; return; }
             postToSheet(payload).catch(function () { });   // 后台发送, 不等待 → 秒回
             status.textContent = 'Sent — thank you! I’ll get back to you.';
@@ -5436,7 +5701,7 @@
                     } else if (type === 'rabbit') {
                         // 兔子轻微跳动 — 必须以落地高度为基准重新赋值。
                         // 之前是 position.y += |sin(...)|, 每帧都加一个非负数, 兔子会一路飘上天。
-                        const restY = animal.userData.restY !== undefined ? animal.userData.restY : 0.5;
+                        const restY = animal.userData.restY !== undefined ? animal.userData.restY : 0.65;
                         animal.position.y = restY + Math.abs(Math.sin(windTime * 3 + i)) * 0.22;
                     } else if (type === 'fox') {
                         // 狐狸轻微晃动
