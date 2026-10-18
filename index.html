@@ -2776,20 +2776,8 @@
         }
 
         function createAutumnElements() {
-            // Falling leaves (clickable projects)
-            for (let i = 0; i < 6; i++) {
-                const leaf = createFallingLeaf(i);
-                leaf.userData.type = 'autumn';
-                leaf.userData.projectId = i;
-                leaf.userData.originalScale = 1;
-                leaf.visible = false;
-                fallingLeaves.push(leaf);
-                scene.add(leaf);
-                interactiveObjects.push(leaf);
-            }
-
-            // More decorative falling leaves
-            for (let i = 0; i < 50; i++) {
+            // 落叶只做装饰 (原来有 6 片点开是项目, 已去掉; 总数保持 56)
+            for (let i = 0; i < 56; i++) {
                 const leaf = createFallingLeaf(-1);
                 leaf.userData.type = 'decoration';
                 leaf.userData.season = 'autumn';
