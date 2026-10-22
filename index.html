@@ -1096,6 +1096,8 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, IS_TOUCH ? 1.5 : 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = IS_TOUCH ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+            // 触屏: 阴影图不再每帧重画 (整棵树 + 动物又要多画一遍), 改由 animate() 隔帧更新
+            if (IS_TOUCH) renderer.shadowMap.autoUpdate = false;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
             renderer.toneMappingExposure = 1.2;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
@@ -1104,7 +1106,8 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.target.set(0, 10, 0);
             controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
+            // 0.05 的惯性在手机上像橡皮筋: 手指拖完树还慢半拍才跟上 → 触屏收紧, 更跟手
+            controls.dampingFactor = IS_TOUCH ? 0.2 : 0.05;
             controls.minDistance = 15;
             controls.maxDistance = 40;
             controls.maxPolarAngle = Math.PI / 1.8;
@@ -2296,6 +2299,14 @@
                 animal.userData.projectId = { butterfly: 'creed', fox: 'art', rabbit: 'business' }[config.type] ?? i;
                 animal.userData.animalType = config.type;
                 animal.userData.originalScale = 1;
+                if (config.type === 'butterfly') {
+                    // 蝴蝶只有 ~20px 大, 还一直上下飘 (幅度比它自己还大) → 很难点中。
+                    // 同狐狸: 加一个看不见的点击球, 把可点范围放大到整只蝴蝶外一圈
+                    const hit = new THREE.Mesh(new THREE.SphereGeometry(1.0, 12, 8),
+                        new THREE.MeshBasicMaterial({ visible: false }));
+                    hit.position.y = 0.05;
+                    animal.add(hit);
+                }
                 if (config.type === 'fox') {
                     // 狐狸坐在地上、屏幕上很小, 手机上很难点中 → 加一个看不见的大一圈点击球
                     // (material.visible=false 不渲染, 但 raycaster 仍能命中)
@@ -4496,7 +4507,13 @@
 
         function onClick(event) {
             if (!isTreeCanvasTarget(event.target) || oneDActive) return;   // 同 onMouseUp: 别把"关弹窗"当成"点苹果"
-            // 作为备用：如果 mouseUp 没有处理，这里也尝试打开项目
+            if (isOverlayOpen()) return;   // 触屏: touchend 已经打开了, 别让随后的兼容 click 再开一次
+            // OrbitControls 在 pointerdown 里 preventDefault → 浏览器不再派发 mousedown/mouseup,
+            // 桌面上真正打开项目的只有这里。hoveredObject 只在 mousemove 时刷新, 鼠标停住不动时
+            // 会动的目标 (蝴蝶) 早就飘走了 → 按点击位置重新 raycast 一次, 不用旧的悬停结果
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            checkHover();
             if (hoveredObject && hoveredObject.userData.projectId !== undefined) {
                 // 只有在没有拖拽的情况下才处理
                 if (!isDragging) {
@@ -5666,6 +5683,8 @@
         }
 
         let lastTime = 0;
+        let touchFrame = 0;
+        const creedEl = document.getElementById('creed');
 
         function animate(currentTime) {
             requestAnimationFrame(animate);
@@ -5673,6 +5692,13 @@
             // 手机端进入作品页后, 3D 场景被不透明面板完全盖住 → 暂停整套渲染/动画,
             // 把性能全留给作品页的原生滚动 (更丝滑) 并省电; 返回树时自动恢复。
             if (oneDActive && IS_TOUCH) { lastTime = currentTime; return; }
+            // Creed (蝴蝶) 也是不透明全屏页: 手机上照样停掉背后的 3D, 不然它滚动和点按都发涩
+            if (IS_TOUCH && creedEl && creedEl.classList.contains('open')) { lastTime = currentTime; return; }
+
+            // 90/120Hz 安卓 / iPad 上 rAF 会跑到 120 帧: GPU 工作量翻倍、手机发热降频 → 掉帧;
+            // 而且下面的动画都是"每帧加一点", 高刷屏上还会快一倍。触屏封顶 60 帧。
+            if (IS_TOUCH && lastTime && currentTime - lastTime < 1000 / 66) return;
+            if (IS_TOUCH) renderer.shadowMap.needsUpdate = (touchFrame++ % 2 === 0);
 
             // 计算 deltaTime
             const deltaTime = lastTime ? (currentTime - lastTime) / 1000 : 0.016;
