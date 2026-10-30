@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jane's Portfolio | Four Seasons</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -47,9 +47,19 @@
             pointer-events: none;
         }
 
+        /* 树场景 UI: 苹果官网的字和色 — SF Pro (非苹果设备回落 Inter)、近黑 #1d1d1f 主字、
+           #6e6e73 次级字、负字距标题、磨砂白胶囊。场景底色是浅色, 原来的白字+黑投影是给深底设计的。 */
+        :root {
+            --ui-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            --ui-ink: #1d1d1f;
+            --ui-ink-2: #6e6e73;
+            --ui-glass: rgba(255,255,255,0.72);
+            --ui-ease: cubic-bezier(.25,.1,.25,1);
+        }
+
         .season-indicator {
             position: fixed;
-            top: 40px;
+            top: 46px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
@@ -57,36 +67,29 @@
         }
 
         .season-name {
-            font-family: 'Libre Baskerville', serif;
-            font-size: 2.2rem;
-            font-weight: 400;
-            letter-spacing: 0.5em;
-            text-indent: 0.5em;            /* 抵消末尾字距 → 保持居中 */
-            text-transform: uppercase;
+            font-family: var(--ui-font);
+            font-size: 3rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            line-height: 1.05;
+            color: var(--ui-ink);
+            white-space: nowrap;
             opacity: 0;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            text-shadow: 0 1px 14px rgba(0,0,0,0.22);
-            transition: opacity 0.5s ease;
         }
-
-        .season-name.spring { color: #ef9bb9; }   /* 浅粉 */
-        .season-name.summer { color: #7ec77e; }   /* 浅浅绿 */
-        .season-name.autumn { color: #eaa75c; }   /* 浅琥珀 — 比秋树橙色更淡 */
-        .season-name.winter { color: #9cbae0; }   /* 浅雾蓝 */
 
         .season-name.active {
-            animation: seasonFadeInOut 3s ease forwards;
+            animation: seasonFadeInOut 3.2s var(--ui-ease) forwards;
         }
 
+        /* 苹果式出场: 轻轻上浮淡入, 停住, 再原地淡出 — 不缩放不弹跳 */
         @keyframes seasonFadeInOut {
-            0% { opacity: 0; transform: translateX(-50%) scale(0.9); }
-            10% { opacity: 1; transform: translateX(-50%) scale(1); }
-            70% { opacity: 1; transform: translateX(-50%) scale(1); }
-            85% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-            90% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-            100% { opacity: 0; transform: translateX(-50%) scale(1); }
+            0% { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            18% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            72% { opacity: 1; transform: translateX(-50%) translateY(0); }
+            100% { opacity: 0; transform: translateX(-50%) translateY(0); }
         }
 
         /* 手机端一次性提示: iOS Tips 式小气泡, 小三角指向右上角头像, 写 "Tap to see my work"。
@@ -170,22 +173,29 @@
 
         .hint-text {
             position: fixed;
-            bottom: 60px;
+            bottom: 64px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
-            font-size: 1.1rem;
-            letter-spacing: 0.2em;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 0 12px rgba(0,0,0,0.6), 0 1px 3px rgba(0,0,0,0.5);
-            animation: pulse 2s ease-in-out infinite;
+            padding: 9px 18px;
+            border-radius: 980px;
+            background: var(--ui-glass);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+            font-family: var(--ui-font);
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: var(--ui-ink);
             white-space: nowrap;
+            opacity: 0;
+            animation: hintIn .8s var(--ui-ease) 1.6s forwards;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.75; }
-            50% { opacity: 1; }
+        @keyframes hintIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
         .scroll-indicator {
@@ -198,25 +208,23 @@
             gap: 12px;
         }
 
+        /* 苹果轮播式分页: 灰点, 当前页拉长成深色胶囊 */
         .scroll-dot {
             width: 8px;
             height: 8px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.18);
+            transition: width .4s var(--ui-ease), background-color .3s ease;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.2);
         }
-        
+
         .scroll-dot:hover {
-            background: rgba(255,255,255,0.6);
-            transform: scale(1.15);
+            background: rgba(0,0,0,0.32);
         }
 
         .scroll-dot.active {
-            background: rgba(255,255,255,0.9);
-            transform: scale(1.2);
-            border-color: rgba(255,255,255,0.6);
+            width: 22px;
+            background: rgba(29,29,31,0.78);
         }
 
         .project-modal {
@@ -341,13 +349,17 @@
 
         .click-hint {
             position: fixed;
-            padding: 12px 25px;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            color: #fff;
-            font-size: 0.95rem;
-            letter-spacing: 0.1em;
+            padding: 8px 16px;
+            background: var(--ui-glass);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+            border-radius: 980px;
+            color: var(--ui-ink);
+            font-family: var(--ui-font);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -358,46 +370,45 @@
             opacity: 1;
         }
 
+        /* 左上角字标, 和右上角头像同一水平线 (头像 top 22 + 68/2 = 56 中线) */
         .name-title {
             position: fixed;
-            top: 50%;
-            left: 50px;
-            transform: translateY(-50%) rotate(-90deg);
-            transform-origin: left center;
+            top: 56px;
+            left: 40px;
+            transform: translateY(-50%);
             z-index: 100;
-            font-family: 'Libre Baskerville', serif;
-            font-size: 0.85rem;
-            letter-spacing: 0.4em;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase;
+            font-family: var(--ui-font);
+            font-size: 1.0625rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--ui-ink);
         }
 
         .social-links {
             position: fixed;
-            bottom: 40px;
+            bottom: 36px;
             right: 40px;
             z-index: 100;
             display: flex;
-            gap: 20px;
+            gap: 24px;
         }
 
         .social-link {
-            color: rgba(255,255,255,0.5);
+            font-family: var(--ui-font);
+            color: var(--ui-ink-2);
             text-decoration: none;
-            font-size: 0.85rem;
-            letter-spacing: 0.15em;
-            transition: color 0.3s ease;
+            font-size: 0.8125rem;
+            letter-spacing: -0.005em;
+            transition: color 0.2s ease;
         }
 
         .social-link:hover {
-            color: #fff;
+            color: var(--ui-ink);
         }
 
         @media (max-width: 768px) {
             .season-name {
-                font-size: 1.7rem;
-                letter-spacing: 0.42em;
-                text-indent: 0.42em;
+                font-size: 2.25rem;
             }
 
             .name-title {
@@ -405,9 +416,8 @@
             }
 
             .hint-text {
-                font-size: 0.85rem;
-                letter-spacing: 0.1em;
-                bottom: 48px;
+                font-size: 0.8125rem;
+                bottom: 52px;
             }
 
             .scroll-indicator {
@@ -435,9 +445,7 @@
 
         @media (max-width: 480px) {
             .season-name {
-                font-size: 1.4rem;
-                letter-spacing: 0.38em;
-                text-indent: 0.38em;
+                font-size: 2rem;
             }
         }
 
@@ -458,13 +466,15 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.45);
-            color: #fff;
+            background: var(--ui-glass);
+            border: none;
+            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+            color: var(--ui-ink);
             font-size: 1.6rem;
             line-height: 1;
             cursor: pointer;
-            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
             align-items: center;
             justify-content: center;
             transition: background 0.25s ease;
@@ -472,7 +482,8 @@
         }
 
         .season-nav-btn:active {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.92);
+            transform: scale(.94);
         }
 
         .season-prev { left: 20px; }
@@ -801,7 +812,7 @@
         </div>
     </div>
 
-    <div class="hint-text" id="hintText">Click the apples to explore</div>
+    <div class="hint-text" id="hintText">Click an apple to explore</div>
 
     <div class="scroll-indicator">
         <div class="scroll-dot active" data-season="0"></div>
@@ -814,7 +825,7 @@
 
     <div class="click-hint" id="clickHint">Click to view project</div>
 
-    <div class="name-title">Jane's Portfolio</div>
+    <div class="name-title">Jane Zhang</div>
 
     <div class="social-links">
         <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
@@ -1049,8 +1060,8 @@
         // Season colors
         const seasonColors = {
             spring: {
-                bg: [0.95, 0.92, 0.93],
-                leaves: 0x5f8f34,
+                bg: [0.961, 0.961, 0.969],   // #f5f5f7 — 苹果官网底色
+                leaves: 0x55882f,
                 accent: 0xf8bbd9
             },
             summer: {
@@ -1073,15 +1084,17 @@
 
         const seasons = ['spring', 'summer', 'autumn'];
         const hintTexts = [
-            'Click the apples to explore',
-            'Click the animals to discover',
+            'Click an apple to explore',
+            'Click an animal to discover',
             ''                                  // 秋天不提示
         ];
 
         function init() {
             // Scene
             scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0xfaf0e6, 20, 80);
+            // 雾: 近端 30 (树在 ~25–35 处, 不再被雾洗白), 远端 62 (地面圆盘边缘全部
+            // 融进背景色 → 没有地平线硬边, 像苹果产品图的无缝影棚)
+            scene.fog = new THREE.Fog(0xf5f5f7, 30, 62);
 
             // Camera
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -1208,17 +1221,18 @@
             scene.add(sunLight);
 
             // Fill light
-            const fillLight = new THREE.DirectionalLight(0x87ceeb, 0.3);
+            // 补光/轮廓光去掉饱和的天蓝和金黄, 换成中性冷白/暖白 — 影棚布光, 不染色
+            const fillLight = new THREE.DirectionalLight(0xe8eef8, 0.35);
             fillLight.position.set(-20, 20, -10);
             scene.add(fillLight);
 
             // Rim light
-            const rimLight = new THREE.DirectionalLight(0xffd700, 0.2);
+            const rimLight = new THREE.DirectionalLight(0xfff4e0, 0.3);
             rimLight.position.set(0, 10, -30);
             scene.add(rimLight);
 
-            // Hemisphere light for sky/ground color
-            const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d2817, 0.3);
+            // Hemisphere light: 天光白、地面反光带一点草绿 → 阴影是柔和的灰绿, 不是死黑斑点
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x9fb38a, 0.45);
             scene.add(hemiLight);
         }
 
@@ -1701,14 +1715,21 @@
 
             // Create leaf clusters — 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
             // 每帧 ~2000 次 draw call (含阴影 pass), 手机上是卡顿主因; 现在 1 次。
+            // 苹果官网式"软陶"质感: 实心不透明 (半透明会排序错乱, 叶球互相透出脏边)、
+            // 球体够圆 (原来 6×4 段是多面体, 一眼像泡泡纸); 每片叶子一点明暗差,
+            // 季节色仍由 material.color 统一控制 (instanceColor 只是接近白的乘数)
             leafMaterial = new THREE.MeshStandardMaterial({
                 color: 0x5f8f34,
-                roughness: 0.8,
-                metalness: 0.1,
-                transparent: true,
-                opacity: 0.9
+                roughness: 0.92,
+                metalness: 0
             });
-            leafInstanced = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 6, 4), leafMaterial, leafCount);
+            const leafSeg = IS_TOUCH ? [10, 8] : [16, 12];
+            leafInstanced = new THREE.InstancedMesh(new THREE.SphereGeometry(1, leafSeg[0], leafSeg[1]), leafMaterial, leafCount);
+            const leafTint = new THREE.Color();
+            for (let i = 0; i < leafCount; i++) {
+                const l = 0.78 + Math.random() * 0.26;
+                leafInstanced.setColorAt(i, leafTint.setRGB(l * (0.97 + Math.random() * 0.06), l, l * (0.94 + Math.random() * 0.06)));
+            }
             leafInstanced.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
             leafInstanced.castShadow = true;
             leafInstanced.frustumCulled = false;   // 包围球只按单个球算, 会被误裁
@@ -4319,7 +4340,6 @@
                 // 非冬季：显示树，隐藏雪人
                 if (tree) tree.visible = true;
                 if (leafInstanced) leafInstanced.visible = true;
-                if (leafMaterial) leafMaterial.opacity = 0.9;
                 
                 snowShells.forEach(snow => {
                     snow.visible = false;
@@ -5363,7 +5383,7 @@
                 //   2) far 恒为 80 而相机一路后退到 56 → 越退越白, 树几乎糊成一片。
                 // 现在: dist=30(默认取景) 时 base 仍是 80 —— 树场景的观感一字不变。
                 const camDist = camera.position.distanceTo(controls.target) || 30;
-                const base = Math.max(80, camDist * 2.67);
+                const base = Math.max(62, camDist * 2.07);
                 scene.fog.far = base * Math.pow(100000 / base, smooth(seg(j, 0.30, 0.50)));
             }
             if (starField) { const so = smooth(seg(j, 0.46, 0.66)); starField.material.opacity = so; starField.visible = so > 0.01; }
