@@ -177,12 +177,19 @@
         .pc-ok:active { transform: translateY(1.5px) scale(.965); color: #2c2c32;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.06); background: rgba(255,255,255,0.62); }
 
+        /* 外层只管定位 (宇宙之旅会改它的 opacity); 胶囊和出场/退场动画在内层 #hintInner,
+           这样提示自己淡出后, 旅程淡入淡出 UI 时不会把它又带出来 */
         .hint-text {
             position: fixed;
             bottom: 64px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
+            pointer-events: none;
+        }
+
+        #hintInner {
+            display: block;
             padding: 9px 18px;
             border-radius: 980px;
             background: var(--ui-glass);
@@ -196,12 +203,18 @@
             color: var(--ui-ink);
             white-space: nowrap;
             opacity: 0;
-            animation: hintIn .8s var(--ui-ease) 1.6s forwards;
         }
 
-        @keyframes hintIn {
-            from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        /* 进场 1.2s 后浮现, 停留约 5s, 再淡出不再出现; 换季时 updateSeasonUI 重播 */
+        #hintInner.play {
+            animation: hintInOut 6.5s var(--ui-ease) 1.2s forwards;
+        }
+
+        @keyframes hintInOut {
+            0% { opacity: 0; transform: translateY(8px); }
+            12% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(0); }
         }
 
         .scroll-indicator {
@@ -376,40 +389,25 @@
             opacity: 1;
         }
 
-        /* 左上角字标, 和右上角头像同一水平线 (头像 top 22 + 68/2 = 56 中线) */
-        .name-title {
-            position: fixed;
-            top: 56px;
-            left: 40px;
-            transform: translateY(-50%);
-            z-index: 100;
-            font-family: var(--ui-font);
-            font-size: 0.9375rem;
-            font-weight: 400;
-            letter-spacing: 0.01em;
-            color: var(--ui-ink);
-        }
-
         .social-links {
             position: fixed;
-            bottom: 36px;
+            bottom: 40px;
             right: 40px;
             z-index: 100;
             display: flex;
-            gap: 24px;
+            gap: 20px;
         }
 
         .social-link {
-            font-family: var(--ui-font);
-            color: var(--ui-ink-2);
+            color: rgba(255,255,255,0.5);
             text-decoration: none;
-            font-size: 0.8125rem;
-            letter-spacing: -0.005em;
-            transition: color 0.2s ease;
+            font-size: 0.85rem;
+            letter-spacing: 0.15em;
+            transition: color 0.3s ease;
         }
 
         .social-link:hover {
-            color: var(--ui-ink);
+            color: #fff;
         }
 
         @media (max-width: 768px) {
@@ -417,12 +415,7 @@
                 font-size: 2.25rem;
             }
 
-            .name-title {
-                display: none;
-            }
-
             .hint-text {
-                font-size: 0.8125rem;
                 bottom: 52px;
             }
 
@@ -818,7 +811,7 @@
         </div>
     </div>
 
-    <div class="hint-text" id="hintText">Click an apple to explore</div>
+    <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span></div>
 
     <div class="scroll-indicator">
         <div class="scroll-dot active" data-season="0"></div>
@@ -831,7 +824,6 @@
 
     <div class="click-hint" id="clickHint">Click to view project</div>
 
-    <div class="name-title">Jane Zhang</div>
 
     <div class="social-links">
         <a href="https://linkedin.com/in/jane-z-439910293" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
@@ -4081,9 +4073,14 @@
             });
 
             // Update hint text
+            // 提示只露几秒就淡出: 重新挂 .play 让动画从头播
             const hintEl = document.getElementById('hintText');
-            hintEl.textContent = hintTexts[currentSeason];
+            const hintInner = document.getElementById('hintInner');
+            hintInner.textContent = hintTexts[currentSeason];
             hintEl.style.visibility = hintTexts[currentSeason] ? 'visible' : 'hidden';
+            hintInner.classList.remove('play');
+            hintInner.offsetHeight; // Trigger reflow
+            hintInner.classList.add('play');
         }
 
         // ============================================
@@ -5197,7 +5194,7 @@
         function setTreeUIOpacity(o) {
             // 只淡入淡出树场景常驻 UI; logo(#fpHome)与 .logo-hint 有各自的显隐逻辑,
             // 不放这里(否则会盖掉 logo 常显 / 手指提示的一次性淡出)。
-            ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links', '.name-title'].forEach(s => {
+            ['.season-indicator', '.hint-text', '.scroll-indicator', '.season-prev', '.season-next', '.social-links'].forEach(s => {
                 document.querySelectorAll(s).forEach(el => {
                     el.style.opacity = o;
                     el.style.pointerEvents = o < 0.5 ? 'none' : '';
