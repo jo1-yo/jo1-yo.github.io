@@ -60,7 +60,7 @@
 
         .season-indicator {
             position: fixed;
-            top: 46px;
+            top: 34px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
@@ -461,7 +461,7 @@
            屏幕一高就显得又小又贴着上下边。改成跟视口高度走 (clamp: 900 高时≈原值,
            越高越往里收、越大一点), 手机 (≤768) 完全不受影响。 */
         @media (min-width: 769px) {
-            .season-indicator { top: clamp(46px, 7.5vh, 120px); }
+            .season-indicator { top: clamp(34px, 5vh, 80px); }
             .season-name { font-size: clamp(2.75rem, 4.6vh, 4rem); }
             .hint-text { bottom: clamp(64px, 9vh, 130px); }
             #hintInner { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); padding: 0.7em 1.4em; }
@@ -4925,7 +4925,7 @@
         }
 
         let cosmosInited = false, cosmicWorld = null;
-        let planetMesh = null, planetAtmo = null, planetClouds = null, starField = null;
+        let planetMesh = null, planetAtmo = null, planetMarble = null, marbleCore = null, starField = null;
         let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
         let pixCanvas = null, pixCtx = null, pixSrc = null, pixTmp = null, pixCells = null, pixCaptured = false, pixNeedsCapture = false;
         const PIX_IN = 0.71, PIX_OUT = 0.695;   // 像素坍塌的进入/退出阈值 (滞回, 见 updateJourney)
@@ -5002,9 +5002,12 @@
         `;
         // 每季: 极地草色(=地面) / 低地 / 高地 / 点缀色 / 点缀量 / 大气色
         const PLANET_SEASONS = [
-            { land: 0x6fa84d, land2: 0x3f7a3a, bloom: 0xf4a9c6, bloomAmt: 0.9, atmo: 0x9fd0ff },   // 春: 樱粉
-            { land: 0x4f9440, land2: 0x2c6431, bloom: 0xf2d76b, bloomAmt: 0.45, atmo: 0x9fe8c4 },  // 夏: 花黄
-            { land: 0xa7a04a, land2: 0x8a6a35, bloom: 0xe39a45, bloomAmt: 0.6, atmo: 0xffcf9c }   // 秋: 金 (不刺橙)
+            { land: 0x6fa84d, land2: 0x3f7a3a, bloom: 0xf4a9c6, bloomAmt: 0.9, atmo: 0x9fd0ff,
+              core: [0xff9fc4, 0x8fd46a, 0xfff1f6] },   // 春: 樱粉
+            { land: 0x4f9440, land2: 0x2c6431, bloom: 0xf2d76b, bloomAmt: 0.45, atmo: 0x9fe8c4,
+              core: [0x4fc27a, 0x7fe0d0, 0xfff2a8] },  // 夏: 花黄
+            { land: 0xa7a04a, land2: 0x8a6a35, bloom: 0xe39a45, bloomAmt: 0.6, atmo: 0xffcf9c,
+              core: [0xf0a24a, 0xd9c45a, 0xfff0d0] }   // 秋: 金 (不刺橙)
         ];
         const planetUniforms = {
             uMeadow: { value: new THREE.Color(0x4a7c3f) },     // = 地面草色
@@ -5058,27 +5061,71 @@
             return mat;
         }
 
-        function makeCloudMaterial() {
+        // ── 玻璃弹珠: 地面卷成球之后, 地表溶掉, 只剩一颗全透明的玻璃珠 + 里面发光的核 ──
+        // 玻璃本身没有颜色, 只靠边缘菲涅尔亮边和太阳/窗光两处反光"画"出轮廓;
+        // 前后两面各画一遍 (背面更淡) → 有玻璃的厚度感。
+        function makeGlassMaterial(back) {
             return new THREE.ShaderMaterial({
-                uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 }, uSun: { value: SUN_DIR.clone() } },
+                uniforms: { uOpacity: { value: 0 }, uTint: { value: new THREE.Color(0xdfeeff) }, uSun: { value: SUN_DIR.clone() } },
                 vertexShader: `
-                    varying vec3 vObjN; varying vec3 vWN;
+                    varying vec3 vWN; varying vec3 vWP;
+                    void main(){
+                        vWN = normalize(mat3(modelMatrix) * normal);
+                        vec4 wp = modelMatrix * vec4(position, 1.0);
+                        vWP = wp.xyz;
+                        gl_Position = projectionMatrix * viewMatrix * wp;
+                    }`,
+                fragmentShader: `
+                    uniform float uOpacity; uniform vec3 uTint; uniform vec3 uSun;
+                    varying vec3 vWN; varying vec3 vWP;
+                    void main(){
+                        vec3 V = normalize(cameraPosition - vWP);
+                        vec3 N = normalize(vWN) * ${back ? '-1.0' : '1.0'};
+                        float fres = pow(1.0 - abs(dot(N, V)), 4.0);
+                        vec3 R = reflect(-V, N);
+                        float sun = pow(max(dot(R, uSun), 0.0), 160.0) * 1.8;
+                        float win = pow(max(dot(R, normalize(vec3(-0.7, 0.55, 0.45))), 0.0), 26.0) * 0.18;
+                        float spec = ${back ? '(sun + win) * 0.35' : 'sun + win'};
+                        vec3 col = mix(uTint, vec3(1.0), 0.55) * fres + vec3(spec);
+                        float a = clamp(fres * ${back ? '0.25' : '0.7'} + spec, 0.0, 1.0);
+                        gl_FragColor = vec4(col, a * uOpacity);
+                    }`,
+                side: back ? THREE.BackSide : THREE.FrontSide,
+                transparent: true, depthWrite: false
+            });
+        }
+
+        // 核: 季节色的流动光团, 慢慢翻涌; 朝向镜头的中心更亮, 边缘收暗 → 立体的发光球
+        function makeCoreMaterial() {
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    uTime: { value: 0 }, uOpacity: { value: 0 },
+                    uC1: { value: new THREE.Color() }, uC2: { value: new THREE.Color() }, uC3: { value: new THREE.Color() }
+                },
+                vertexShader: `
+                    varying vec3 vObjN; varying vec3 vN; varying vec3 vP;
                     void main(){
                         vObjN = normalize(position);
-                        vWN = normalize(mat3(modelMatrix) * normal);
-                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        vN = normalize(normalMatrix * normal);
+                        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                        vP = mv.xyz;
+                        gl_Position = projectionMatrix * mv;
                     }`,
                 fragmentShader: PLANET_NOISE_GLSL + `
-                    uniform float uTime, uOpacity; uniform vec3 uSun;
-                    varying vec3 vObjN; varying vec3 vWN;
+                    uniform float uTime, uOpacity; uniform vec3 uC1, uC2, uC3;
+                    varying vec3 vObjN; varying vec3 vN; varying vec3 vP;
                     void main(){
-                        float t = uTime * 0.025;
-                        vec3 q = vec3(vObjN.x * cos(t) - vObjN.z * sin(t), vObjN.y, vObjN.x * sin(t) + vObjN.z * cos(t));
-                        float n = pfbm(q * vec3(2.2, 4.0, 2.2) + vec3(0.0, 0.0, uTime * 0.012));
-                        float a = smoothstep(0.18, 0.5, n);
-                        a *= 1.0 - smoothstep(0.72, 0.86, vObjN.y);          // 北极不盖云, 别挡住树
-                        float lit = 0.5 + 0.5 * max(dot(vWN, uSun), 0.0);
-                        gl_FragColor = vec4(vec3(lit), a * 0.7 * uOpacity);
+                        float t = uTime * 0.18;
+                        vec3 q = vObjN;
+                        q = vec3(q.x * cos(t) - q.z * sin(t), q.y, q.x * sin(t) + q.z * cos(t));
+                        float n = pfbm(q * 0.9 + vec3(0.0, uTime * 0.07, 0.0));
+                        float m = pfbm(q * 1.5 - vec3(uTime * 0.05));
+                        vec3 col = mix(uC1, uC2, smoothstep(-0.35, 0.35, n));
+                        col = mix(col, uC3, smoothstep(0.1, 0.5, m) * 0.55);
+                        float facing = max(dot(normalize(vN), normalize(-vP)), 0.0);
+                        col *= 0.55 + 0.75 * facing;
+                        col += vec3(1.0) * pow(facing, 6.0) * 0.25;
+                        gl_FragColor = vec4(col, uOpacity);
                     }`,
                 transparent: true, depthWrite: false
             });
@@ -5118,6 +5165,11 @@
             planetUniforms.uBloomAmt.value = ps.bloomAmt;
             planetUniforms.uAtmo.value.setHex(ps.atmo);
             if (planetAtmo) planetAtmo.material.uniforms.uColor.value.setHex(ps.atmo);
+            if (marbleCore) {
+                const cu = marbleCore.material.uniforms;
+                cu.uC1.value.setHex(ps.core[0]); cu.uC2.value.setHex(ps.core[1]); cu.uC3.value.setHex(ps.core[2]);
+                marbleCore.userData.glow.material.uniforms.uColor.value.setHex(ps.core[0]);
+            }
         }
 
         // ── 2D 像素坍塌 ──────────────────────────────────────────────
@@ -5309,10 +5361,22 @@
             planetAtmo.position.copy(planetMesh.position);
             planetAtmo.visible = false;
             cosmicWorld.add(planetAtmo);
-            planetClouds = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 1.018, 96, 64), makeCloudMaterial());
-            planetClouds.position.copy(planetMesh.position);
-            planetClouds.visible = false;
-            cosmicWorld.add(planetClouds);
+            // 玻璃弹珠 (与星球同心同尺寸; 绘制顺序: 背面玻璃 → 核光晕 → 核 → 正面玻璃)
+            planetMarble = new THREE.Group();
+            const glassGeo = new THREE.SphereGeometry(PLANET_R, 96, 64);
+            const glassBack = new THREE.Mesh(glassGeo, makeGlassMaterial(true));
+            const glassFront = new THREE.Mesh(glassGeo, makeGlassMaterial(false));
+            glassBack.renderOrder = 1; glassFront.renderOrder = 4;
+            marbleCore = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 0.4, 64, 48), makeCoreMaterial());
+            marbleCore.renderOrder = 3;
+            const coreGlow = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 0.72, 48, 32), makeAtmoMaterial());
+            coreGlow.renderOrder = 2;
+            marbleCore.userData.glow = coreGlow;
+            planetMarble.add(glassBack, coreGlow, marbleCore, glassFront);
+            planetMarble.userData.glass = [glassBack, glassFront];
+            planetMarble.position.copy(planetMesh.position);
+            planetMarble.visible = false;
+            cosmicWorld.add(planetMarble);
 
             // 黑洞
             const BH_R = 14;
@@ -5601,23 +5665,28 @@
             if (planetMesh) {
                 refreshPlanetSeason();
                 const pscale = lerpN(20, 1, morph);
-                planetMesh.visible = j > 0.28;
+                // 地面卷成球之后 (0.58→0.68) 地表溶掉, 换成玻璃弹珠
+                const glass = smooth(seg(j, 0.58, 0.68));
+                planetMesh.visible = j > 0.28 && glass < 0.999;
                 planetMesh.scale.setScalar(pscale);
                 planetMesh.position.y = -PLANET_R * pscale; // 北极始终落在 y=0 (树根处)
-                planetMesh.material.opacity = 1;
+                planetMesh.material.opacity = 1 - glass;
+                planetMesh.material.depthWrite = glass < 0.01;
                 if (planetAtmo) {
                     const ao = smooth(seg(j, 0.60, 0.72));
                     planetAtmo.visible = ao > 0.01;
                     planetAtmo.scale.setScalar(pscale);
                     planetAtmo.position.y = planetMesh.position.y;
-                    planetAtmo.material.uniforms.uOpacity.value = 0.55 * ao;
+                    planetAtmo.material.uniforms.uOpacity.value = 0.55 * ao * (1 - glass);
                     planetUniforms.uRim.value = ao;
-                    if (planetClouds) {
-                        planetClouds.visible = ao > 0.01;
-                        planetClouds.scale.setScalar(pscale);
-                        planetClouds.position.y = planetMesh.position.y;
-                        planetClouds.material.uniforms.uOpacity.value = ao;
-                        planetClouds.material.uniforms.uTime.value = performance.now() / 1000;
+                    if (planetMarble) {
+                        planetMarble.visible = glass > 0.001;
+                        planetMarble.scale.setScalar(pscale);
+                        planetMarble.position.y = planetMesh.position.y;
+                        planetMarble.userData.glass.forEach(g => g.material.uniforms.uOpacity.value = glass);
+                        marbleCore.material.uniforms.uOpacity.value = glass;
+                        marbleCore.material.uniforms.uTime.value = performance.now() / 1000;
+                        marbleCore.userData.glow.material.uniforms.uOpacity.value = 0.32 * glass;
                     }
                 }
             }
@@ -5639,7 +5708,7 @@
                     // 该帧已定格成像素 → 隐藏全部 3D, 只显示二维像素层
                     if (planetMesh) planetMesh.visible = false;
                     if (planetAtmo) planetAtmo.visible = false;
-                    if (planetClouds) planetClouds.visible = false;
+                    if (planetMarble) planetMarble.visible = false;
                     if (tree) tree.visible = false;
                     if (starField) starField.visible = false;   // 天空/星星已一并变成方块
                     if (pixCanvas) { pixCanvas.style.display = 'block'; pixCanvas.style.opacity = '1'; }
