@@ -4934,7 +4934,8 @@
         const seasonBgColor = new THREE.Color(0.95, 0.92, 0.93);
         let oneDActive = false, sitePos = 0, siteMax = 0;
         const TREE_TARGET = new THREE.Vector3(0, 10, 0);
-        const PLANET_TARGET = new THREE.Vector3(0, -14, 0);
+        // 镜头最终对准 (树顶 +10 ~ 球底 -48 的中点); 球拉近变大后原来的 -14 会让球底贴着屏幕下沿
+        const PLANET_TARGET = new THREE.Vector3(0, -19, 0);
         const BH_CENTER = new THREE.Vector3(0, -14, 0);
         const PLANET_R = 24;
 
@@ -5049,7 +5050,8 @@
                     void main(){
                         // 极简: 球面上什么都不画, 只有一圈边线。立体感全靠这圈线的明暗 —
                         // 朝太阳 uSun (= 树的 sunLight 方向, 世界坐标固定) 的一侧亮,
-                        // 背光一侧几乎隐没, 所以镜头怎么转、小世界怎么自转, 亮的都是同一侧。
+                        // 背光一侧收淡但不断 (完整一圈框, 否则球看着缺一块), 所以镜头怎么转、
+                        // 小世界怎么自转, 亮的都是同一侧。
                         // (试过: 点状高光、背面焦散光团、宽柔反光 —— 在黑底上都成了一块白, 已去掉)
                         vec3 V = normalize(cameraPosition - vWP);
                         vec3 Nout = normalize(vWN);
@@ -5059,11 +5061,11 @@
                         vec3 rimCol = mix(uTint, vec3(1.0), 0.55);
                         vec3 col; float a;
                         ${back ? `
-                        col = rimCol * fres * (0.3 + 0.7 * lit);
-                        a = fres * 0.22 * (0.4 + 0.6 * lit);
+                        col = rimCol * fres * (0.5 + 0.5 * lit);
+                        a = fres * 0.22 * (0.6 + 0.4 * lit);
                         ` : `
-                        col = rimCol * fres * (0.15 + 1.1 * lit);
-                        a = fres * 0.8 * (0.15 + 0.85 * lit);
+                        col = rimCol * fres * (0.5 + 0.8 * lit);
+                        a = fres * 0.85 * (0.45 + 0.55 * lit);
                         `}
                         gl_FragColor = vec4(col, clamp(a, 0.0, 1.0) * uOpacity);
                     }`,
@@ -5512,9 +5514,13 @@
             let dist;
             // 树部特写: treeZoom 把默认距离 30 拉近到最近 13 (只在旅程起点附近有感)
             const nearDist = lerpN(30, 13, smooth(treeZoom));
+            // 太空里的最终距离: 原来固定 95, 弹珠显小 → 拉近到 72 (约大 1.3 倍);
+            // 窄屏 (手机竖屏) 如果 72 会把球两侧切掉, 就退到刚好装下整颗球 (留 20% 边)
+            const fitW = PLANET_R * 1.2 / (Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect);
+            const spaceDist = Math.max(72, fitW);
             if (j < 0.30) dist = lerpN(nearDist, 56, smooth(seg(j, 0.0, 0.30)));
-            else if (j < 0.66) dist = lerpN(56, 95, smooth(seg(j, 0.30, 0.66)));
-            else dist = 95;
+            else if (j < 0.66) dist = lerpN(56, spaceDist, smooth(seg(j, 0.30, 0.66)));
+            else dist = spaceDist;
             controls.minDistance = controls.maxDistance = dist;
 
             // 树/星球的缩放比例 (河流、地面/星球的防穿模钳位共用它)
