@@ -5047,10 +5047,10 @@
                     uniform float uOpacity; uniform vec3 uTint; uniform vec3 uSun;
                     varying vec3 vWN; varying vec3 vWP;
                     void main(){
-                        // 不画点状高光 (两颗白点看着假)。立体感靠三样"真玻璃球才有"的东西:
+                        // 不画点状高光 (两颗白点看着假)。立体感靠两样:
                         //   1) 亮边有明暗: 迎光一侧亮, 背光一侧收淡 → 读得出受光方向
                         //   2) 一大片很柔的面光反射 (像棚里的柔光箱), 宽而虚, 不是点
-                        //   3) 焦散: 光穿过球后在背光那侧的内壁聚成一团柔光 → 看得出"里面有深度"
+                        // (试过背光侧内壁的焦散光团, 看着是一片白雾, 已去掉)
                         vec3 V = normalize(cameraPosition - vWP);
                         vec3 Nout = normalize(vWN);
                         vec3 N = Nout * ${back ? '-1.0' : '1.0'};
@@ -5059,9 +5059,8 @@
                         vec3 rimCol = mix(uTint, vec3(1.0), 0.55);
                         vec3 col; float a;
                         ${back ? `
-                        float caustic = smoothstep(0.55, 1.0, dot(Nout, -uSun));
-                        col = rimCol * fres * (0.3 + 0.7 * lit) + vec3(1.0, 0.94, 0.82) * caustic * 0.5;
-                        a = fres * 0.22 * (0.4 + 0.6 * lit) + caustic * 0.22;
+                        col = rimCol * fres * (0.3 + 0.7 * lit);
+                        a = fres * 0.22 * (0.4 + 0.6 * lit);
                         ` : `
                         vec3 R = reflect(-V, N);
                         float sheen = pow(max(dot(R, normalize(uSun + vec3(-0.6, 0.3, 0.2))), 0.0), 5.0);
