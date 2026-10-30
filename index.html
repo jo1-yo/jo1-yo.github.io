@@ -5333,7 +5333,11 @@
             const coreGlow = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 0.72, 48, 32), makeAtmoMaterial());
             coreGlow.renderOrder = 2;
             marbleCore.userData.glow = coreGlow;
-            planetMarble.add(glassBack, coreGlow, marbleCore, glassFront);
+            // 先试"空心"弹珠: 核和光晕照常建好 (季节色仍会更新), 只是不放进场景;
+            // 想要回来就把 MARBLE_CORE 改成 true
+            const MARBLE_CORE = false;
+            if (MARBLE_CORE) planetMarble.add(glassBack, coreGlow, marbleCore, glassFront);
+            else planetMarble.add(glassBack, glassFront);
             planetMarble.userData.glass = [glassBack, glassFront];
             planetMarble.position.copy(planetMesh.position);
             planetMarble.visible = false;
