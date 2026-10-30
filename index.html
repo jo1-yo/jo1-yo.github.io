@@ -4943,14 +4943,10 @@
         function seg(j, a, b) { return clampN((j - a) / (b - a), 0, 1); }
         function smooth(x) { return x * x * (3 - 2 * x); }
 
-        // ── 星球: GPU 程序化地表 ─────────────────────────────────────
-        // 原来是 canvas 上画 6 块一样的圆滚滚色块 + 一层会被雾染灰的"大气圈",
-        // 看着像儿童贴纸。现在每个像素都在着色器里用 3D 分形噪声算:
-        //   海岸线 (球面 3D 采样 → 没有接缝, 放多大都清晰)、深浅海、沙滩、
-        //   低地/高地两色 + 季节点缀 (春樱粉、夏花黄、秋金), 海面光滑能反出太阳高光;
-        //   外加一层缓缓漂移的云 + 菲涅尔大气辉光。
-        // 北极冠严格等于地面草色 (uMeadow, 粗糙度 0.95) → 0.28 时它以超大半径出现,
-        // 看上去仍是那片草地, 再"卷"成星球, 衔接不变。
+        // ── 星球 → 玻璃弹珠 ─────────────────────────────────────────
+        // 0.28 起草地以超大半径出现 (看着仍是那片地), 卷成球的同时 (0.44→0.64) 地表变透明,
+        // 成形时已经是一颗全透明玻璃珠 + 里面季节色的发光核; 全程只有草地和玻璃两种东西,
+        // 不再出现大洲/海洋 (那一段跟后面的弹珠对不上)。噪声只给弹珠核心用。
         const PLANET_NOISE_GLSL = `
             vec4 pn_perm(vec4 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
             vec4 pn_tis(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
@@ -5000,21 +4996,14 @@
                 return f;
             }
         `;
-        // 每季: 极地草色(=地面) / 低地 / 高地 / 点缀色 / 点缀量 / 大气色
+        // 每季: 边缘大气色 / 弹珠核心三色
         const PLANET_SEASONS = [
-            { land: 0x6fa84d, land2: 0x3f7a3a, bloom: 0xf4a9c6, bloomAmt: 0.9, atmo: 0x9fd0ff,
-              core: [0xff9fc4, 0x8fd46a, 0xfff1f6] },   // 春: 樱粉
-            { land: 0x4f9440, land2: 0x2c6431, bloom: 0xf2d76b, bloomAmt: 0.45, atmo: 0x9fe8c4,
-              core: [0x4fc27a, 0x7fe0d0, 0xfff2a8] },  // 夏: 花黄
-            { land: 0xa7a04a, land2: 0x8a6a35, bloom: 0xe39a45, bloomAmt: 0.6, atmo: 0xffcf9c,
-              core: [0xf0a24a, 0xd9c45a, 0xfff0d0] }   // 秋: 金 (不刺橙)
+            { atmo: 0x9fd0ff, core: [0xff9fc4, 0x8fd46a, 0xfff1f6] },   // 春: 樱粉
+            { atmo: 0x9fe8c4, core: [0x4fc27a, 0x7fe0d0, 0xfff2a8] },   // 夏
+            { atmo: 0xffcf9c, core: [0xf0a24a, 0xd9c45a, 0xfff0d0] }    // 秋: 金 (不刺橙)
         ];
         const planetUniforms = {
             uMeadow: { value: new THREE.Color(0x4a7c3f) },     // = 地面草色
-            uLand: { value: new THREE.Color() },
-            uLand2: { value: new THREE.Color() },
-            uBloom: { value: new THREE.Color() },
-            uBloomAmt: { value: 0 },
             uAtmo: { value: new THREE.Color() },
             uRim: { value: 0 }
         };
@@ -5029,29 +5018,8 @@
                     .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjN = normalize(position);');
                 sh.fragmentShader = sh.fragmentShader
                     .replace('#include <common>', '#include <common>\nvarying vec3 vObjN;\n' +
-                        'uniform vec3 uMeadow, uLand, uLand2, uBloom, uAtmo;\nuniform float uBloomAmt, uRim;\n' + PLANET_NOISE_GLSL)
-                    .replace('#include <map_fragment>', `
-                        vec3 pp = normalize(vObjN);
-                        // 低频定大陆形状, 高频只扰动海岸线 → 几块大洲, 不是迷彩碎片
-                        float cont = 0.75 * pnoise(pp * 0.9 + 4.0) + 0.35 * pfbm(pp * 2.4) - 0.1;
-                        float pLand = smoothstep(0.0, 0.025, cont);
-                        // 北极冠: 带一点噪声的边缘, 冠内纯草色
-                        float cap = smoothstep(0.905, 0.935, pp.y + 0.05 * pnoise(pp * 5.0));
-                        pLand = max(pLand, cap);
-                        // 海: 离岸越远越深, 近岸一圈浅青
-                        float shelf = smoothstep(-0.14, 0.0, cont);
-                        vec3 ocean = mix(vec3(0.04, 0.16, 0.32), vec3(0.14, 0.46, 0.60), shelf * shelf);
-                        // 陆: 低地→高地, 细碎纹理; 季节点缀成片撒在低地
-                        float elev = smoothstep(0.08, 0.45, cont + 0.1 * pnoise(pp * 11.0));
-                        vec3 lc = mix(uLand, uLand2, elev);
-                        float bloom = smoothstep(0.45, 0.7, pnoise(pp * 16.0 + 3.0)) * (1.0 - elev) * uBloomAmt;
-                        lc = mix(lc, uBloom, bloom * 0.85);
-                        float beach = 1.0 - smoothstep(0.025, 0.045, cont);
-                        lc = mix(lc, vec3(0.86, 0.80, 0.60), beach * 0.7);
-                        lc = mix(lc, uMeadow, cap);
-                        diffuseColor.rgb = mix(ocean, lc, pLand);
-                    `)
-                    .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(0.32, 0.95, pLand);')
+                        'uniform vec3 uMeadow, uAtmo;\nuniform float uRim;\n')
+                    .replace('#include <map_fragment>', 'diffuseColor.rgb = uMeadow;')
                     .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
                         // 星球边缘一圈从里透出的大气光 (只在太空里亮, 草地阶段 uRim=0)
                         float rimD = 1.0 - max(dot(normal, normalize(vViewPosition)), 0.0);
@@ -5159,10 +5127,6 @@
             if (!planetMesh || planetTexSeason === currentSeason) return;
             planetTexSeason = currentSeason;
             const ps = PLANET_SEASONS[currentSeason] || PLANET_SEASONS[0];
-            planetUniforms.uLand.value.setHex(ps.land);
-            planetUniforms.uLand2.value.setHex(ps.land2);
-            planetUniforms.uBloom.value.setHex(ps.bloom);
-            planetUniforms.uBloomAmt.value = ps.bloomAmt;
             planetUniforms.uAtmo.value.setHex(ps.atmo);
             if (planetAtmo) planetAtmo.material.uniforms.uColor.value.setHex(ps.atmo);
             if (marbleCore) {
@@ -5665,8 +5629,8 @@
             if (planetMesh) {
                 refreshPlanetSeason();
                 const pscale = lerpN(20, 1, morph);
-                // 地面卷成球之后 (0.58→0.68) 地表溶掉, 换成玻璃弹珠
-                const glass = smooth(seg(j, 0.58, 0.68));
+                // 草地一边卷成球一边变透明 (0.44→0.64), 成形时已是玻璃弹珠
+                const glass = smooth(seg(j, 0.44, 0.64));
                 planetMesh.visible = j > 0.28 && glass < 0.999;
                 planetMesh.scale.setScalar(pscale);
                 planetMesh.position.y = -PLANET_R * pscale; // 北极始终落在 y=0 (树根处)
