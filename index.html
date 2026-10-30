@@ -4934,10 +4934,12 @@
         const seasonBgColor = new THREE.Color(0.95, 0.92, 0.93);
         let oneDActive = false, sitePos = 0, siteMax = 0;
         const TREE_TARGET = new THREE.Vector3(0, 10, 0);
-        // 镜头最终对准 (树顶 +10 ~ 球底 -48 的中点); 球拉近变大后原来的 -14 会让球底贴着屏幕下沿
-        const PLANET_TARGET = new THREE.Vector3(0, -19, 0);
+        // 镜头最终对准小世界中心 (树顶约 +5 ~ 球底 -48 的中点)
+        const PLANET_TARGET = new THREE.Vector3(0, -21, 0);
         const BH_CENTER = new THREE.Vector3(0, -14, 0);
         const PLANET_R = 24;
+        // 进入太空时树缩到原来的多少: 宇宙很大, 树在星球上应该很小 (原来 0.5, 树和球差不多大)
+        const TREE_SPACE_SCALE = 0.25;
 
         const lerpN = THREE.MathUtils.lerp;
         const clampN = THREE.MathUtils.clamp;
@@ -5514,10 +5516,10 @@
             let dist;
             // 树部特写: treeZoom 把默认距离 30 拉近到最近 13 (只在旅程起点附近有感)
             const nearDist = lerpN(30, 13, smooth(treeZoom));
-            // 太空里的最终距离: 原来固定 95, 弹珠显小 → 拉近到 72 (约大 1.3 倍);
-            // 窄屏 (手机竖屏) 如果 72 会把球两侧切掉, 就退到刚好装下整颗球 (留 20% 边)
+            // 太空里的最终距离: 宇宙很大, 小世界 (球 + 树) 在画面里应该小 → 130 (原来 95);
+            // 窄屏 (手机竖屏) 如果还会切掉球的两侧, 就退到刚好装下整颗球 (留 20% 边)
             const fitW = PLANET_R * 1.2 / (Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect);
-            const spaceDist = Math.max(72, fitW);
+            const spaceDist = Math.max(130, fitW);
             if (j < 0.30) dist = lerpN(nearDist, 56, smooth(seg(j, 0.0, 0.30)));
             else if (j < 0.66) dist = lerpN(56, spaceDist, smooth(seg(j, 0.30, 0.66)));
             else dist = spaceDist;
@@ -5620,7 +5622,7 @@
             {
                 const o = (currentSeason === 2) ? (1 - smooth(seg(j, 0.26, 0.40))) : 0;  // 与地面同步淡出
                 const vis = (currentSeason === 2) && o > 0.01;
-                const treeScale = lerpN(1, 0.5, morph);                                   // 和树相同比例 → 比例不变
+                const treeScale = lerpN(1, TREE_SPACE_SCALE, morph);                                   // 和树相同比例 → 比例不变
                 const fadeRiv = (m, isWater) => {
                     if (!m) return;
                     m.visible = vis;
@@ -5674,7 +5676,7 @@
                 }
             }
             // 树与星球同步、同缓动缩小 → 比例平滑变化, 不突兀
-            if (tree) tree.scale.setScalar(lerpN(1, 0.5, morph));
+            if (tree) tree.scale.setScalar(lerpN(1, TREE_SPACE_SCALE, morph));
 
             // 宇宙坍塌: 把"用户最后那一帧"3D 画面整屏定格 → 全屏变成二维像素方块 →
             // 像倒塌的墙一样从左上逐个掉落 → 作品集页 (不再是 3D 立体方块)
