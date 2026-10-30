@@ -569,6 +569,29 @@
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 0 0 0.5px rgba(0,0,0,0.04),
                         0 2px 6px rgba(20,22,34,0.06), 0 24px 60px rgba(20,22,34,0.18), 0 60px 120px rgba(20,22,34,0.10);
             color: #1d1d1f;
+            /* 3D 玻璃板: 按下时绕按点反方向倾斜 (JS 写 --rx/--ry), 松手用回弹曲线回正 */
+            transform: perspective(1100px) rotateX(0deg) rotateY(0deg) scale(1);
+            transform-style: preserve-3d;
+            transition: transform .7s cubic-bezier(.2,1.4,.4,1), box-shadow .5s ease;
+            will-change: transform;
+        }
+        .msg-box.pressed {
+            transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(.985);
+            transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.75), 0 0 0 0.5px rgba(0,0,0,0.04),
+                        0 2px 4px rgba(20,22,34,0.06), 0 16px 40px rgba(20,22,34,0.16), 0 40px 90px rgba(20,22,34,0.08);
+        }
+        /* 按点处的玻璃反光 + 一道斜向高光, 让它读起来是一块有厚度的玻璃 */
+        .msg-box::after {
+            content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+            background:
+                radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,0.55), rgba(255,255,255,0) 45%),
+                linear-gradient(115deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.22) 45%, rgba(255,255,255,0) 60%);
+            opacity: 0; transition: opacity .6s ease;
+        }
+        .msg-box.pressed::after { opacity: 1; transition: opacity .15s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            .msg-box, .msg-box.pressed { transform: none; transition: none; }
         }
         .msg-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: #8a8a92; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .msg-close:hover { color: #45454d; }
@@ -4639,8 +4662,7 @@
                       b: ['My mind always wanders, leaps, and imagines infinite possibilities. I want my actions to live up to my thoughts and my words to mean something. True freedom is the courage to turn imagination into reality.'],
                       q: '“Knowledge is the beginning of action; action is the completion of knowledge.”', s: 'Wang Yangming, Instructions for Practical Living' },
                     { t: 'Simplicity.',
-                      b: ['Seek the essence. Eliminate the unnecessary.',
-                          'For instance, in communication, I value clarity, concision, and effectiveness. Talk is cheap.'],
+                      b: ['Seek the essence. Eliminate the unnecessary.'],
                       q: '“Less brings gain; excess brings confusion.”', s: 'Tao Te Ching, Chapter 22' },
                     { t: 'No Regrets.',
                       b: ['I’ve played [Go](https://en.wikipedia.org/wiki/Go_%28game%29) (围棋) since elementary school. “落子无悔”, a move once made is never taken back, is one of the top principles of Go and of my life.'],
@@ -4663,17 +4685,15 @@
                     { t: '知行合一',
                       b: ['我一直有很多很跳脱、天马行空的想法。我希望我能说到做到，说的、想的和做的保持一致，不能让大脑成为囚笼困住我。'],
                       q: '知者行之始，行者知之成。', s: '王阳明《传习录》' },
-                    { t: '大道至简', b: ['追求本质，拒绝冗余。', '比如简洁有效的沟通。'],
+                    { t: '大道至简', b: ['追求本质，拒绝冗余。'],
                       q: '少则得，多则惑。', s: '《道德经》第二十二章' },
                     { t: '落子无悔', b: ['我从小学开始下[围棋](https://zh.wikipedia.org/wiki/围棋)，落子无悔既是围棋的准则，也是我人生的原则。'],
                       q: '不怨天，不尤人。', s: '《论语·宪问》' },
                     { t: '不追逐，只吸引',
-                      b: ['我不靠迎合获取认可，不靠追逐证明自己的价值。',
-                          '永远专注于自我成长、创造，努力成为自己欣赏的人。用实力说话，志同道合的伙伴自然会被我吸引。'],
+                      b: ['永远专注于自我成长、创造，努力成为自己欣赏的人。用实力说话，志同道合的伙伴自然会被我吸引。'],
                       q: '同声相应，同气相求。', s: '《周易·乾卦·文言》' },
                     { t: '成长是一个不断祛魅的过程',
-                      b: ['曾经以为高不可攀的人、事、成就与光环，在真正靠近之后，也许会显露出它们平凡普通的一面。',
-                          '不轻易神化或美化任何人或事，有自己的判断、执行和思考。'],
+                      b: ['不轻易神化或美化任何人或事，有自己的判断、执行和思考。'],
                       q: '纸上得来终觉浅，绝知此事要躬行。', s: '陆游《冬夜读书示子聿》' }
                 ]
             }
@@ -5800,6 +5820,24 @@
             if (treeBtn) treeBtn.addEventListener('click', open);
             document.getElementById('msgClose').addEventListener('click', close);
             modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+            // 玻璃板: 按下哪里, 哪里就往后"仰" (按点离中心越远仰得越多, 最多 ~7°),
+            // 按点处亮起一块玻璃反光; 松手弹簧回正。
+            const TILT = 7;
+            const press = (e) => {
+                if (e.button !== undefined && e.button !== 0) return;
+                const r = box.getBoundingClientRect();
+                const nx = ((e.clientX - r.left) / r.width) * 2 - 1;    // -1..1, 右为正
+                const ny = ((e.clientY - r.top) / r.height) * 2 - 1;    // -1..1, 下为正
+                box.style.setProperty('--rx', (-ny * TILT).toFixed(2) + 'deg');
+                box.style.setProperty('--ry', (nx * TILT).toFixed(2) + 'deg');
+                box.style.setProperty('--gx', ((nx + 1) * 50).toFixed(1) + '%');
+                box.style.setProperty('--gy', ((ny + 1) * 50).toFixed(1) + '%');
+                box.classList.add('pressed');
+            };
+            const release = () => box.classList.remove('pressed');
+            box.addEventListener('pointerdown', press);
+            window.addEventListener('pointerup', release);
+            window.addEventListener('pointercancel', release);
             // 键盘: Tab/Shift+Tab 在弹窗内循环 (焦点陷阱)。Esc 不在这里接 ——
             // 这个监听挂在弹窗上, 焦点一旦跑到弹窗外 Esc 就失灵了; 交给全局那条链。
             modal.addEventListener('keydown', (e) => {
