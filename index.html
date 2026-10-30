@@ -81,6 +81,11 @@
             transform: translateX(-50%);
         }
 
+        .season-name.spring { color: #ef9bb9; }   /* 浅粉 */
+        .season-name.summer { color: #7ec77e; }   /* 浅浅绿 */
+        .season-name.autumn { color: #eaa75c; }   /* 浅琥珀 — 比秋树橙色更淡 */
+        .season-name.winter { color: #9cbae0; }   /* 浅雾蓝 */
+
         .season-name.active {
             animation: seasonFadeInOut 3.2s var(--ui-ease) forwards;
         }
@@ -1061,8 +1066,8 @@
         // Season colors
         const seasonColors = {
             spring: {
-                bg: [0.961, 0.961, 0.969],   // #f5f5f7 — 苹果官网底色
-                leaves: 0x82bb55,
+                bg: [0.95, 0.92, 0.93],
+                leaves: 0x5f8f34,
                 accent: 0xf8bbd9
             },
             summer: {
@@ -1095,7 +1100,7 @@
             scene = new THREE.Scene();
             // 雾: 近端 30 (树在 ~25–35 处, 不再被雾洗白), 远端 62 (地面圆盘边缘全部
             // 融进背景色 → 没有地平线硬边, 像苹果产品图的无缝影棚)
-            scene.fog = new THREE.Fog(0xf5f5f7, 30, 62);
+            scene.fog = new THREE.Fog(0xfaf0e6, 30, 62);
 
             // Camera
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -1200,11 +1205,11 @@
 
         function setupLighting() {
             // Ambient light
-            const ambientLight = new THREE.AmbientLight(0xfff8f0, 0.42);
+            const ambientLight = new THREE.AmbientLight(0xfff5e6, 0.4);
             scene.add(ambientLight);
 
             // Main sun light
-            const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.25);
+            const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.5);
             sunLight.position.set(30, 50, 20);
             sunLight.castShadow = true;
             // 小屏（手机）降低阴影分辨率以保证流畅，构图与画质观感不变
@@ -1222,18 +1227,17 @@
             scene.add(sunLight);
 
             // Fill light
-            // 补光/轮廓光去掉饱和的天蓝和金黄, 换成中性冷白/暖白 — 影棚布光, 不染色
-            const fillLight = new THREE.DirectionalLight(0xe8eef8, 0.35);
+            const fillLight = new THREE.DirectionalLight(0x87ceeb, 0.3);
             fillLight.position.set(-20, 20, -10);
             scene.add(fillLight);
 
             // Rim light
-            const rimLight = new THREE.DirectionalLight(0xfff4e0, 0.3);
+            const rimLight = new THREE.DirectionalLight(0xffd700, 0.2);
             rimLight.position.set(0, 10, -30);
             scene.add(rimLight);
 
-            // Hemisphere light: 天光白、地面反光带一点草绿 → 阴影是柔和的灰绿, 不是死黑斑点
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd8e4cc, 0.6);
+            // Hemisphere light for sky/ground color
+            const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x3d2817, 0.3);
             scene.add(hemiLight);
         }
 
@@ -1376,7 +1380,7 @@
         // 统一树皮材质 (树干和分支共用)
         // ============================================
         const sharedBarkMaterial = new THREE.MeshStandardMaterial({
-            color: 0x6e5644,       // 浅暖褐: 原来近黑, 整棵树显得沉
+            color: 0x352a1d,
             emissive: 0x050302,
             emissiveIntensity: 0.04,
             roughness: 0.95,
@@ -1716,21 +1720,16 @@
 
             // Create leaf clusters — 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
             // 每帧 ~2000 次 draw call (含阴影 pass), 手机上是卡顿主因; 现在 1 次。
-            // 苹果官网式"软陶"质感: 实心不透明 (半透明会排序错乱, 叶球互相透出脏边)、
-            // 球体够圆 (原来 6×4 段是多面体, 一眼像泡泡纸); 每片叶子一点明暗差,
-            // 季节色仍由 material.color 统一控制 (instanceColor 只是接近白的乘数)
             leafMaterial = new THREE.MeshStandardMaterial({
                 color: 0x5f8f34,
-                roughness: 0.92,
-                metalness: 0
+                roughness: 0.8,
+                metalness: 0.1,
+                transparent: true,
+                opacity: 0.9
             });
+            // 球体段数加密 (原来 6×4 是多面体, 一眼像泡泡纸); 颜色材质不变
             const leafSeg = IS_TOUCH ? [10, 8] : [16, 12];
             leafInstanced = new THREE.InstancedMesh(new THREE.SphereGeometry(1, leafSeg[0], leafSeg[1]), leafMaterial, leafCount);
-            const leafTint = new THREE.Color();
-            for (let i = 0; i < leafCount; i++) {
-                const l = 0.78 + Math.random() * 0.26;
-                leafInstanced.setColorAt(i, leafTint.setRGB(l * (0.97 + Math.random() * 0.06), l, l * (0.94 + Math.random() * 0.06)));
-            }
             leafInstanced.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
             leafInstanced.castShadow = true;
             leafInstanced.frustumCulled = false;   // 包围球只按单个球算, 会被误裁
@@ -1791,7 +1790,7 @@
         const GROUND_CONFIG = {
             radius: 50,
             segments: 64,
-            grassColor: 0x94c27a,      // 浅鼠尾草绿 — 轻, 不压画面
+            grassColor: 0x4a7c3f,      // 浅鼠尾草绿 — 轻, 不压画面
             snowColor: 0xfafcff,    // 更亮的雪地颜色，与天空区分
             snowRoughness: 0.85,    // 稍微光滑一点让雪地更亮
             snowNoiseScale: 3.0,
@@ -2062,7 +2061,7 @@
 
             // 果身主色用最初版本的亮红 (0xff4444), 纹理细节 (果点/条纹贴图、
             // 梗洼周围的金冠、侧面红晕) 保留
-            const APPLE_BODY = 0xff5a4e;
+            const APPLE_BODY = 0xff4444;
             const APPLE_CROWN = 0xd0a844;
 
             applePositions.forEach((pos, i) => {
@@ -4341,6 +4340,7 @@
                 // 非冬季：显示树，隐藏雪人
                 if (tree) tree.visible = true;
                 if (leafInstanced) leafInstanced.visible = true;
+                if (leafMaterial) leafMaterial.opacity = 0.9;
                 
                 snowShells.forEach(snow => {
                     snow.visible = false;
@@ -4902,7 +4902,7 @@
         function makePlanetTexture(season) {
             // 统一漂亮蓝海; 陆地按季节微调(不刺眼); 极地用草地色与地面无缝衔接
             const ocean = '#3d83b8';
-            const meadow = '#94c27a';                                  // = 地面草色
+            const meadow = '#4a7c3f';                                  // = 地面草色
             const land = ['#6fa84d', '#4f9440', '#9aa24a'][season] || '#6fa84d'; // 春/夏/秋(金绿,不刺橙)
             const W = 1024, H = 512;
             const c = document.createElement('canvas'); c.width = W; c.height = H;
