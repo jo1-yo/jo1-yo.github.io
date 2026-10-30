@@ -5030,7 +5030,7 @@
         }
 
         // ── 玻璃弹珠: 地面卷成球之后, 地表溶掉, 只剩一颗全透明的玻璃珠 + 里面发光的核 ──
-        // 玻璃本身没有颜色, 只靠边缘菲涅尔亮边和太阳/窗光两处反光"画"出轮廓;
+        // 玻璃本身没有颜色, 只靠边缘菲涅尔亮边"画"出轮廓;
         // 前后两面各画一遍 (背面更淡) → 有玻璃的厚度感。
         function makeGlassMaterial(back) {
             return new THREE.ShaderMaterial({
@@ -5050,12 +5050,9 @@
                         vec3 V = normalize(cameraPosition - vWP);
                         vec3 N = normalize(vWN) * ${back ? '-1.0' : '1.0'};
                         float fres = pow(1.0 - abs(dot(N, V)), 4.0);
-                        vec3 R = reflect(-V, N);
-                        float sun = pow(max(dot(R, uSun), 0.0), 160.0) * 1.8;
-                        float win = pow(max(dot(R, normalize(vec3(-0.7, 0.55, 0.45))), 0.0), 26.0) * 0.18;
-                        float spec = ${back ? '(sun + win) * 0.35' : 'sun + win'};
-                        vec3 col = mix(uTint, vec3(1.0), 0.55) * fres + vec3(spec);
-                        float a = clamp(fres * ${back ? '0.25' : '0.7'} + spec, 0.0, 1.0);
+                        // 不画点状高光 (两颗白点看着假), 轮廓只靠边缘菲涅尔亮边
+                        vec3 col = mix(uTint, vec3(1.0), 0.55) * fres;
+                        float a = clamp(fres * ${back ? '0.25' : '0.7'}, 0.0, 1.0);
                         gl_FragColor = vec4(col, a * uOpacity);
                     }`,
                 side: back ? THREE.BackSide : THREE.FrontSide,
@@ -5086,13 +5083,13 @@
                         float t = uTime * 0.18;
                         vec3 q = vObjN;
                         q = vec3(q.x * cos(t) - q.z * sin(t), q.y, q.x * sin(t) + q.z * cos(t));
-                        float n = pfbm(q * 0.9 + vec3(0.0, uTime * 0.07, 0.0));
-                        float m = pfbm(q * 1.5 - vec3(uTime * 0.05));
-                        vec3 col = mix(uC1, uC2, smoothstep(-0.35, 0.35, n));
-                        col = mix(col, uC3, smoothstep(0.1, 0.5, m) * 0.55);
+                        // 只用一层低频噪声做两色的大块渐变 (原来多层噪声+第三色斑块, 看着脏)
+                        float n = pnoise(q * 0.7 + vec3(0.0, uTime * 0.05, 0.0));
+                        vec3 col = mix(uC2, uC1, 0.5 + 0.5 * n);
                         float facing = max(dot(normalize(vN), normalize(-vP)), 0.0);
-                        col *= 0.55 + 0.75 * facing;
-                        col += vec3(1.0) * pow(facing, 6.0) * 0.25;
+                        col *= 0.8 + 0.3 * facing;
+                        col = mix(col, uC3, pow(facing, 3.0) * 0.5);        // 中心柔和的淡色亮区
+                        col += uC1 * pow(1.0 - facing, 3.0) * 0.45;         // 边缘一圈自发光
                         gl_FragColor = vec4(col, uOpacity);
                     }`,
                 transparent: true, depthWrite: false
