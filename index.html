@@ -4878,7 +4878,7 @@
         }
 
         let cosmosInited = false, cosmicWorld = null;
-        let planetMesh = null, planetAtmo = null, starField = null;
+        let planetMesh = null, planetAtmo = null, planetClouds = null, starField = null;
         let bhGroup = null, bhHorizon = null, bhPhoton = null, bhHalo = null, bhDisk = null, bhGlow = null;
         let pixCanvas = null, pixCtx = null, pixSrc = null, pixTmp = null, pixCells = null, pixCaptured = false, pixNeedsCapture = false;
         const PIX_IN = 0.71, PIX_OUT = 0.695;   // 像素坍塌的进入/退出阈值 (滞回, 见 updateJourney)
@@ -4896,46 +4896,181 @@
         function seg(j, a, b) { return clampN((j - a) / (b - a), 0, 1); }
         function smooth(x) { return x * x * (3 - 2 * x); }
 
-        function makePlanetTexture(season) {
-            // 统一漂亮蓝海; 陆地按季节微调(不刺眼); 极地用草地色与地面无缝衔接
-            const ocean = '#3d83b8';
-            const meadow = '#4a7c3f';                                  // = 地面草色
-            const land = ['#6fa84d', '#4f9440', '#9aa24a'][season] || '#6fa84d'; // 春/夏/秋(金绿,不刺橙)
-            const W = 1024, H = 512;
-            const c = document.createElement('canvas'); c.width = W; c.height = H;
-            const ctx = c.getContext('2d');
-            ctx.fillStyle = ocean; ctx.fillRect(0, 0, W, H);
-            // 平滑圆润、互不重叠的大陆 (低频起伏闭合曲线)
-            const continent = (cx, cy, rw, rh, color, seed) => {
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                const steps = 40;
-                for (let i = 0; i <= steps; i++) {
-                    const a = (i / steps) * Math.PI * 2;
-                    const wob = 0.80 + 0.12 * Math.sin(a * 3 + seed) + 0.06 * Math.sin(a * 5 + seed * 2);
-                    const px = cx + Math.cos(a) * rw * wob;
-                    const py = cy + Math.sin(a) * rh * wob;
-                    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-                }
-                ctx.closePath(); ctx.fill();
+        // ── 星球: GPU 程序化地表 ─────────────────────────────────────
+        // 原来是 canvas 上画 6 块一样的圆滚滚色块 + 一层会被雾染灰的"大气圈",
+        // 看着像儿童贴纸。现在每个像素都在着色器里用 3D 分形噪声算:
+        //   海岸线 (球面 3D 采样 → 没有接缝, 放多大都清晰)、深浅海、沙滩、
+        //   低地/高地两色 + 季节点缀 (春樱粉、夏花黄、秋金), 海面光滑能反出太阳高光;
+        //   外加一层缓缓漂移的云 + 菲涅尔大气辉光。
+        // 北极冠严格等于地面草色 (uMeadow, 粗糙度 0.95) → 0.28 时它以超大半径出现,
+        // 看上去仍是那片草地, 再"卷"成星球, 衔接不变。
+        const PLANET_NOISE_GLSL = `
+            vec4 pn_perm(vec4 x){ return mod(((x*34.0)+1.0)*x, 289.0); }
+            vec4 pn_tis(vec4 r){ return 1.79284291400159 - 0.85373472095314 * r; }
+            float pnoise(vec3 v){
+                const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+                vec3 i = floor(v + dot(v, C.yyy));
+                vec3 x0 = v - i + dot(i, C.xxx);
+                vec3 g = step(x0.yzx, x0.xyz);
+                vec3 l = 1.0 - g;
+                vec3 i1 = min(g.xyz, l.zxy);
+                vec3 i2 = max(g.xyz, l.zxy);
+                vec3 x1 = x0 - i1 + C.xxx;
+                vec3 x2 = x0 - i2 + C.yyy;
+                vec3 x3 = x0 - D.yyy;
+                i = mod(i, 289.0);
+                vec4 p = pn_perm(pn_perm(pn_perm(i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+                float n_ = 1.0/7.0;
+                vec3 ns = n_ * D.wyz - D.xzx;
+                vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+                vec4 x_ = floor(j * ns.z);
+                vec4 y_ = floor(j - 7.0 * x_);
+                vec4 x = x_ * ns.x + ns.yyyy;
+                vec4 y = y_ * ns.x + ns.yyyy;
+                vec4 h = 1.0 - abs(x) - abs(y);
+                vec4 b0 = vec4(x.xy, y.xy);
+                vec4 b1 = vec4(x.zw, y.zw);
+                vec4 s0 = floor(b0)*2.0 + 1.0;
+                vec4 s1 = floor(b1)*2.0 + 1.0;
+                vec4 sh = -step(h, vec4(0.0));
+                vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+                vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+                vec3 p0 = vec3(a0.xy, h.x);
+                vec3 p1 = vec3(a0.zw, h.y);
+                vec3 p2 = vec3(a1.xy, h.z);
+                vec3 p3 = vec3(a1.zw, h.w);
+                vec4 norm = pn_tis(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+                p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+                vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+                m = m * m;
+                return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+            }
+            float pfbm(vec3 p){
+                float f = 0.0, a = 0.5;
+                for (int i = 0; i < 5; i++) { f += a * pnoise(p); p = p * 2.03 + 17.1; a *= 0.5; }
+                return f;
+            }
+        `;
+        // 每季: 极地草色(=地面) / 低地 / 高地 / 点缀色 / 点缀量 / 大气色
+        const PLANET_SEASONS = [
+            { land: 0x6fa84d, land2: 0x3f7a3a, bloom: 0xf4a9c6, bloomAmt: 0.9, atmo: 0x9fd0ff },   // 春: 樱粉
+            { land: 0x4f9440, land2: 0x2c6431, bloom: 0xf2d76b, bloomAmt: 0.45, atmo: 0x9fe8c4 },  // 夏: 花黄
+            { land: 0xa7a04a, land2: 0x8a6a35, bloom: 0xe39a45, bloomAmt: 0.6, atmo: 0xffcf9c }   // 秋: 金 (不刺橙)
+        ];
+        const planetUniforms = {
+            uMeadow: { value: new THREE.Color(0x4a7c3f) },     // = 地面草色
+            uLand: { value: new THREE.Color() },
+            uLand2: { value: new THREE.Color() },
+            uBloom: { value: new THREE.Color() },
+            uBloomAmt: { value: 0 },
+            uAtmo: { value: new THREE.Color() },
+            uRim: { value: 0 }
+        };
+        const SUN_DIR = new THREE.Vector3(30, 50, 20).normalize();
+
+        function makePlanetMaterial() {
+            const mat = new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0.0, transparent: true, opacity: 1 });
+            mat.onBeforeCompile = sh => {
+                Object.assign(sh.uniforms, planetUniforms);
+                sh.vertexShader = sh.vertexShader
+                    .replace('#include <common>', '#include <common>\nvarying vec3 vObjN;')
+                    .replace('#include <begin_vertex>', '#include <begin_vertex>\nvObjN = normalize(position);');
+                sh.fragmentShader = sh.fragmentShader
+                    .replace('#include <common>', '#include <common>\nvarying vec3 vObjN;\n' +
+                        'uniform vec3 uMeadow, uLand, uLand2, uBloom, uAtmo;\nuniform float uBloomAmt, uRim;\n' + PLANET_NOISE_GLSL)
+                    .replace('#include <map_fragment>', `
+                        vec3 pp = normalize(vObjN);
+                        // 低频定大陆形状, 高频只扰动海岸线 → 几块大洲, 不是迷彩碎片
+                        float cont = 0.75 * pnoise(pp * 0.9 + 4.0) + 0.35 * pfbm(pp * 2.4) - 0.1;
+                        float pLand = smoothstep(0.0, 0.025, cont);
+                        // 北极冠: 带一点噪声的边缘, 冠内纯草色
+                        float cap = smoothstep(0.905, 0.935, pp.y + 0.05 * pnoise(pp * 5.0));
+                        pLand = max(pLand, cap);
+                        // 海: 离岸越远越深, 近岸一圈浅青
+                        float shelf = smoothstep(-0.14, 0.0, cont);
+                        vec3 ocean = mix(vec3(0.04, 0.16, 0.32), vec3(0.14, 0.46, 0.60), shelf * shelf);
+                        // 陆: 低地→高地, 细碎纹理; 季节点缀成片撒在低地
+                        float elev = smoothstep(0.08, 0.45, cont + 0.1 * pnoise(pp * 11.0));
+                        vec3 lc = mix(uLand, uLand2, elev);
+                        float bloom = smoothstep(0.45, 0.7, pnoise(pp * 16.0 + 3.0)) * (1.0 - elev) * uBloomAmt;
+                        lc = mix(lc, uBloom, bloom * 0.85);
+                        float beach = 1.0 - smoothstep(0.025, 0.045, cont);
+                        lc = mix(lc, vec3(0.86, 0.80, 0.60), beach * 0.7);
+                        lc = mix(lc, uMeadow, cap);
+                        diffuseColor.rgb = mix(ocean, lc, pLand);
+                    `)
+                    .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(0.32, 0.95, pLand);')
+                    .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+                        // 星球边缘一圈从里透出的大气光 (只在太空里亮, 草地阶段 uRim=0)
+                        float rimD = 1.0 - max(dot(normal, normalize(vViewPosition)), 0.0);
+                        totalEmissiveRadiance += uAtmo * pow(rimD, 4.0) * 0.7 * uRim;
+                    `);
             };
-            // 极地陆地 (树在陆地上; 北极 = 顶行; 用草地色 → 卷成星球时无缝)
-            ctx.fillStyle = meadow; ctx.fillRect(0, 0, W, 50);
-            continent(W * 0.5, 46, 150, 50, meadow, 1.0);
-            // 分离放置的大陆 (互不重叠)
-            const spots = [[0.16, 0.40], [0.44, 0.60], [0.74, 0.36], [0.30, 0.82], [0.64, 0.84], [0.90, 0.62]];
-            spots.forEach((s, i) => continent(W * s[0], H * s[1], 92 + (i % 3) * 20, 66 + (i % 2) * 18, (i % 2) ? land : meadow, i + 2));
-            const tex = new THREE.CanvasTexture(c); tex.needsUpdate = true; return tex;
+            return mat;
+        }
+
+        function makeCloudMaterial() {
+            return new THREE.ShaderMaterial({
+                uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 }, uSun: { value: SUN_DIR.clone() } },
+                vertexShader: `
+                    varying vec3 vObjN; varying vec3 vWN;
+                    void main(){
+                        vObjN = normalize(position);
+                        vWN = normalize(mat3(modelMatrix) * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }`,
+                fragmentShader: PLANET_NOISE_GLSL + `
+                    uniform float uTime, uOpacity; uniform vec3 uSun;
+                    varying vec3 vObjN; varying vec3 vWN;
+                    void main(){
+                        float t = uTime * 0.025;
+                        vec3 q = vec3(vObjN.x * cos(t) - vObjN.z * sin(t), vObjN.y, vObjN.x * sin(t) + vObjN.z * cos(t));
+                        float n = pfbm(q * vec3(2.2, 4.0, 2.2) + vec3(0.0, 0.0, uTime * 0.012));
+                        float a = smoothstep(0.18, 0.5, n);
+                        a *= 1.0 - smoothstep(0.72, 0.86, vObjN.y);          // 北极不盖云, 别挡住树
+                        float lit = 0.5 + 0.5 * max(dot(vWN, uSun), 0.0);
+                        gl_FragColor = vec4(vec3(lit), a * 0.7 * uOpacity);
+                    }`,
+                transparent: true, depthWrite: false
+            });
+        }
+
+        function makeAtmoMaterial() {
+            return new THREE.ShaderMaterial({
+                uniforms: { uColor: { value: new THREE.Color(0x9fd0ff) }, uOpacity: { value: 0 } },
+                vertexShader: `
+                    varying vec3 vN; varying vec3 vP;
+                    void main(){
+                        vN = normalize(normalMatrix * normal);
+                        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                        vP = mv.xyz;
+                        gl_Position = projectionMatrix * mv;
+                    }`,
+                fragmentShader: `
+                    uniform vec3 uColor; uniform float uOpacity;
+                    varying vec3 vN; varying vec3 vP;
+                    void main(){
+                        // 背面壳: 贴着星球边缘最亮, 往外柔和散到全透明 (没有硬边灰圈)
+                        float d = max(dot(normalize(vN), normalize(vP)), 0.0);
+                        float glow = pow(d, 2.2) * 2.4;
+                        gl_FragColor = vec4(uColor * glow, glow * uOpacity);
+                    }`,
+                side: THREE.BackSide, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false
+            });
         }
 
         function refreshPlanetSeason() {
             if (!planetMesh || planetTexSeason === currentSeason) return;
             planetTexSeason = currentSeason;
-            const t = makePlanetTexture(currentSeason);
-            if (planetMesh.material.map) planetMesh.material.map.dispose();
-            planetMesh.material.map = t; planetMesh.material.needsUpdate = true;
-            const atmoCols = [0xbfe0ff, 0xa8e6c0, 0xffd2a0];
-            if (planetAtmo) planetAtmo.material.color.setHex(atmoCols[currentSeason] || 0xbfe0ff);
+            const ps = PLANET_SEASONS[currentSeason] || PLANET_SEASONS[0];
+            planetUniforms.uLand.value.setHex(ps.land);
+            planetUniforms.uLand2.value.setHex(ps.land2);
+            planetUniforms.uBloom.value.setHex(ps.bloom);
+            planetUniforms.uBloomAmt.value = ps.bloomAmt;
+            planetUniforms.uAtmo.value.setHex(ps.atmo);
+            if (planetAtmo) planetAtmo.material.uniforms.uColor.value.setHex(ps.atmo);
         }
 
         // ── 2D 像素坍塌 ──────────────────────────────────────────────
@@ -5119,20 +5254,18 @@
             scene.add(starField);
 
             // 星球 (北极对齐树根 y=0)
-            planetMesh = new THREE.Mesh(
-                new THREE.SphereGeometry(PLANET_R, 48, 36),
-                new THREE.MeshStandardMaterial({ roughness: 0.95, metalness: 0.0, transparent: true, opacity: 1 })
-            );
+            planetMesh = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 128, 96), makePlanetMaterial());
             planetMesh.position.set(0, -PLANET_R, 0);
             planetMesh.receiveShadow = false; planetMesh.visible = false; // 不接收树的大投影(避免丑陋阴影)
             cosmicWorld.add(planetMesh);
-            planetAtmo = new THREE.Mesh(
-                new THREE.SphereGeometry(PLANET_R * 1.07, 48, 36),
-                new THREE.MeshBasicMaterial({ color: 0xbfe0ff, transparent: true, opacity: 0, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false })
-            );
+            planetAtmo = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 1.14, 64, 48), makeAtmoMaterial());
             planetAtmo.position.copy(planetMesh.position);
             planetAtmo.visible = false;
             cosmicWorld.add(planetAtmo);
+            planetClouds = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R * 1.018, 96, 64), makeCloudMaterial());
+            planetClouds.position.copy(planetMesh.position);
+            planetClouds.visible = false;
+            cosmicWorld.add(planetClouds);
 
             // 黑洞
             const BH_R = 14;
@@ -5430,7 +5563,15 @@
                     planetAtmo.visible = ao > 0.01;
                     planetAtmo.scale.setScalar(pscale);
                     planetAtmo.position.y = planetMesh.position.y;
-                    planetAtmo.material.opacity = 0.28 * ao;
+                    planetAtmo.material.uniforms.uOpacity.value = 0.55 * ao;
+                    planetUniforms.uRim.value = ao;
+                    if (planetClouds) {
+                        planetClouds.visible = ao > 0.01;
+                        planetClouds.scale.setScalar(pscale);
+                        planetClouds.position.y = planetMesh.position.y;
+                        planetClouds.material.uniforms.uOpacity.value = ao;
+                        planetClouds.material.uniforms.uTime.value = performance.now() / 1000;
+                    }
                 }
             }
             // 树与星球同步、同缓动缩小 → 比例平滑变化, 不突兀
@@ -5451,6 +5592,7 @@
                     // 该帧已定格成像素 → 隐藏全部 3D, 只显示二维像素层
                     if (planetMesh) planetMesh.visible = false;
                     if (planetAtmo) planetAtmo.visible = false;
+                    if (planetClouds) planetClouds.visible = false;
                     if (tree) tree.visible = false;
                     if (starField) starField.visible = false;   // 天空/星星已一并变成方块
                     if (pixCanvas) { pixCanvas.style.display = 'block'; pixCanvas.style.opacity = '1'; }
