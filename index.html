@@ -398,8 +398,9 @@
             gap: 20px;
         }
 
+        /* 原来是半透明白字 — 场景底色是浅色, 几乎看不见。字体字距照旧, 只换成深暖灰 */
         .social-link {
-            color: rgba(255,255,255,0.5);
+            color: rgba(58,52,54,0.72);
             text-decoration: none;
             font-size: 0.85rem;
             letter-spacing: 0.15em;
@@ -407,7 +408,7 @@
         }
 
         .social-link:hover {
-            color: #fff;
+            color: #1d1a1b;
         }
 
         @media (max-width: 768px) {
@@ -454,6 +455,19 @@
             .social-links {
                 display: none;
             }
+        }
+
+        /* 桌面大屏 (全屏 1440×900 以上): 叠在场景上的字和图标原来都是固定 px,
+           屏幕一高就显得又小又贴着上下边。改成跟视口高度走 (clamp: 900 高时≈原值,
+           越高越往里收、越大一点), 手机 (≤768) 完全不受影响。 */
+        @media (min-width: 769px) {
+            .season-indicator { top: clamp(46px, 7.5vh, 120px); }
+            .season-name { font-size: clamp(2.75rem, 4.6vh, 4rem); }
+            .hint-text { bottom: clamp(64px, 9vh, 130px); }
+            #hintInner { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); padding: 0.7em 1.4em; }
+            .scroll-indicator { bottom: clamp(30px, 4.2vh, 60px); }
+            .social-links { bottom: clamp(40px, 4.6vh, 66px); right: clamp(40px, 3vw, 72px); gap: clamp(20px, 1.6vw, 30px); }
+            .social-link { font-size: clamp(0.85rem, 1.3vh, 1.05rem); }
         }
 
         /* Season nav buttons — mobile only */
@@ -522,6 +536,13 @@
         #fpHome:hover { transform: scale(1.08); }
         /* 显隐由 JS 每帧按 (作品页开 || 靠近树) 切换 .show —— 桌面端旅程途中淡出, 手机端常显 */
         #fpHome.show { opacity: 1; visibility: visible; pointer-events: auto; }
+        /* 桌面大屏: 头像跟视口高度一起放大、往里收 (见上面"桌面大屏"那段) */
+        @media (min-width: 769px) {
+            #fpHome {
+                top: clamp(22px, 3.6vh, 52px); right: clamp(26px, 2.6vw, 60px);
+                width: clamp(68px, 7.4vh, 96px); height: clamp(68px, 7.4vh, 96px);
+            }
+        }
         /* "Message" 连接按钮 (与其它 connect 链接同款) */
         .fp-msg-btn { background: none; border: none; padding: 0; margin: 0; color: #cbc4b4; font-size: .98rem; font-family: inherit; width: max-content; cursor: pointer; text-align: left; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s; }
         .fp-msg-btn:hover { color: #e7c87e; border-color: #e7c87e; }
@@ -1178,6 +1199,9 @@
                 window.visualViewport.addEventListener('resize', onWindowResize);
             }
             window.addEventListener('wheel', onWheel, { passive: false });
+            // Safari 的触控板捏合走 gesture 事件, 不是 ctrl+wheel → 同样拦住整页缩放
+            ['gesturestart', 'gesturechange', 'gestureend'].forEach(t =>
+                document.addEventListener(t, ev => ev.preventDefault(), { passive: false }));
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('mousedown', onMouseDown);
             window.addEventListener('mouseup', onMouseUp);
@@ -4006,13 +4030,17 @@
         }
 
         function onWheel(e) {
+            // 触控板双指捏合 = ctrl+wheel: 任何情况下都不许浏览器整页放大。原来下面几条
+            // 提前 return (弹窗开着/作品页/换季冷却) 漏掉了 preventDefault → Chrome 把整页
+            // 捏放大且不会自己复原, 右上头像/右下链接/分页点就被裁到屏幕外, 比例全乱。
+            if (e.ctrlKey) e.preventDefault();
             // 作品集页: 原生竖直滚动, 停在本页; 返回宇宙只能点右上角地球图标
             if (oneDActive) return;
             if (isOverlayOpen()) return;   // 弹窗开着时滚轮不推进宇宙之旅
             // 靠近树时, 横向滑动切换季节
             if (journey < 0.08 && Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 30) {
+                e.preventDefault();          // 冷却中也拦住, 否则横滑会触发浏览器后退手势
                 if (!seasonChangeCooldown) {
-                    e.preventDefault();
                     if (e.deltaX > 0 && currentSeason < 2) changeSeason(1);
                     else if (e.deltaX < 0 && currentSeason > 0) changeSeason(-1);
                 }
