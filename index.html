@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jane's Portfolio | Four Seasons</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -51,9 +51,10 @@
            #6e6e73 次级字、负字距标题、磨砂白胶囊。场景底色是浅色, 原来的白字+黑投影是给深底设计的。 */
         :root {
             --ui-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', Arial, sans-serif;
-            --ui-ink: #1d1d1f;
-            --ui-ink-2: #6e6e73;
-            --ui-glass: rgba(255,255,255,0.72);
+            --ui-ink: #6e6e73;          /* 主字也用灰, 不用近黑 — 轻 */
+            --ui-ink-2: #a1a1a6;
+            --ui-glass: rgba(255,255,255,0.45);
+            --ui-hair: 0 0 0 0.5px rgba(0,0,0,0.05);
             --ui-ease: cubic-bezier(.25,.1,.25,1);
         }
 
@@ -68,9 +69,9 @@
 
         .season-name {
             font-family: var(--ui-font);
-            font-size: 3rem;
-            font-weight: 600;
-            letter-spacing: -0.025em;
+            font-size: 2.75rem;
+            font-weight: 200;
+            letter-spacing: 0.02em;
             line-height: 1.05;
             color: var(--ui-ink);
             white-space: nowrap;
@@ -182,11 +183,11 @@
             background: var(--ui-glass);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+            box-shadow: var(--ui-hair);
             font-family: var(--ui-font);
-            font-size: 0.875rem;
-            font-weight: 500;
-            letter-spacing: -0.01em;
+            font-size: 0.8125rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
             color: var(--ui-ink);
             white-space: nowrap;
             opacity: 0;
@@ -213,18 +214,18 @@
             width: 8px;
             height: 8px;
             border-radius: 4px;
-            background: rgba(0,0,0,0.18);
+            background: rgba(0,0,0,0.1);
             transition: width .4s var(--ui-ease), background-color .3s ease;
             cursor: pointer;
         }
 
         .scroll-dot:hover {
-            background: rgba(0,0,0,0.32);
+            background: rgba(0,0,0,0.2);
         }
 
         .scroll-dot.active {
             width: 22px;
-            background: rgba(29,29,31,0.78);
+            background: rgba(0,0,0,0.28);
         }
 
         .project-modal {
@@ -353,13 +354,13 @@
             background: var(--ui-glass);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: var(--ui-hair);
             border-radius: 980px;
             color: var(--ui-ink);
             font-family: var(--ui-font);
             font-size: 0.8125rem;
-            font-weight: 500;
-            letter-spacing: -0.01em;
+            font-weight: 400;
+            letter-spacing: 0.01em;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -378,9 +379,9 @@
             transform: translateY(-50%);
             z-index: 100;
             font-family: var(--ui-font);
-            font-size: 1.0625rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
+            font-size: 0.9375rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
             color: var(--ui-ink);
         }
 
@@ -468,7 +469,7 @@
             border-radius: 50%;
             background: var(--ui-glass);
             border: none;
-            box-shadow: 0 0 0 0.5px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: var(--ui-hair);
             color: var(--ui-ink);
             font-size: 1.6rem;
             line-height: 1;
@@ -1061,7 +1062,7 @@
         const seasonColors = {
             spring: {
                 bg: [0.961, 0.961, 0.969],   // #f5f5f7 — 苹果官网底色
-                leaves: 0x55882f,
+                leaves: 0x82bb55,
                 accent: 0xf8bbd9
             },
             summer: {
@@ -1199,11 +1200,11 @@
 
         function setupLighting() {
             // Ambient light
-            const ambientLight = new THREE.AmbientLight(0xfff5e6, 0.4);
+            const ambientLight = new THREE.AmbientLight(0xfff8f0, 0.42);
             scene.add(ambientLight);
 
             // Main sun light
-            const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.5);
+            const sunLight = new THREE.DirectionalLight(0xfff5e1, 1.25);
             sunLight.position.set(30, 50, 20);
             sunLight.castShadow = true;
             // 小屏（手机）降低阴影分辨率以保证流畅，构图与画质观感不变
@@ -1232,7 +1233,7 @@
             scene.add(rimLight);
 
             // Hemisphere light: 天光白、地面反光带一点草绿 → 阴影是柔和的灰绿, 不是死黑斑点
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x9fb38a, 0.45);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0xd8e4cc, 0.6);
             scene.add(hemiLight);
         }
 
@@ -1375,7 +1376,7 @@
         // 统一树皮材质 (树干和分支共用)
         // ============================================
         const sharedBarkMaterial = new THREE.MeshStandardMaterial({
-            color: 0x352a1d,
+            color: 0x6e5644,       // 浅暖褐: 原来近黑, 整棵树显得沉
             emissive: 0x050302,
             emissiveIntensity: 0.04,
             roughness: 0.95,
@@ -1790,7 +1791,7 @@
         const GROUND_CONFIG = {
             radius: 50,
             segments: 64,
-            grassColor: 0x4a7c3f,
+            grassColor: 0x94c27a,      // 浅鼠尾草绿 — 轻, 不压画面
             snowColor: 0xfafcff,    // 更亮的雪地颜色，与天空区分
             snowRoughness: 0.85,    // 稍微光滑一点让雪地更亮
             snowNoiseScale: 3.0,
@@ -2061,7 +2062,7 @@
 
             // 果身主色用最初版本的亮红 (0xff4444), 纹理细节 (果点/条纹贴图、
             // 梗洼周围的金冠、侧面红晕) 保留
-            const APPLE_BODY = 0xff4444;
+            const APPLE_BODY = 0xff5a4e;
             const APPLE_CROWN = 0xd0a844;
 
             applePositions.forEach((pos, i) => {
@@ -4901,7 +4902,7 @@
         function makePlanetTexture(season) {
             // 统一漂亮蓝海; 陆地按季节微调(不刺眼); 极地用草地色与地面无缝衔接
             const ocean = '#3d83b8';
-            const meadow = '#4a7c3f';                                  // = 地面草色
+            const meadow = '#94c27a';                                  // = 地面草色
             const land = ['#6fa84d', '#4f9440', '#9aa24a'][season] || '#6fa84d'; // 春/夏/秋(金绿,不刺橙)
             const W = 1024, H = 512;
             const c = document.createElement('canvas'); c.width = W; c.height = H;
