@@ -5047,16 +5047,14 @@
                     uniform float uOpacity; uniform vec3 uTint; uniform vec3 uSun;
                     varying vec3 vWN; varying vec3 vWP;
                     void main(){
-                        // 不画点状高光 (两颗白点看着假)。立体感靠两样:
-                        //   1) 亮边有明暗: 迎光一侧亮, 背光一侧收淡 → 读得出受光方向
-                        //   2) 太阳本身在玻璃上的反射, 但做得很宽很虚 (不是一个点)
-                        // 两样都只认同一个光源 uSun (= 树的 sunLight 方向, 世界坐标固定),
-                        // 所以无论镜头怎么转、小世界怎么自转, 亮的永远是朝太阳那一侧。
-                        // (试过背光侧内壁的焦散光团, 看着是一片白雾, 已去掉)
+                        // 极简: 球面上什么都不画, 只有一圈边线。立体感全靠这圈线的明暗 —
+                        // 朝太阳 uSun (= 树的 sunLight 方向, 世界坐标固定) 的一侧亮,
+                        // 背光一侧几乎隐没, 所以镜头怎么转、小世界怎么自转, 亮的都是同一侧。
+                        // (试过: 点状高光、背面焦散光团、宽柔反光 —— 在黑底上都成了一块白, 已去掉)
                         vec3 V = normalize(cameraPosition - vWP);
                         vec3 Nout = normalize(vWN);
                         vec3 N = Nout * ${back ? '-1.0' : '1.0'};
-                        float fres = pow(1.0 - abs(dot(N, V)), 3.0);
+                        float fres = pow(1.0 - abs(dot(N, V)), 5.0);   // 指数大 → 只剩贴边一圈细线, 球面内部干净
                         float lit = smoothstep(-0.5, 0.9, dot(Nout, uSun));
                         vec3 rimCol = mix(uTint, vec3(1.0), 0.55);
                         vec3 col; float a;
@@ -5064,10 +5062,8 @@
                         col = rimCol * fres * (0.3 + 0.7 * lit);
                         a = fres * 0.22 * (0.4 + 0.6 * lit);
                         ` : `
-                        vec3 R = reflect(-V, N);
-                        float sheen = pow(max(dot(R, uSun), 0.0), 8.0);
-                        col = rimCol * fres * (0.35 + 0.9 * lit) + vec3(1.0) * sheen * 0.35;
-                        a = fres * 0.75 * (0.35 + 0.65 * lit) + sheen * 0.12;
+                        col = rimCol * fres * (0.15 + 1.1 * lit);
+                        a = fres * 0.8 * (0.15 + 0.85 * lit);
                         `}
                         gl_FragColor = vec4(col, clamp(a, 0.0, 1.0) * uOpacity);
                     }`,
