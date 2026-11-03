@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jane's Portfolio | Four Seasons</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <script>
+        // 刷新/后退回到作品页时, 第一帧就直接是作品页 (不先闪一下树): 记号在这条历史记录的 state 里 (见 setOneDActive)
+        try { if ((history.state && history.state.work) || location.hash === '#work') document.documentElement.classList.add('boot-work'); } catch (e) {}
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@200;300;400&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -188,37 +192,48 @@
             pointer-events: none;
         }
 
-        /* 底部提示: 一个位置、一行字, 不要胶囊。先出季节提示 ("Click an apple…"),
-           它淡出后同一位置换成桌面端的 "Swipe up" —— 永远只有一句话在说。
-           浅色场景上靠一圈白色柔光托住灰字, 不需要底板。 */
+        /* 底部提示: 一个位置只说一句 —— 先季节提示 ("Click an apple…"), 淡出后桌面端换成 swipe 提示。
+           字用 Geist; 颜色取草地的深苔绿 (而不是近黑), 和场景同一色相, 压在草上不脏也读得清。 */
         #hintInner, .swipe-hint {
-            font-family: var(--ui-font);
-            font-size: 0.8125rem;
-            font-weight: 400;
+            font-family: 'Geist', var(--ui-font);
+            font-size: 1rem;
+            font-weight: 300;
             letter-spacing: 0.01em;
-            color: var(--ui-ink);
+            color: rgba(38,66,42,0.7);
             white-space: nowrap;
-            text-shadow: 0 0 14px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.7);
             opacity: 0;
+            /* 轻质感的框: 大半透明的白 + 柔和模糊, 一圈发丝亮边, 几乎没有投影 —— 像草地上浮着一片薄雾, 不是一块按钮 */
+            padding: 0.55em 1.15em;
+            border-radius: 980px;
+            background: rgba(255,255,255,0.32);
+            -webkit-backdrop-filter: blur(14px) saturate(150%);
+            backdrop-filter: blur(14px) saturate(150%);
+            box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.6), 0 4px 16px rgba(38,66,42,0.06);
         }
         #hintInner { display: block; }
 
-        /* 桌面端"往上滑": 和季节提示共用一个位置; 细线 chevron 轻轻上浮; 第一次往外滑就收起, 不再出现 */
+        /* 桌面端 swipe 提示: 字 + 右边一只小鼠标, 滚轮那一点一直往上滚; 第一次往外滑就收起, 不再出现 */
         .swipe-hint {
-            position: absolute; top: 0; left: 50%;
-            display: inline-flex; align-items: center; gap: 7px;
+            position: absolute; bottom: 0; left: 50%;
+            display: inline-flex; align-items: center; gap: 9px; padding-right: 0.95em;
             transform: translate(-50%, 6px);
-            transition: opacity .8s var(--ui-ease), transform .8s var(--ui-ease);
+            transition: opacity 1s var(--ui-ease), transform 1s var(--ui-ease);
         }
         .swipe-hint.visible { opacity: 1; transform: translate(-50%, 0); }
-        .swipe-hint svg { width: 11px; height: 11px; flex: none; animation: swipeBob 2.2s var(--ui-ease) infinite; }
-        @keyframes swipeBob { 0%, 100% { transform: translateY(1.5px); opacity: .55; } 50% { transform: translateY(-2.5px); opacity: 1; } }
+        .swipe-mouse { width: 18px; height: 18px; flex: none; overflow: visible; }   /* Lucide "mouse" 图标 */
+        .swipe-mouse .wheel { transform-box: fill-box; transform-origin: center; animation: wheelUp 1.8s cubic-bezier(.45,0,.25,1) infinite; }
+        @keyframes wheelUp {
+            0% { transform: translateY(3px); opacity: 0; }
+            25% { opacity: 1; }
+            75% { transform: translateY(-2.5px); opacity: 1; }
+            100% { transform: translateY(-2.5px); opacity: 0; }
+        }
         @media (min-width: 769px) {
-            .swipe-hint { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
-            .swipe-hint svg { width: clamp(11px, 1.2vh, 14px); height: clamp(11px, 1.2vh, 14px); }
+            #hintInner, .swipe-hint { font-size: clamp(1rem, 1.6vh, 1.2rem); }
+            .swipe-mouse { width: clamp(18px, 2.2vh, 22px); height: clamp(18px, 2.2vh, 22px); }
             #hintInner.play { animation-duration: 5s; }       /* 桌面后面还要接 swipe 提示, 季节提示短一点 */
         }
-        @media (prefers-reduced-motion: reduce) { .swipe-hint svg { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .swipe-mouse .wheel { animation: none; } }
 
         /* 进场 1.2s 后浮现, 停留约 5s, 再淡出不再出现; 换季时 updateSeasonUI 重播 */
         #hintInner.play {
@@ -288,7 +303,7 @@
             padding: 60px;
             text-align: center;
             transform: translateY(30px);
-            transition: transform 0.5s ease;
+            transition: transform 0.5s ease, opacity 0.4s ease;   /* opacity: 留言框关掉退回时文字淡回来 */
         }
 
         .project-modal.active .modal-content {
@@ -423,10 +438,12 @@
 
         /* 原来是半透明白字 — 场景底色是浅色, 几乎看不见。字体字距照旧, 只换成深暖灰 */
         .social-link {
-            color: rgba(58,52,54,0.72);
+            color: rgba(58,52,54,0.6);
             text-decoration: none;
-            font-size: 0.85rem;
-            letter-spacing: 0.15em;
+            font-family: 'Geist', var(--ui-font);   /* 和底部提示同一套字 */
+            font-size: 0.95rem;
+            font-weight: 300;
+            letter-spacing: 0.02em;
             transition: color 0.3s ease;
         }
 
@@ -487,10 +504,9 @@
             .season-indicator { top: clamp(34px, 5vh, 80px); }
             .season-name { font-size: clamp(2.75rem, 4.6vh, 4rem); }
             .hint-text { bottom: clamp(64px, 9vh, 130px); }
-            #hintInner { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
             .scroll-indicator { bottom: clamp(30px, 4.2vh, 60px); }
             .social-links { bottom: clamp(40px, 4.6vh, 66px); right: clamp(40px, 3vw, 72px); gap: clamp(20px, 1.6vw, 30px); }
-            .social-link { font-size: clamp(0.85rem, 1.3vh, 1.05rem); }
+            .social-link { font-size: clamp(0.95rem, 1.5vh, 1.15rem); }
         }
 
         /* Season nav buttons — mobile only */
@@ -607,7 +623,44 @@
         /* 自己不加任何底色/模糊: 直接透出下面那层兔子卡片的暗底, 颜色和点 Contact 前完全一样
            (自带 backdrop-filter 会越过那层暗底取到明亮的树, 再叠一层暗色又会变成死黑) */
         #msgModal.dark { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
-        #msgModal.dark .msg-box { background: linear-gradient(180deg, rgba(250,250,252,0.95), rgba(238,238,242,0.92)); }
+        /* 暗底上的卡片: 不再是一块白玻璃, 而是和兔子卡片同一个夜色里的"烟色玻璃" ——
+           极淡的白透出底色 + 发丝亮边 + 顶部一线高光; 字体沿用兔子卡片的 Baskerville / Cormorant。
+           卡片自己也不做 backdrop-filter (同上, 会越层取到明亮的树) */
+        #msgModal.dark .msg-box {
+            background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035));
+            -webkit-backdrop-filter: none; backdrop-filter: none;
+            border: 1px solid rgba(255,255,255,0.10);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 30px 80px rgba(0,0,0,0.35);
+            color: #f2f0ea;
+        }
+        #msgModal.dark .msg-box.pressed { box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 20px 60px rgba(0,0,0,0.32); }
+        #msgModal.dark .msg-box::after {
+            background:
+                radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255,255,255,0.08), rgba(255,255,255,0) 45%),
+                linear-gradient(115deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.04) 45%, rgba(255,255,255,0) 60%);
+        }
+        #msgModal.dark .msg-box h3 { font-family: 'Libre Baskerville', serif; font-weight: 400; letter-spacing: 0.02em; color: #fff; }
+        #msgModal.dark .msg-sub { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: rgba(255,255,255,0.68); }
+        #msgModal.dark .msg-close { color: rgba(255,255,255,0.45); }
+        #msgModal.dark .msg-close:hover { color: rgba(255,255,255,0.9); }
+        #msgModal.dark #msgForm input, #msgModal.dark #msgForm textarea {
+            background: rgba(255,255,255,0.045); border-color: rgba(255,255,255,0.10); color: #f2f0ea;
+        }
+        #msgModal.dark #msgForm input:hover, #msgModal.dark #msgForm textarea:hover { border-color: rgba(255,255,255,0.18); }
+        #msgModal.dark #msgForm input:focus, #msgModal.dark #msgForm textarea:focus { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.32); }
+        #msgModal.dark #msgForm input::placeholder, #msgModal.dark #msgForm textarea::placeholder { color: rgba(255,255,255,0.38); }
+        /* 主按钮 = 兔子卡片上那颗 Contact 胶囊的放大版: 透明白 + 细白边 */
+        #msgModal.dark .msg-send {
+            background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.28); color: #fff;
+            font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.12em;
+            box-shadow: none;
+        }
+        #msgModal.dark .msg-send:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.5); color: #fff; box-shadow: none; }
+        #msgModal.dark .msg-send:active { background: rgba(255,255,255,0.20); box-shadow: none; }
+        #msgModal.dark .msg-send:focus-visible { box-shadow: 0 0 0 3px rgba(255,255,255,0.18); }
+        #msgModal.dark .msg-status { color: rgba(255,255,255,0.6); }
+        #msgModal.dark .msg-status.ok { color: #9bc48a; }
+        #msgModal.dark .msg-status.err { color: #e09a7c; }
         /* 卡片: 三层投影 (贴边细影 + 中距 + 远处大柔影) 做出"浮起来"的厚度, 顶部一线内高光像玻璃的倒角 */
         .msg-box {
             position: relative; width: 100%; max-width: 540px; box-sizing: border-box;
@@ -708,6 +761,11 @@
         }
         #oneDSite::-webkit-scrollbar { display: none; }
         #oneDSite.active { opacity: 1; visibility: visible; }
+        /* 回到作品页的那一刻: 直接显示, 不做淡入/入场动画 (JS 接管后移除 boot-work) */
+        html.boot-work #oneDSite { opacity: 1; visibility: visible; transition: none !important; }
+        html.boot-work #oneDSite * { transition: none !important; }
+        html.boot-work .fp-side, html.boot-work .fp-hero, html.boot-work .fp-lede, html.boot-work .fp-projects,
+        html.boot-work .fp-name, html.boot-work .fp-role, html.boot-work .fp-side-label, html.boot-work .fp-connect { opacity: 1; transform: none; }
         #oneDSite:focus { outline: none; }   /* 为键盘滚动而聚焦, 不该画出焦点框 */
         /* 入场: 内容自下而上、分层淡入 (高级感) */
         .fp-side, .fp-hero, .fp-lede, .fp-projects { opacity: 0; transform: translateY(18px); transition: opacity .85s ease, transform .85s cubic-bezier(.22,.61,.36,1); }
@@ -883,7 +941,7 @@
         </div>
     </div>
 
-    <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span><span class="swipe-hint" id="swipeHint" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 6 4l3.5 3.5"/></svg>Swipe up to zoom out</span></div>
+    <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span><span class="swipe-hint" id="swipeHint" aria-hidden="true">Swipe up to zoom out<svg class="swipe-mouse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="7"/><path class="wheel" d="M12 6v4"/></svg></span></div>
 
     <div class="scroll-indicator">
         <div class="scroll-dot active" data-season="0"></div>
@@ -1256,7 +1314,8 @@
                 const pm = document.getElementById('pcModal');
                 const ok = document.getElementById('pcOk');
                 if (pm && ok) {
-                    setTimeout(() => pm.classList.add('show'), 450);
+                    // 刷新回到作品页时不再弹, 不然会盖在作品页上
+                    if (!document.documentElement.classList.contains('boot-work')) setTimeout(() => pm.classList.add('show'), 450);
                     ok.addEventListener('click', () => {
                         pm.classList.remove('show');
                         setTimeout(showLogoHint, 2000);       // 关掉弹窗 2s 后弹出指向头像的气泡
@@ -4136,6 +4195,8 @@
         }
 
         function updateSeasonUI() {
+            // 季节记进这条历史记录: 从 /art/ 等页面按后退回来 (或刷新) 还是同一个季节, 不跳回春天
+            try { history.replaceState(Object.assign({}, history.state, { season: currentSeason }), '', location.href); } catch (e) {}
             // Update season title with animation reset
             document.querySelectorAll('.season-name').forEach(el => {
                 el.classList.remove('active');
@@ -5438,6 +5499,18 @@
             // 气泡上写着 "Tap to see my work", 点气泡等于点头像
             const bubble = document.querySelector('.logo-hint .lh-bubble');
             if (bubble && home) bubble.addEventListener('click', () => home.click());
+            // 刷新/后退回到作品页 (旧的 #work 链接也认) → 直接回到作品页, 并回到刷新前看到的位置
+            const site = document.getElementById('oneDSite');
+            if (site) site.addEventListener('scroll', () => {
+                try { sessionStorage.setItem('workScroll', String(site.scrollTop)); } catch (e) {}
+            }, { passive: true });
+            if (document.documentElement.classList.contains('boot-work')) {
+                setOneDActive(true);
+                requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('boot-work')));
+                let y = 0;
+                try { y = parseInt(sessionStorage.getItem('workScroll') || '0', 10) || 0; } catch (e) {}
+                if (y && site) requestAnimationFrame(() => { site.scrollTop = y; });
+            }
         }
 
         // 作品页 → 树: 硬切回最初的树 (无倒带/特效)。logo 点击和 Esc 共用同一条路径。
@@ -5486,6 +5559,10 @@
             if (active === oneDActive) return;
             oneDActive = active;
             if (active) dismissSwipeHint();
+            // 作品页记在这条历史记录的 state 里 (网址不加任何后缀): 刷新/后退回来还是作品页, 回到树就清掉
+            try {
+                history.replaceState(Object.assign({}, history.state, { work: active }), '', location.pathname + location.search);
+            } catch (e) {}
             const home = document.getElementById('fpHome');
             if (home) {                                   // logo 双重身份: 树↔作品页
                 home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
@@ -5948,9 +6025,9 @@
                 if (modal.contains(document.activeElement)) document.activeElement.blur(); // 先移焦, 再 aria-hidden
                 modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
                 if (bg) { bg.removeAttribute('aria-hidden'); bg.inert = false; }
-                // 从兔子卡片 Contact 进来的: 垫在下面的暗背景这时才淡出
+                // 从兔子卡片 Contact 进来的: 关掉留言框 = 退回兔子卡片 (文字淡回来), 不是直接回树
                 const proj = document.getElementById('projectModal');
-                if (proj && proj.classList.contains('handoff')) { closeModal(); return; }
+                if (proj && proj.classList.contains('handoff')) { proj.classList.remove('handoff'); }
                 if (lastFocus && lastFocus.focus) lastFocus.focus();                       // 还焦点给触发按钮
             };
             window.closeMsgModal = close;     // Esc 统一走全局 escapeTopLayer()
@@ -6168,6 +6245,12 @@
 
         // Initialize
         init();
+        // 后退/刷新回到这一页时, 恢复离开时的季节 (见 updateSeasonUI)
+        (() => {
+            let s = 0;
+            try { s = (history.state && history.state.season) | 0; } catch (e) {}
+            if (s > 0 && s < seasons.length) jumpToSeason(s);
+        })();
         // 季节提示播完 (秋天没有文字也照样跑完动画) → 同一位置接上 swipe 提示
         document.getElementById('hintInner').addEventListener('animationend', showSwipeHint);
         
