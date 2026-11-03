@@ -205,6 +205,37 @@
             opacity: 0;
         }
 
+        /* 桌面端"向上滑"引导: 季节提示上方一枚小胶囊, 箭头轻轻上下浮; 第一次滚动/滑动就收起, 不再出现 */
+        .swipe-hint {
+            position: fixed;
+            bottom: 112px;
+            left: 50%;
+            transform: translate(-50%, 8px);
+            z-index: 100;
+            pointer-events: none;
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 18px 9px 14px;
+            border-radius: 980px;
+            background: var(--ui-glass);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: var(--ui-hair);
+            font-family: var(--ui-font);
+            font-size: 0.8125rem;
+            letter-spacing: 0.01em;
+            color: var(--ui-ink);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity .6s var(--ui-ease), transform .6s var(--ui-ease);
+        }
+        .swipe-hint.visible { opacity: 1; transform: translate(-50%, 0); }
+        .swipe-arrow { display: inline-block; animation: swipeBob 1.6s ease-in-out infinite; }
+        @keyframes swipeBob { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
+        @media (min-width: 769px) {
+            .swipe-hint { bottom: calc(clamp(64px, 9vh, 130px) + 48px); font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
+        }
+        @media (prefers-reduced-motion: reduce) { .swipe-arrow { animation: none; } }
+
         /* 进场 1.2s 后浮现, 停留约 5s, 再淡出不再出现; 换季时 updateSeasonUI 重播 */
         #hintInner.play {
             animation: hintInOut 6.5s var(--ui-ease) 1.2s forwards;
@@ -278,6 +309,14 @@
 
         .project-modal.active .modal-content {
             transform: translateY(0);
+        }
+
+        /* 点 Contact 交给 Talk to Me 时: 只淡掉卡片文字, 暗背景留着垫在留言框下面,
+           留言框关掉时再一起淡出 —— 不再一下子闪回明亮的树 */
+        .project-modal.handoff .modal-content {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s ease, transform .5s ease;
         }
 
         .modal-icon {
@@ -580,6 +619,9 @@
         /* Talk to Me: 和 "Best on desktop" 卡片同一套 Apple 磨砂玻璃 (浅色玻璃 + 重模糊 + 大软投影) */
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(18,16,14,.26); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
+        /* 从兔子卡片 Contact 进来: 沿用项目卡片同一层暗底 (它自己的 backdrop-filter 会越过下面的暗层直接取到明亮的树) */
+        #msgModal.dark { background: rgba(0,0,0,0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+        #msgModal.dark .msg-box { background: linear-gradient(180deg, rgba(250,250,252,0.95), rgba(238,238,242,0.92)); }
         /* 卡片: 三层投影 (贴边细影 + 中距 + 远处大柔影) 做出"浮起来"的厚度, 顶部一线内高光像玻璃的倒角 */
         .msg-box {
             position: relative; width: 100%; max-width: 540px; box-sizing: border-box;
@@ -614,7 +656,7 @@
         @media (prefers-reduced-motion: reduce) {
             .msg-box, .msg-box.pressed { transform: none; transition: none; }
         }
-        .msg-close { position: absolute; top: 18px; right: 20px; background: none; border: none; color: #8a8a92; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .msg-close { position: absolute; top: 8px; right: 10px; padding: 10px 12px; background: none; border: none; color: #8a8a92; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: color .2s; -webkit-tap-highlight-color: transparent; }
         .msg-close:hover { color: #45454d; }
         .msg-box h3 { font-size: 2rem; font-weight: 600; letter-spacing: -.025em; color: #1b1b1e; }
         .msg-sub { margin-top: 10px; font-size: 1rem; color: #5b5b63; line-height: 1.5; max-width: 34em; }
@@ -855,6 +897,7 @@
         </div>
     </div>
 
+    <div class="swipe-hint" id="swipeHint" aria-hidden="true"><span class="swipe-arrow">&#8593;</span>Swipe up to zoom out</div>
     <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span></div>
 
     <div class="scroll-indicator">
@@ -4058,6 +4101,7 @@
             } else {
                 if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1);
                 else nudgeJourneyTarget(dj);
+                if (!swipeHintDone) dismissSwipeHint();
             }
         }
 
@@ -4623,6 +4667,7 @@
             if (id === 'creed') { openCreed(); return; }
             if (id === 'art') { window.location.href = '/art/'; return; }
             const project = id === 'business' ? BUSINESS : projects[id];
+            document.getElementById('projectModal').classList.remove('handoff');
             document.getElementById('modalIcon').textContent = project.icon;
             document.getElementById('modalTitle').textContent = project.title;
             document.getElementById('modalDescription').textContent = project.description;
@@ -4643,8 +4688,8 @@
                         b.className = 'modal-link';
                         b.textContent = link.label;
                         b.addEventListener('click', () => {
-                            closeModal();
-                            if (window.openMsgModal) window.openMsgModal(null, { placeholder: project.msgPlaceholder });
+                            document.getElementById('projectModal').classList.add('handoff');
+                            if (window.openMsgModal) window.openMsgModal(null, { placeholder: project.msgPlaceholder, dark: true });
                         });
                         linksEl.appendChild(b);
                         return;
@@ -4916,6 +4961,21 @@
             el.classList.add('visible');
             clearTimeout(logoHintTimer);
             logoHintTimer = setTimeout(() => el.classList.remove('visible'), 5000);
+        }
+
+        // 桌面端一次性提示: 进场 2s 后出现 "Swipe up to zoom out", 一直停着, 直到访客第一次
+        // 往外滑 (推进宇宙之旅) 或进了作品页才收起。触屏不出现 (手机靠捏合, 另有 logo 提示)。
+        let swipeHintDone = false;
+        let journeyHidSeasonals = false;     // 宇宙之旅是否已把动物/落叶藏起 (见 updateJourney)
+        function showSwipeHint() {
+            if (IS_TOUCH || swipeHintDone || oneDActive || journeyTarget > 0.01) return;
+            const el = document.getElementById('swipeHint');
+            if (el) el.classList.add('visible');
+        }
+        function dismissSwipeHint() {
+            swipeHintDone = true;
+            const el = document.getElementById('swipeHint');
+            if (el) el.classList.remove('visible');
         }
 
         function dismissLogoHint() {
@@ -5439,6 +5499,7 @@
         function setOneDActive(active) {
             if (active === oneDActive) return;
             oneDActive = active;
+            if (active) dismissSwipeHint();
             const home = document.getElementById('fpHome');
             if (home) {                                   // logo 双重身份: 树↔作品页
                 home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
@@ -5644,7 +5705,15 @@
                     if (typeof splashParticles !== 'undefined') splashParticles.forEach(s => s.visible = false);
                 }
             }
-            if (j > 0.26) { animals.forEach(a => a.visible = false); fallingLeaves.forEach(l => l.visible = false); }
+            // 飞远了藏起动物/落叶; 回来时按当前季节放回 —— 以前只藏不放, 从宇宙回来夏天的动物就没了
+            if (j > 0.26) {
+                journeyHidSeasonals = true;
+                animals.forEach(a => a.visible = false); fallingLeaves.forEach(l => l.visible = false);
+            } else if (journeyHidSeasonals) {
+                journeyHidSeasonals = false;
+                animals.forEach(a => a.visible = currentSeason === 1);
+                fallingLeaves.forEach(l => l.visible = currentSeason === 2);
+            }
 
             // 星球: 0.28 起以超大半径出现(看似平地, 草地色), 0.38→0.68 半径缩小 → 地面"卷"成星球
             if (planetMesh) {
@@ -5884,6 +5953,7 @@
                 lastFocus = (e && e.currentTarget) || document.activeElement;
                 // 从兔子 (留学申请) 进来时换成对应的提示语, 其它入口恢复默认
                 if (ta && !ta.value) ta.placeholder = (opts && opts.placeholder) || defaultPlaceholder;
+                modal.classList.toggle('dark', !!(opts && opts.dark));
                 modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
                 if (bg) { bg.setAttribute('aria-hidden', 'true'); bg.inert = true; }
                 if (ta) setTimeout(() => ta.focus(), 60);
@@ -5892,6 +5962,9 @@
                 if (modal.contains(document.activeElement)) document.activeElement.blur(); // 先移焦, 再 aria-hidden
                 modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true');
                 if (bg) { bg.removeAttribute('aria-hidden'); bg.inert = false; }
+                // 从兔子卡片 Contact 进来的: 垫在下面的暗背景这时才淡出
+                const proj = document.getElementById('projectModal');
+                if (proj && proj.classList.contains('handoff')) { closeModal(); return; }
                 if (lastFocus && lastFocus.focus) lastFocus.focus();                       // 还焦点给触发按钮
             };
             window.closeMsgModal = close;     // Esc 统一走全局 escapeTopLayer()
@@ -5906,6 +5979,9 @@
             const TILT = 7;
             const press = (e) => {
                 if (e.button !== undefined && e.button !== 0) return;
+                // 按在 ×/输入框/按钮上不倾斜: 倾斜+缩放会把小小的 × 从指针下挪走,
+                // 松手落在卡片上, click 就到不了 × —— 表现是"叉点不掉"
+                if (e.target.closest('button, input, textarea, a')) return;
                 const r = box.getBoundingClientRect();
                 const nx = ((e.clientX - r.left) / r.width) * 2 - 1;    // -1..1, 右为正
                 const ny = ((e.clientY - r.top) / r.height) * 2 - 1;    // -1..1, 下为正
@@ -6106,6 +6182,7 @@
 
         // Initialize
         init();
+        setTimeout(showSwipeHint, 2000);
         
         // 创建积雪壳 (必须在树创建后)
         createSnowShells();
