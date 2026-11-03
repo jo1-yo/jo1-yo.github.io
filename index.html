@@ -188,53 +188,37 @@
             pointer-events: none;
         }
 
-        #hintInner {
-            display: block;
-            padding: 9px 18px;
-            border-radius: 980px;
-            background: var(--ui-glass);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: var(--ui-hair);
+        /* 底部提示: 一个位置、一行字, 不要胶囊。先出季节提示 ("Click an apple…"),
+           它淡出后同一位置换成桌面端的 "Swipe up" —— 永远只有一句话在说。
+           浅色场景上靠一圈白色柔光托住灰字, 不需要底板。 */
+        #hintInner, .swipe-hint {
             font-family: var(--ui-font);
             font-size: 0.8125rem;
             font-weight: 400;
             letter-spacing: 0.01em;
             color: var(--ui-ink);
             white-space: nowrap;
+            text-shadow: 0 0 14px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.7);
             opacity: 0;
         }
+        #hintInner { display: block; }
 
-        /* 桌面端"向上滑"引导: 季节提示上方一枚小胶囊, 箭头轻轻上下浮; 第一次滚动/滑动就收起, 不再出现 */
+        /* 桌面端"往上滑": 和季节提示共用一个位置; 细线 chevron 轻轻上浮; 第一次往外滑就收起, 不再出现 */
         .swipe-hint {
-            position: fixed;
-            bottom: 112px;
-            left: 50%;
-            transform: translate(-50%, 8px);
-            z-index: 100;
-            pointer-events: none;
-            display: flex; align-items: center; gap: 8px;
-            padding: 9px 18px 9px 14px;
-            border-radius: 980px;
-            background: var(--ui-glass);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: var(--ui-hair);
-            font-family: var(--ui-font);
-            font-size: 0.8125rem;
-            letter-spacing: 0.01em;
-            color: var(--ui-ink);
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity .6s var(--ui-ease), transform .6s var(--ui-ease);
+            position: absolute; top: 0; left: 50%;
+            display: inline-flex; align-items: center; gap: 7px;
+            transform: translate(-50%, 6px);
+            transition: opacity .8s var(--ui-ease), transform .8s var(--ui-ease);
         }
         .swipe-hint.visible { opacity: 1; transform: translate(-50%, 0); }
-        .swipe-arrow { display: inline-block; animation: swipeBob 1.6s ease-in-out infinite; }
-        @keyframes swipeBob { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-3px); } }
+        .swipe-hint svg { width: 11px; height: 11px; flex: none; animation: swipeBob 2.2s var(--ui-ease) infinite; }
+        @keyframes swipeBob { 0%, 100% { transform: translateY(1.5px); opacity: .55; } 50% { transform: translateY(-2.5px); opacity: 1; } }
         @media (min-width: 769px) {
-            .swipe-hint { bottom: calc(clamp(64px, 9vh, 130px) + 48px); font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
+            .swipe-hint { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
+            .swipe-hint svg { width: clamp(11px, 1.2vh, 14px); height: clamp(11px, 1.2vh, 14px); }
+            #hintInner.play { animation-duration: 5s; }       /* 桌面后面还要接 swipe 提示, 季节提示短一点 */
         }
-        @media (prefers-reduced-motion: reduce) { .swipe-arrow { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .swipe-hint svg { animation: none; } }
 
         /* 进场 1.2s 后浮现, 停留约 5s, 再淡出不再出现; 换季时 updateSeasonUI 重播 */
         #hintInner.play {
@@ -503,7 +487,7 @@
             .season-indicator { top: clamp(34px, 5vh, 80px); }
             .season-name { font-size: clamp(2.75rem, 4.6vh, 4rem); }
             .hint-text { bottom: clamp(64px, 9vh, 130px); }
-            #hintInner { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); padding: 0.7em 1.4em; }
+            #hintInner { font-size: clamp(0.8125rem, 1.45vh, 1.05rem); }
             .scroll-indicator { bottom: clamp(30px, 4.2vh, 60px); }
             .social-links { bottom: clamp(40px, 4.6vh, 66px); right: clamp(40px, 3vw, 72px); gap: clamp(20px, 1.6vw, 30px); }
             .social-link { font-size: clamp(0.85rem, 1.3vh, 1.05rem); }
@@ -620,7 +604,9 @@
         #msgModal { position: fixed; inset: 0; z-index: 3500; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(18,16,14,.26); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
         #msgModal.open { display: flex; }
         /* 从兔子卡片 Contact 进来: 沿用项目卡片同一层暗底 (它自己的 backdrop-filter 会越过下面的暗层直接取到明亮的树) */
-        #msgModal.dark { background: rgba(0,0,0,0.85); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+        /* 自己不加任何底色/模糊: 直接透出下面那层兔子卡片的暗底, 颜色和点 Contact 前完全一样
+           (自带 backdrop-filter 会越过那层暗底取到明亮的树, 再叠一层暗色又会变成死黑) */
+        #msgModal.dark { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
         #msgModal.dark .msg-box { background: linear-gradient(180deg, rgba(250,250,252,0.95), rgba(238,238,242,0.92)); }
         /* 卡片: 三层投影 (贴边细影 + 中距 + 远处大柔影) 做出"浮起来"的厚度, 顶部一线内高光像玻璃的倒角 */
         .msg-box {
@@ -897,8 +883,7 @@
         </div>
     </div>
 
-    <div class="swipe-hint" id="swipeHint" aria-hidden="true"><span class="swipe-arrow">&#8593;</span>Swipe up to zoom out</div>
-    <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span></div>
+    <div class="hint-text" id="hintText"><span id="hintInner" class="play">Click an apple to explore</span><span class="swipe-hint" id="swipeHint" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 6 4l3.5 3.5"/></svg>Swipe up to zoom out</span></div>
 
     <div class="scroll-indicator">
         <div class="scroll-dot active" data-season="0"></div>
@@ -4169,10 +4154,11 @@
 
             // Update hint text
             // 提示只露几秒就淡出: 重新挂 .play 让动画从头播
-            const hintEl = document.getElementById('hintText');
             const hintInner = document.getElementById('hintInner');
             hintInner.textContent = hintTexts[currentSeason];
-            hintEl.style.visibility = hintTexts[currentSeason] ? 'visible' : 'hidden';
+            hintInner.style.visibility = hintTexts[currentSeason] ? 'visible' : 'hidden';
+            const swipeEl = document.getElementById('swipeHint');   // 季节提示重播时先让位, 播完再回来
+            if (swipeEl) swipeEl.classList.remove('visible');
             hintInner.classList.remove('play');
             hintInner.offsetHeight; // Trigger reflow
             hintInner.classList.add('play');
@@ -6182,7 +6168,8 @@
 
         // Initialize
         init();
-        setTimeout(showSwipeHint, 2000);
+        // 季节提示播完 (秋天没有文字也照样跑完动画) → 同一位置接上 swipe 提示
+        document.getElementById('hintInner').addEventListener('animationend', showSwipeHint);
         
         // 创建积雪壳 (必须在树创建后)
         createSnowShells();
