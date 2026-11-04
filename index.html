@@ -4035,6 +4035,20 @@
                 return;
             }
 
+            // + / - 缩放, 以鼠标停着的位置为中心 (和滚轮同一套: 缩到底再按 - 就往宇宙走)
+            if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+                e.preventDefault();
+                if (journeyTarget > 0.001) nudgeJourneyTarget(-0.06);
+                else { setZoomFocus(lastPointer.x, lastPointer.y); treeZoomTarget = clampN(treeZoomTarget + 0.2, 0, 1); }
+                return;
+            }
+            if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+                e.preventDefault();
+                if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget - 0.2, 0, 1);
+                else { nudgeJourneyTarget(0.06); dismissSwipeHint(); }
+                return;
+            }
+
             if (seasonChangeCooldown) return;
 
             // ← / → 循环切季节 (走到头会绕回去, 不再撞墙); 空格保持原来的"下一个"
@@ -4126,6 +4140,7 @@
             }
             // 双指捏合 → 只做"靠近树细看"(treeZoom); 手机端不进宇宙之旅。
             // 捏开(放大)→ 更近看树; 捏合(缩小)→ 退回默认距离。
+            if (dDist > 0) setZoomFocus(currentX, (e.touches[0].clientY + e.touches[1].clientY) / 2);   // 捏开: 朝两指中点放大
             treeZoomTarget = clampN(treeZoomTarget + dDist * 0.004, 0, 1);
         }
 
@@ -4189,7 +4204,7 @@
             // 与双指捏合同一套路由: 放大到旅程 0 之后继续放大 = 靠近树细看。
             if (dj < 0) {
                 if (journeyTarget > 0.001) nudgeJourneyTarget(dj);
-                else treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1);
+                else { setZoomFocus(e.clientX, e.clientY); treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1); }
             } else {
                 if (treeZoomTarget > 0.001) treeZoomTarget = clampN(treeZoomTarget - dj * 2.2, 0, 1);
                 else nudgeJourneyTarget(dj);
@@ -5044,6 +5059,27 @@
         }
         // 树部特写: 捏开(或滚轮放大)到旅程 0 之后继续放大 → 镜头靠近树 (0=默认取景, 1=最近)。
         let treeZoom = 0, treeZoomTarget = 0;
+        // 朝指针放大: 放大时把"指针下的那个点"一直钉在指针下 (像地图那样), 而不是只朝树中心拉近。
+        // zoomPan 叠加在树场景的 controls.target 上; 缩小时它按比例缩回 0, 完全缩回就是原来居中的构图。
+        const zoomPan = new THREE.Vector3();
+        let zoomFocus = null, lastNearDist = 30;
+        const lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        window.addEventListener('mousemove', (e) => { lastPointer.x = e.clientX; lastPointer.y = e.clientY; }, { passive: true });
+        function isShown(o) { for (; o; o = o.parent) if (!o.visible) return false; return true; }
+        function setZoomFocus(clientX, clientY) {
+            zoomFocus = null;                                   // 取不到就不平移, 别沿用上一次的旧焦点
+            if (!camera || journey > 0.02) return;
+            const ndc = new THREE.Vector2((clientX / window.innerWidth) * 2 - 1, -(clientY / window.innerHeight) * 2 + 1);
+            const ray = new THREE.Raycaster();
+            ray.setFromCamera(ndc, camera);
+            // 指针下看得见的东西 (树叶/苹果/树干/动物/地面); 都没打到就落在"过视角中心、正对镜头"的平面上
+            const hits = ray.intersectObjects(scene.children, true);
+            const hit = hits.find(h => isShown(h.object) && !(h.object.material && h.object.material.visible === false));
+            if (hit && hit.distance < 80) { zoomFocus = hit.point.clone(); return; }
+            const n = new THREE.Vector3(); camera.getWorldDirection(n);
+            const p = new THREE.Vector3();
+            if (ray.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(n, controls.target), p)) zoomFocus = p;
+        }
         let logoHintTimer = null;
 
         // 手机端一次性提示: 关掉弹窗 2s 后, 右上角头像下弹出 "Tap to see my work" 气泡, 停 5s 淡出,
@@ -5684,10 +5720,27 @@
 
             // 相机: 0–0.30 拉远看更多地面; 0.30–0.66 地面卷成星球; 0.66+ 停留观看像素化与坍塌
             const tgt = new THREE.Vector3().lerpVectors(TREE_TARGET, PLANET_TARGET, smooth(seg(j, 0.30, 0.66)));
-            controls.target.copy(tgt);
             let dist;
-            // 树部特写: treeZoom 把默认距离 30 拉近到最近 13 (只在旅程起点附近有感)
-            const nearDist = lerpN(30, 13, smooth(treeZoom));
+            // 树部特写: treeZoom 把默认距离 30 拉近到最近 10 (只在旅程起点附近有感)
+            const nearDist = lerpN(30, 10, smooth(treeZoom));
+            if (Math.abs(nearDist - lastNearDist) > 1e-5) {
+                if (nearDist < lastNearDist && zoomFocus) {
+                    // 相机沿"相机→焦点"连线前进同样比例 → 焦点在屏幕上原地不动
+                    const k = 1 - nearDist / lastNearDist;
+                    zoomPan.addScaledVector(zoomFocus.clone().sub(TREE_TARGET).sub(zoomPan), k);
+                } else if (nearDist > lastNearDist) {
+                    const span = 30 - lastNearDist;
+                    zoomPan.multiplyScalar(span > 1e-4 ? clampN(1 - (nearDist - lastNearDist) / span, 0, 1) : 0);
+                }
+                // 别平移出场景: 水平半径 ≤ 14, 视角中心高度留在 1.5–14 之间
+                const hr = Math.hypot(zoomPan.x, zoomPan.z);
+                if (hr > 14) { zoomPan.x *= 14 / hr; zoomPan.z *= 14 / hr; }
+                zoomPan.y = clampN(zoomPan.y, 1.5 - TREE_TARGET.y, 4);
+            }
+            lastNearDist = nearDist;
+            if (treeZoom < 0.002 && treeZoomTarget === 0) { zoomPan.set(0, 0, 0); zoomFocus = null; }
+            tgt.addScaledVector(zoomPan, 1 - smooth(seg(j, 0.0, 0.08)));    // 一进宇宙之旅就回到正中
+            controls.target.copy(tgt);
             // 太空里的最终距离: 宇宙很大, 小世界 (球 + 树) 在画面里应该小 → 130 (原来 95);
             // 窄屏 (手机竖屏) 如果还会切掉球的两侧, 就退到刚好装下整颗球 (留 20% 边)
             const fitW = PLANET_R * 1.2 / (Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect);
