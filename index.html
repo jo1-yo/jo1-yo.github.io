@@ -1954,22 +1954,41 @@
             // 以前是 60 个一模一样的四棱锥 (远看像一座座尖尖的小山)。现在改成一簇簇真正的草:
             // 每簇 3–7 片细叶, 叶子从根到尖逐渐收窄并向一侧弯, 每片高矮/倾斜/朝向/深浅都不同,
             // 颜色比草地略浅、低饱和, 根部只暗一点点 —— 融进草地, 不做深色的草 (顶点色 × 每片的 instanceColor)。仍然是一个 InstancedMesh。
-            const TUFTS = 110, MAX_BLADES = TUFTS * 7;
-            const bladeGeo = new THREE.PlaneGeometry(0.085, 1, 1, 5);
+            // 草要和树的语言一致: 树叶是一颗颗柔和的圆球, 所以草也不要细尖的写实叶,
+            // 而是一片片圆头、饱满、微微内卷的小叶子, 颜色/质感取自树叶。
+            const TUFTS = 95, MAX_BLADES = TUFTS * 5;
+            const bladeGeo = new THREE.PlaneGeometry(1, 1, 2, 12);
             bladeGeo.translate(0, 0.5, 0);                                   // 根部在 y=0
             {
+                const W = 0.13;
                 const pos = bladeGeo.attributes.position, cols = [];
                 for (let i = 0; i < pos.count; i++) {
-                    const t = pos.getY(i);                                   // 0 根 → 1 尖
-                    pos.setX(i, pos.getX(i) * (1 - t * 0.92));               // 收窄成尖
-                    pos.setZ(i, t * t * 0.28);                               // 越往上越弯
-                    const shade = 0.88 + 0.12 * t;
+                    const t = pos.getY(i), u = pos.getX(i) * 2;              // t: 0 根 → 1 顶; u: -1..1 横向
+                    // 叶形: 圆头短桨 —— 根部略窄, 中段等宽, 顶端 25% 是半圆收口 (像花茎/树叶球一样圆润, 不是尖刺)
+                    const w = t < 0.75 ? W * (0.78 + 0.22 * Math.min(t / 0.35, 1))
+                                       : W * Math.sqrt(Math.max(0, 1 - Math.pow((t - 0.75) / 0.25, 2)));
+                    pos.setX(i, u * w / 2);
+                    pos.setZ(i, t * t * 0.3 + u * u * w * 0.35);             // 向前柔和弯 + 横向微微内卷
+                    const shade = 0.92 + 0.1 * t;
                     cols.push(shade, shade, shade);
                 }
                 bladeGeo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
                 bladeGeo.computeVertexNormals();
+                // 法线以"朝上"为主、带一点叶面朝向: 颜色融进草地, 但每片仍有树叶球那样柔和的明暗
+                const nrm = bladeGeo.attributes.normal, v = new THREE.Vector3();
+                for (let i = 0; i < nrm.count; i++) {
+                    v.fromBufferAttribute(nrm, i);
+                    if (v.y < 0) v.negate();
+                    v.multiplyScalar(0.45).add(new THREE.Vector3(0, 0.55, 0)).normalize();
+                    nrm.setXYZ(i, v.x, v.y, v.z);
+                }
+                // 正反两面: 再加一份反向绕序的三角面, 材质用单面。
+                // (不用 DoubleSide: three.js 画背面时会把法线翻成朝下, 背面变成深色)
+                const idx = Array.from(bladeGeo.index.array);
+                for (let i = 0, n = idx.length; i < n; i += 3) idx.push(idx[i], idx[i + 2], idx[i + 1]);
+                bladeGeo.setIndex(idx);
             }
-            const grassMat = new THREE.MeshStandardMaterial({ roughness: 0.85, vertexColors: true, side: THREE.DoubleSide });
+            const grassMat = new THREE.MeshStandardMaterial({ roughness: 0.8, metalness: 0.1, vertexColors: true });   // 同树叶
             const grassInst = new THREE.InstancedMesh(bladeGeo, grassMat, MAX_BLADES);
             const grassDummy = new THREE.Object3D();
             grassDummy.rotation.order = 'YXZ';
@@ -1977,7 +1996,7 @@
 
             let created = 0;
             let tufts = 0, attempts = 0;
-            while (tufts < TUFTS && attempts < 1000) {
+            while (tufts < TUFTS && attempts < 1500) {
                 attempts++;
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 4 + Math.random() * 14;
@@ -1988,19 +2007,22 @@
                 if (isInRiverArea(cx, cz)) continue;
                 tufts++;
 
-                const tuftH = 0.18 + Math.random() * 0.18;                   // 这一簇整体的高度
-                const tuftHue = 0.27 + Math.random() * 0.04;
-                const blades = 3 + Math.floor(Math.random() * 5);
+                const tuftH = 0.17 + Math.random() * 0.13;                   // 这一簇整体的高度
+                const tuftHue = 0.27 + Math.random() * 0.025;
+                const blades = 3 + Math.floor(Math.random() * 3);
+                const spin = Math.random() * Math.PI * 2;
                 for (let k = 0; k < blades && created < MAX_BLADES; k++) {
-                    const a = Math.random() * Math.PI * 2, r = Math.random() * 0.12;
+                    // 几片叶子绕一圈均匀散开, 中间那片高、外面的矮一点倒得开一点
+                    const a = spin + (k / blades) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                    const r = 0.02 + Math.random() * 0.05;
                     grassDummy.position.set(cx + Math.cos(a) * r, 0, cz + Math.sin(a) * r);
-                    grassDummy.rotation.set(0.15 + Math.random() * 0.4, a + (Math.random() - 0.5) * 0.8, 0);   // 朝外倒一点
-                    const h = tuftH * (0.6 + Math.random() * 0.65);
-                    grassDummy.scale.set(0.8 + Math.random() * 0.6, h, h);
+                    grassDummy.rotation.set(0.25 + Math.random() * 0.35, a, 0);
+                    const h = tuftH * (k === 0 ? 1.15 : 0.75 + Math.random() * 0.3);
+                    grassDummy.scale.set(h * (2.6 + Math.random() * 0.6), h, h);
                     grassDummy.updateMatrix();
                     grassInst.setMatrixAt(created, grassDummy.matrix);
-                    grassInst.setColorAt(created, grassColor.setHSL(tuftHue + (Math.random() - 0.5) * 0.03,
-                        0.36 + Math.random() * 0.1, 0.4 + Math.random() * 0.06));
+                    grassInst.setColorAt(created, grassColor.setHSL(tuftHue + (Math.random() - 0.5) * 0.02,
+                        0.4 + Math.random() * 0.1, 0.35 + Math.random() * 0.04));     // 和草地同亮度, 略饱和一点
                     created++;
                 }
             }
