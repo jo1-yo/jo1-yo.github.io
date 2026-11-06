@@ -193,34 +193,45 @@
         }
 
         /* 底部提示: 一个位置只说一句 —— 先季节提示 ("Click an apple…"), 淡出后桌面端换成 swipe 提示。
-           字用 Geist; 颜色取草地的深苔绿 (而不是近黑), 和场景同一色相, 压在草上不脏也读得清。 */
+           参考 kayna.ai 的克制做法: 不要胶囊/毛玻璃框, 就是一行安静的小字 + 前面一个细线图标;
+           颜色用半透明的黑 (像那边的 rgba(0,0,0,.35/.75)), 叠在草地上自动带一点绿, 不脏。 */
         #hintInner, .swipe-hint {
             font-family: 'Geist', var(--ui-font);
-            font-size: 1rem;
-            font-weight: 300;
-            letter-spacing: 0.01em;
-            color: rgba(38,66,42,0.7);
+            font-size: 0.9375rem;
+            font-weight: 400;
+            line-height: 1.5;
+            letter-spacing: -0.005em;
+            color: rgba(0,0,0,0.42);
             white-space: nowrap;
             opacity: 0;
-            /* 轻质感的框: 大半透明的白 + 柔和模糊, 一圈发丝亮边, 几乎没有投影 —— 像草地上浮着一片薄雾, 不是一块按钮 */
-            padding: 0.55em 1.15em;
-            border-radius: 980px;
-            background: rgba(255,255,255,0.32);
-            -webkit-backdrop-filter: blur(14px) saturate(150%);
-            backdrop-filter: blur(14px) saturate(150%);
-            box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.6), 0 4px 16px rgba(38,66,42,0.06);
+            padding: 0;
+            background: none;
+            /* 只有一圈很淡的白色柔光, 字压在树影上时也读得清, 看起来仍然是"没有框" */
+            text-shadow: 0 0 14px rgba(255,255,255,0.55);
+        }
+        /* 季节提示前的小图标 (Lucide "mouse-pointer-click", 1.5px 细线), 用 mask 上色 = 跟字同色;
+           文字由 JS textContent 改写, 图标放在伪元素里就不会被冲掉 */
+        #hintInner::before {
+            content: '';
+            display: inline-block;
+            width: 1em; height: 1em;
+            margin-right: 0.45em;
+            vertical-align: -0.14em;
+            background: currentColor;
+            -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4.1 12 6'/%3E%3Cpath d='m5.1 8-2.9-.8'/%3E%3Cpath d='m6 12-1.9 2'/%3E%3Cpath d='M7.2 2.2 8 5.1'/%3E%3Cpath d='M9.04 9.21a.5.5 0 0 1 .665-.664l11.1 4.553a.5.5 0 0 1-.065.95l-4.36 1.161a2 2 0 0 0-1.43 1.43l-1.16 4.36a.5.5 0 0 1-.95.064z'/%3E%3C/svg%3E") center / contain no-repeat;
+                    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 4.1 12 6'/%3E%3Cpath d='m5.1 8-2.9-.8'/%3E%3Cpath d='m6 12-1.9 2'/%3E%3Cpath d='M7.2 2.2 8 5.1'/%3E%3Cpath d='M9.04 9.21a.5.5 0 0 1 .665-.664l11.1 4.553a.5.5 0 0 1-.065.95l-4.36 1.161a2 2 0 0 0-1.43 1.43l-1.16 4.36a.5.5 0 0 1-.95.064z'/%3E%3C/svg%3E") center / contain no-repeat;
         }
         #hintInner { display: block; }
 
         /* 桌面端 swipe 提示: 字 + 右边一只小鼠标, 滚轮那一点一直往上滚; 第一次往外滑就收起, 不再出现 */
         .swipe-hint {
             position: absolute; bottom: 0; left: 50%;
-            display: inline-flex; align-items: center; gap: 9px; padding-right: 0.95em;
+            display: inline-flex; align-items: center; gap: 0.45em;
             transform: translate(-50%, 6px);
             transition: opacity 1s var(--ui-ease), transform 1s var(--ui-ease);
         }
         .swipe-hint.visible { opacity: 1; transform: translate(-50%, 0); }
-        .swipe-mouse { width: 18px; height: 18px; flex: none; overflow: visible; }   /* Lucide "mouse" 图标 */
+        .swipe-mouse { width: 1em; height: 1em; flex: none; overflow: visible; order: -1; }   /* Lucide "mouse" 图标 */
         .swipe-mouse .wheel { transform-box: fill-box; transform-origin: center; animation: wheelUp 1.8s cubic-bezier(.45,0,.25,1) infinite; }
         @keyframes wheelUp {
             0% { transform: translateY(3px); opacity: 0; }
@@ -229,8 +240,7 @@
             100% { transform: translateY(-2.5px); opacity: 0; }
         }
         @media (min-width: 769px) {
-            #hintInner, .swipe-hint { font-size: clamp(1rem, 1.6vh, 1.2rem); }
-            .swipe-mouse { width: clamp(18px, 2.2vh, 22px); height: clamp(18px, 2.2vh, 22px); }
+            #hintInner, .swipe-hint { font-size: clamp(0.9375rem, 1.45vh, 1.0625rem); }
             #hintInner.play { animation-duration: 5s; }       /* 桌面后面还要接 swipe 提示, 季节提示短一点 */
         }
         @media (prefers-reduced-motion: reduce) { .swipe-mouse .wheel { animation: none; } }
@@ -1897,6 +1907,7 @@
         ];
 
         // 点 (x, z) 是否落在河道内 (含缓冲区)，用来把草和花挡在水面外
+        const FOX_SPOT = { x: 6, z: -4 };   // 狐狸坐的位置 (花草避开这里)
         function isInRiverArea(x, z, buffer = 14) {
             for (let i = 0; i < RIVER_PATH.length - 1; i++) {
                 const [x1, z1] = RIVER_PATH[i];
@@ -2005,6 +2016,7 @@
 
                 // 跳过河流区域
                 if (isInRiverArea(cx, cz)) continue;
+                if (Math.hypot(cx - FOX_SPOT.x, cz - FOX_SPOT.z) < 1.1) continue;   // 草不要插进狐狸身体
                 tufts++;
 
                 const tuftH = 0.17 + Math.random() * 0.13;                   // 这一簇整体的高度
@@ -2371,6 +2383,7 @@
                 const fx = Math.cos(angle) * radius;
                 const fz = Math.sin(angle) * radius;
                 if (isInRiverArea(fx, fz, 8)) continue;
+                if (Math.hypot(fx - FOX_SPOT.x, fz - FOX_SPOT.z) < 1.6) continue;   // 狐狸身边留一小块空地
                 flowersPlaced++;
 
                 const flower = createFlower();
@@ -2482,7 +2495,7 @@
             const animalConfigs = [
                 { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
                 { type: 'rabbit', pos: { x: -4, y: 0.65, z: 3 } },  // 树干左前方的草地上 (0.5 太低; 0.8 会和影子脱开, 像悬空)
-                { type: 'fox', pos: { x: 6, y: 0.15, z: -4 } }
+                { type: 'fox', pos: { x: 6, y: 0, z: -4 } }   // 脚掌贴地 (y=0 是草地)
             ];
 
             animalConfigs.forEach((config, i) => {
@@ -2791,102 +2804,270 @@
                     break;
 
                 case 'fox': {
-                    // 坐姿狐狸：圆润、清晰、两只眼睛朝前
-                    const orange = createFurMaterial(0xe0742e);
-                    const white = createFurMaterial(0xf3ead9, -0.05);
-                    const darkFur = createFurMaterial(0x3a2418, 0.05);
-                    const noseMat = new THREE.MeshStandardMaterial({ color: 0x241712, roughness: 0.5 });
-                    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.2 });
-
-                    // 身体（坐姿蛋形）
-                    const bodyF = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.5, cfg.segmentsHigh, cfg.segmentsMed), orange);
-                    bodyF.scale.set(0.82, 1.0, 0.78);
-                    bodyF.position.set(0, 0.5, 0);
-                    bodyF.castShadow = true; bodyF.receiveShadow = true;
-
-                    // 胸口白毛
-                    const chestF = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.3, cfg.segmentsMed, 8), white);
-                    chestF.scale.set(0.58, 0.95, 0.5);
-                    chestF.position.set(0.3, 0.42, 0);
-
-                    // 头
-                    const headF = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.34, cfg.segmentsHigh, cfg.segmentsMed), orange);
-                    headF.scale.set(0.96, 0.96, 1.0);
-                    headF.position.set(0.16, 1.02, 0);
-                    headF.castShadow = true;
-
-                    // 白色吻部（朝前 +X）
-                    const muzzleF = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.36, 14), white);
-                    muzzleF.rotation.z = -Math.PI / 2;
-                    muzzleF.position.set(0.5, 0.95, 0);
-
-                    // 鼻头
-                    const noseF = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), noseMat);
-                    noseF.position.set(0.69, 0.97, 0);
-
-                    // 耳朵（橙色三角 + 深色内耳）两只
-                    const makeEar = (zside) => {
-                        const ear = new THREE.Group();
-                        const outer = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.36, 4), orange);
-                        const inner = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.26, 4), darkFur);
-                        inner.position.set(0.04, 0.02, 0);
-                        ear.add(outer, inner);
-                        ear.position.set(0.04, 1.34, zside * 0.18);
-                        ear.rotation.x = zside * -0.18;
-                        ear.rotation.z = -0.12;
-                        return ear;
+                    // 坐姿狐狸 v2：平滑轮廓 + 顶点色渐变（黑袜子、黑耳尖、白尾尖、白吻部），
+                    // 尾巴是可变粗细的管子、绕到身前贴地，每帧轻摆。朝向 +X。
+                    const ORANGE = new THREE.Color(0xd9602a);
+                    const CREAM  = new THREE.Color(0xfbf2e4);
+                    const DARK   = new THREE.Color(0x4a3328);
+                    const furMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.92, metalness: 0 });
+                    const creamMat = new THREE.MeshStandardMaterial({ color: CREAM, roughness: 0.95 });
+                    const earInMat = new THREE.MeshStandardMaterial({ color: 0xf3d3bd, roughness: 0.95 });
+                    const glossy = new THREE.MeshStandardMaterial({ color: 0x1c1411, roughness: 0.22, metalness: 0.05 });
+                    const sparkle = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+                    // 按顶点局部坐标给几何体刷颜色: fn(x,y,z) → 0(橙)…1(目标色)
+                    const paint = (geo, target, fn, base = ORANGE) => {
+                        const p = geo.attributes.position, c = [], tmp = new THREE.Color();
+                        for (let i = 0; i < p.count; i++) {
+                            tmp.copy(base).lerp(target, fn(p.getX(i), p.getY(i), p.getZ(i)));
+                            c.push(tmp.r, tmp.g, tmp.b);
+                        }
+                        geo.setAttribute('color', new THREE.Float32BufferAttribute(c, 3));
+                        return geo;
                     };
-                    const ear1 = makeEar(1);
-                    const ear2 = makeEar(-1);
-
-                    // 眼睛（脸前方两只，确保都可见）
-                    const makeEyeF = (zside) => {
-                        const e = new THREE.Mesh(new THREE.SphereGeometry(0.052, 10, 8), eyeMat);
-                        e.position.set(0.42, 1.08, zside * 0.14);
-                        return e;
+                    const mesh = (geo, mat, cast = true) => {
+                        const m = new THREE.Mesh(geo, mat); m.castShadow = cast; m.receiveShadow = true; return m;
                     };
-                    const eye1 = makeEyeF(1);
-                    const eye2 = makeEyeF(-1);
 
-                    // 前腿（坐姿前伸）+ 深色爪
-                    const makeFrontLeg = (zside) => {
+                    // 身体：车削出的坐姿梨形，底宽上窄，略向前倾
+                    const profile = new THREE.SplineCurve([
+                        new THREE.Vector2(0.001, 0.0), new THREE.Vector2(0.33, 0.03), new THREE.Vector2(0.41, 0.2),
+                        new THREE.Vector2(0.36, 0.44), new THREE.Vector2(0.25, 0.66), new THREE.Vector2(0.17, 0.84),
+                        new THREE.Vector2(0.001, 0.9)
+                    ]).getPoints(28);
+                    const bodyGeo = new THREE.LatheGeometry(profile, 32);
+                    bodyGeo.scale(1, 1, 0.84);
+                    // 胸口白毛直接刷在身体上 → 和橙色自然过渡, 不是贴上去的一块
+                    const bodyF = mesh(paint(bodyGeo, CREAM, (x, y, z) => smooth(0.14, 0.3, x) * smooth(0.22, 0.42, y) * (1 - smooth(0.78, 0.9, y)) * (1 - smooth(0.16, 0.26, Math.abs(z)))), furMat);
+                    bodyF.rotation.z = -0.14;
+                    bodyF.position.set(-0.04, 0, 0);
+
+                    // 胸前白毛（嵌在身体前面，顶部收进脖子）
+                    const chestGeo = new THREE.SphereGeometry(0.25, 28, 20);
+                    paint(chestGeo, CREAM, (x, y, z) => smooth(-0.02, 0.12, x) * (1 - smooth(0.1, 0.2, Math.abs(z))));
+                    const chestF = mesh(chestGeo, furMat, false);
+                    chestF.scale.set(0.5, 1.05, 0.8);
+                    chestF.position.set(0.17, 0.52, 0);
+                    chestF.rotation.z = -0.2;
+
+                    // 后腿大腿 + 后脚掌
+                    const hips = [1, -1].map(s => {
+                        const h = mesh(new THREE.SphereGeometry(0.24, 26, 18), furMat);
+                        paint(h.geometry, ORANGE, () => 0);
+                        h.scale.set(1.15, 0.92, 0.72);
+                        h.position.set(-0.1, 0.2, s * 0.25);
+                        return h;
+                    });
+                    const hindPaws = [1, -1].map(s => {
+                        const p = mesh(new THREE.SphereGeometry(0.075, 18, 12), furMat);
+                        paint(p.geometry, DARK, (x) => smooth(-0.02, 0.06, x));
+                        p.scale.set(1.6, 0.6, 0.95);
+                        p.position.set(0.14, 0.025, s * 0.31);
+                        return p;
+                    });
+
+                    // 前腿：微锥形，下半截渐变成深色"袜子"
+                    const frontLegs = [1, -1].map(s => {
                         const g = new THREE.Group();
-                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.08, 0.5, 10), orange);
-                        leg.position.set(0.3, 0.2, zside * 0.18);
-                        leg.castShadow = true;
-                        const paw = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 8), darkFur);
-                        paw.scale.set(1.1, 0.6, 1);
-                        paw.position.set(0.36, 0.0, zside * 0.18);
+                        const legGeo = new THREE.CylinderGeometry(0.068, 0.056, 0.46, 18, 8);
+                        paint(legGeo, DARK, (x, y) => smooth(0.0, -0.12, y));
+                        const leg = mesh(legGeo, furMat);
+                        leg.position.y = 0.25;
+                        const pawGeo = new THREE.SphereGeometry(0.068, 18, 12);
+                        paint(pawGeo, DARK, () => 1);
+                        const paw = mesh(pawGeo, furMat);
+                        paw.scale.set(1.35, 0.62, 1.08);
+                        paw.position.set(0.025, 0.028, 0);
                         g.add(leg, paw);
+                        g.position.set(0.25, 0, s * 0.125);
+                        g.rotation.z = 0.06;
                         return g;
+                    });
+
+                    // ---- 头（单独一组，便于转头/歪头） ----
+                    const head = new THREE.Group();
+                    head.position.set(0.17, 0.93, 0);
+                    const skull = mesh(new THREE.SphereGeometry(0.29, 32, 24), furMat);
+                    paint(skull.geometry, CREAM, (x, y, z) => smooth(-0.02, -0.2, y) * smooth(0.0, 0.2, x));
+                    skull.scale.set(0.95, 0.88, 1.06);
+                    skull.position.y = 0.03;
+                    // 吻部：上橙下白
+                    const muzzleGeo = new THREE.SphereGeometry(0.15, 28, 20);
+                    paint(muzzleGeo, CREAM, (x, y) => smooth(0.03, -0.05, y));
+                    const muzzle = mesh(muzzleGeo, furMat);
+                    muzzle.scale.set(1.5, 0.66, 0.78);
+                    muzzle.position.set(0.25, -0.06, 0);
+                    muzzle.rotation.z = -0.08;
+                    const nose = mesh(new THREE.SphereGeometry(0.042, 16, 12), glossy, false);
+                    nose.scale.set(0.9, 0.78, 1.25);
+                    nose.position.set(0.47, -0.035, 0);
+                    // 两颊白色蓬毛（尖尖向外）
+                    const ruffs = [1, -1].map(s => {
+                        const r = mesh(new THREE.ConeGeometry(0.1, 0.24, 16), creamMat, false);
+                        r.position.set(0.02, -0.1, s * 0.25);
+                        r.rotation.set(s * 1.9, 0, 0.25);
+                        r.scale.set(1, 1, 0.6);
+                        return r;
+                    });
+                    // 眼睛：杏仁形 + 高光，可眨眼
+                    const eyes = [1, -1].map(s => {
+                        const g = new THREE.Group();
+                        const e = new THREE.Mesh(new THREE.SphereGeometry(0.048, 16, 12), glossy);
+                        e.scale.set(0.55, 1.0, 0.85);
+                        const hl = new THREE.Mesh(new THREE.SphereGeometry(0.011, 8, 6), sparkle);
+                        hl.position.set(0.02, 0.016, s * -0.008);
+                        g.add(e, hl);
+                        g.position.set(0.245, 0.07, s * 0.125);
+                        g.rotation.y = s * -0.35;
+                        return g;
+                    });
+                    // 耳朵：扁锥形 + 黑耳尖 + 浅色内耳；枢轴在耳根，便于抖耳
+                    const ears = [1, -1].map(s => {
+                        const g = new THREE.Group();
+                        const outerGeo = new THREE.ConeGeometry(0.115, 0.3, 20, 6);
+                        outerGeo.translate(0, 0.15, 0);
+                        paint(outerGeo, DARK, (x, y) => smooth(0.17, 0.25, y));
+                        const outer = mesh(outerGeo, furMat);
+                        outer.scale.set(0.42, 1, 1);
+                        const innerGeo = new THREE.ConeGeometry(0.07, 0.2, 16);
+                        innerGeo.translate(0, 0.1, 0);
+                        const inner = mesh(innerGeo, earInMat, false);
+                        inner.scale.set(0.3, 1, 1);
+                        inner.position.set(0.032, 0.015, 0);
+                        g.add(outer, inner);
+                        g.position.set(-0.03, 0.2, s * 0.14);
+                        g.rotation.set(s * 0.32, 0, 0.06);
+                        g.userData.baseRX = s * 0.32;
+                        return g;
+                    });
+                    head.add(skull, muzzle, nose, ...ruffs, ...eyes, ...ears);
+
+                    // ---- 尾巴：可变粗细的管子，从身后绕到身侧贴地，白尖 ----
+                    const TS = 36, TR = 14;
+                    const tailGeo = new THREE.BufferGeometry();
+                    const tPos = new Float32Array((TS + 1) * TR * 3);
+                    const tCol = new Float32Array((TS + 1) * TR * 3);
+                    const tIdx = [];
+                    for (let i = 0; i < TS; i++) for (let j = 0; j < TR; j++) {
+                        const a = i * TR + j, b = i * TR + (j + 1) % TR, c = (i + 1) * TR + j, d = (i + 1) * TR + (j + 1) % TR;
+                        tIdx.push(a, c, b, b, c, d);
+                    }
+                    tailGeo.setIndex(tIdx);
+                    tailGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
+                    const tmpC = new THREE.Color();
+                    for (let i = 0; i <= TS; i++) {
+                        tmpC.copy(ORANGE).lerp(CREAM, smooth(0.72, 0.84, i / TS));
+                        for (let j = 0; j < TR; j++) tCol.set([tmpC.r, tmpC.g, tmpC.b], (i * TR + j) * 3);
+                    }
+                    tailGeo.setAttribute('color', new THREE.BufferAttribute(tCol, 3));
+                    const tailRadius = t => (0.055 + 0.145 * Math.sin(Math.PI * Math.min(1, t * 0.95 + 0.04))) * Math.sqrt(Math.max(0, 1 - Math.pow(t, 7)));
+                    const tailBase = [
+                        new THREE.Vector3(-0.26, 0.2, 0.0), new THREE.Vector3(-0.52, 0.13, 0.1),
+                        new THREE.Vector3(-0.6, 0.12, 0.42), new THREE.Vector3(-0.36, 0.12, 0.7),
+                        new THREE.Vector3(0.02, 0.13, 0.74), new THREE.Vector3(0.34, 0.16, 0.62)
+                    ];
+                    const tailCurve = new THREE.CatmullRomCurve3(tailBase.map(v => v.clone()), false, 'centripetal');
+                    const N = new THREE.Vector3(), B = new THREE.Vector3(), P = new THREE.Vector3();
+                    const buildTail = (time) => {
+                        // 尾巴从根部往尖端逐渐加大摆幅，尖端轻轻抬起再放下
+                        tailCurve.points.forEach((p, k) => {
+                            const w = k / (tailBase.length - 1);
+                            const ph = time * 1.5 - k * 0.55;
+                            p.copy(tailBase[k]);
+                            p.x += Math.sin(ph) * 0.035 * w;
+                            p.z += Math.sin(ph) * 0.05 * w;
+                            p.y += Math.max(0, Math.sin(time * 0.7 - k * 0.4)) * 0.09 * w * w;
+                        });
+                        const frames = tailCurve.computeFrenetFrames(TS, false);
+                        for (let i = 0; i <= TS; i++) {
+                            const t = i / TS;
+                            tailCurve.getPointAt(t, P);
+                            const r = tailRadius(t);
+                            const n = frames.normals[i], bn = frames.binormals[i];
+                            for (let j = 0; j < TR; j++) {
+                                const ang = (j / TR) * Math.PI * 2;
+                                const cs = Math.cos(ang), sn = Math.sin(ang);
+                                const k3 = (i * TR + j) * 3;
+                                tPos[k3]     = P.x + r * (cs * n.x + sn * bn.x);
+                                tPos[k3 + 1] = Math.max(0.005, P.y + r * 0.82 * (cs * n.y + sn * bn.y));
+                                tPos[k3 + 2] = P.z + r * (cs * n.z + sn * bn.z);
+                            }
+                        }
+                        tailGeo.attributes.position.needsUpdate = true;
+                        tailGeo.computeVertexNormals();
+                        tailGeo.computeBoundingSphere();
                     };
-                    const fl1 = makeFrontLeg(1);
-                    const fl2 = makeFrontLeg(-1);
+                    buildTail(0);
+                    const tail = mesh(tailGeo, furMat);
+                    tail.receiveShadow = false;   // 每帧变形的管子自己接阴影会出条纹 (shadow acne)
 
-                    // 蓬松大尾巴（白尖）：主体与白尖共用同一根轴线放置并重叠，
-                    // 保证从任何角度（含侧面）都连在一起，不脱节。
-                    const tailGroup = new THREE.Group();
-                    const tailF = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.2, cfg.segmentsMed, 8), orange);
-                    tailF.scale.set(2.3, 0.85, 0.85);     // 沿 x 拉长成蓬松尾巴
-                    tailF.position.set(-0.42, 0, 0);
-                    tailF.castShadow = true;
-                    const tailTip = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.18, cfg.segmentsMed, 8), white);
-                    tailTip.scale.set(1.0, 0.9, 0.9);
-                    tailTip.position.set(-0.84, 0, 0);     // 紧接主体末端并与之重叠
-                    tailTip.castShadow = true;
-                    tailGroup.add(tailF, tailTip);
-                    tailGroup.position.set(-0.34, 0.42, 0); // 接到身体后部
-                    tailGroup.rotation.z = -0.9;            // 向上翘成蓬松狐狸尾
+                    // 贴地软阴影（接触阴影），让它"坐"在草地上而不是漂着
+                    const blobCanvas = document.createElement('canvas');
+                    blobCanvas.width = blobCanvas.height = 64;
+                    const bctx = blobCanvas.getContext('2d');
+                    const grad = bctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+                    grad.addColorStop(0, 'rgba(0,0,0,0.55)');
+                    grad.addColorStop(0.55, 'rgba(0,0,0,0.25)');
+                    grad.addColorStop(1, 'rgba(0,0,0,0)');
+                    bctx.fillStyle = grad; bctx.fillRect(0, 0, 64, 64);
+                    const blob = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5),
+                        new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blobCanvas), transparent: true,
+                            depthWrite: false, polygonOffset: true, polygonOffsetFactor: -12, polygonOffsetUnits: -12 }));
+                    blob.rotation.x = -Math.PI / 2;
+                    blob.position.set(-0.08, 0.004, 0.18);
+                    blob.scale.set(1.0, 0.9, 1);
 
-                    group.add(bodyF, chestF, headF, muzzleF, noseF, ear1, ear2, eye1, eye2, fl1, fl2, tailGroup);
+                    const torso = new THREE.Group();   // 呼吸时整体轻微起伏
+                    torso.add(bodyF, chestF, head, ...frontLegs);
+                    group.add(blob, torso, ...hips, ...hindPaws, tail);
+
+                    // ---- 待机动画：呼吸、看向镜头 + 东张西望、歪头、眨眼、抖耳、摇尾 ----
+                    const camLocal = new THREE.Vector3();
+                    let nextBlink = 2 + Math.random() * 2, blinkT = -1;
+                    let nextTwitch = 3 + Math.random() * 3, twitchT = -1, twitchEar = 0;
+                    let yaw = 0, pitch = 0;
+                    group.userData.update = (time, dt) => {
+                        const breath = Math.sin(time * 2.1);
+                        torso.scale.set(1 + breath * 0.008, 1 + breath * 0.014, 1 + breath * 0.012);
+                        hips.forEach(h => h.scale.y = 0.92 * (1 + breath * 0.01));
+
+                        // 头：大体朝镜头方向，叠加慢速东张西望
+                        camLocal.copy(camera.position);
+                        group.worldToLocal(camLocal);
+                        const toCam = Math.atan2(-camLocal.z, camLocal.x);
+                        const wander = Math.sin(time * 0.37) * 0.35 + Math.sin(time * 0.91 + 1.3) * 0.12;
+                        const targetYaw = Math.max(-0.75, Math.min(0.75, toCam * 0.6 + wander));
+                        const targetPitch = Math.sin(time * 0.53) * 0.06;
+                        yaw += (targetYaw - yaw) * Math.min(1, dt * 2.5);
+                        pitch += (targetPitch - pitch) * Math.min(1, dt * 2.5);
+                        head.rotation.set(Math.sin(time * 0.29) * 0.13, yaw, pitch);
+                        head.position.y = 0.93 + breath * 0.006;
+
+                        // 眨眼（偶尔连眨两下）
+                        if (blinkT < 0 && time > nextBlink) { blinkT = 0; }
+                        if (blinkT >= 0) {
+                            blinkT += dt;
+                            const k = blinkT < 0.07 ? 1 - blinkT / 0.07 : Math.min(1, (blinkT - 0.07) / 0.09);
+                            eyes.forEach(e => e.scale.y = Math.max(0.08, k));
+                            if (blinkT > 0.16) {
+                                blinkT = -1; eyes.forEach(e => e.scale.y = 1);
+                                nextBlink = time + (Math.random() < 0.25 ? 0.22 : 2.5 + Math.random() * 3);
+                            }
+                        }
+                        // 抖耳朵
+                        if (twitchT < 0 && time > nextTwitch) { twitchT = 0; twitchEar = Math.random() < 0.5 ? 0 : 1; }
+                        ears.forEach((ear, idx) => {
+                            let flick = 0;
+                            if (twitchT >= 0 && idx === twitchEar) flick = Math.sin(Math.min(1, twitchT / 0.32) * Math.PI * 2) * 0.28;
+                            ear.rotation.x = ear.userData.baseRX + flick * Math.sign(ear.userData.baseRX);
+                            ear.rotation.z = 0.06 + Math.sin(time * 0.8 + idx) * 0.03;
+                        });
+                        if (twitchT >= 0) { twitchT += dt; if (twitchT > 0.32) { twitchT = -1; nextTwitch = time + 3 + Math.random() * 4; } }
+
+                        buildTail(time);
+                    };
                     break;
                 }
-
                 case 'owl':
                     color = 0x8b4513;
                     const matO = createFurMaterial(color);
@@ -6269,8 +6450,13 @@
                         const restY = animal.userData.restY !== undefined ? animal.userData.restY : 0.65;
                         animal.position.y = restY + Math.abs(Math.sin(windTime * 3 + i)) * 0.22;
                     } else if (type === 'fox') {
-                        // 狐狸轻微晃动
-                        animal.rotation.y = Math.sin(windTime * 0.3) * 0.05;
+                        // 呼吸 / 看镜头 / 眨眼 / 抖耳 / 摇尾 都在 createAnimal 里的 update()
+                        if (animal.userData.update) {
+                            const now = performance.now() / 1000;
+                            const dt = Math.min(0.05, now - (animal.userData.lastT || now));
+                            animal.userData.lastT = now;
+                            animal.userData.update(now, dt);
+                        }
                     } else if (type === 'owl') {
                         // 猫头鹰转头
                         const head = animal.children.find(c => c.position && c.position.y > 0.4);
