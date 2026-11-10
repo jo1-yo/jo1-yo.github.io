@@ -106,9 +106,25 @@
     .row { grid-template-columns: 1fr; padding: .4em 0; }
     .ages .row, .short .row { grid-template-columns: 4.4rem 1fr; column-gap: .8rem; padding: .22em 0; }
   }
+
+  /* rain layer */
+  #water { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+  .rain-toggle {
+    position: fixed; top: 16px; right: 18px; z-index: 6;
+    width: 34px; height: 34px; display: grid; place-items: center;
+    color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
+    border-radius: 50%; transition: color .25s;
+  }
+  .rain-toggle svg { width: 13px; height: 18px; overflow: visible; }
+  .rain-toggle path { fill: transparent; stroke: currentColor; stroke-width: 1.2; transition: fill .3s; }
+  .rain-toggle:hover, .rain-toggle[aria-pressed="true"] { color: var(--muted); }
+  .rain-toggle:focus-visible { outline: 1px solid var(--line); outline-offset: 0; }
+  .rain-toggle[aria-pressed="true"] path { fill: currentColor; }
 </style>
 </head>
 <body>
+<canvas id="water" aria-hidden="true"></canvas>
+<button type="button" class="rain-toggle" id="rainToggle" aria-pressed="false" aria-label="Rain" title="Rain (R)"><svg viewBox="0 0 13 18" aria-hidden="true"><path d="M6.5 1C6.5 1 1.2 7.6 1.2 11.4a5.3 5.3 0 0 0 10.6 0C11.8 7.6 6.5 1 6.5 1Z"/></svg></button>
 <main class="page">
 
   <header>
@@ -201,6 +217,126 @@
     form.reset();
     document.getElementById('noteStatus').textContent = 'Sent. Thank you.';
   });
+</script>
+<script>
+/* Rain: the raindrop button (or R) lets it rain on the page; drops land and splash. */
+(function () {
+  var cv = document.getElementById('water');
+  var ctx = cv.getContext('2d');
+  var btn = document.getElementById('rainToggle');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var W = 0, H = 0, dpr = 1, ink = '29,29,31';
+  var ripples = [], drops = [], bits = [];
+  var raining = false, intensity = 0, spawnAcc = 0;
+  var running = false, last = 0;
+
+  function readInk() {
+    var m = getComputedStyle(document.body).color.match(/\d+/g);
+    if (m) ink = m.slice(0, 3).join(',');
+  }
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  function start() {
+    if (running) return;
+    running = true; last = performance.now();
+    requestAnimationFrame(frame);
+  }
+
+  function frame(now) {
+    var dt = Math.max(0, Math.min((now - last) / 1000, 0.05)); last = now;
+    ctx.clearRect(0, 0, W, H);
+
+    // rain eases in and out instead of switching on
+    intensity += ((raining ? 1 : 0) - intensity) * Math.min(dt * 1.2, 1);
+    if (intensity > 0.01) {
+      var rate = 70 * intensity * Math.max(W / 1200, 0.45) * (reduce.matches ? 0.4 : 1);
+      spawnAcc += rate * dt;
+      while (spawnAcc >= 1) {
+        spawnAcc -= 1;
+        var vy = rand(900, 1250);
+        drops.push({ x: rand(-40, W), y: rand(-60, -10), vy: vy, vx: vy * 0.06,
+                     len: rand(10, 20), ty: rand(H * 0.04, H) });
+      }
+    }
+
+    // falling drops
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(' + ink + ',0.2)';
+    for (var i = drops.length - 1; i >= 0; i--) {
+      var d = drops[i];
+      d.x += d.vx * dt; d.y += d.vy * dt;
+      if (d.y >= d.ty) {
+        ripples.push({ x: d.x, y: d.ty, max: rand(7, 15), life: rand(0.6, 0.9), age: 0 });
+        var n = Math.random() < 0.6 ? 2 : 3;
+        for (var k = 0; k < n; k++) {
+          bits.push({ x: d.x, y: d.ty, vx: rand(-70, 70), vy: rand(-170, -90), age: 0, life: rand(0.25, 0.4) });
+        }
+        drops.splice(i, 1);
+        continue;
+      }
+      var k2 = d.len / d.vy;
+      ctx.beginPath();
+      ctx.moveTo(d.x - d.vx * k2, d.y - d.len);
+      ctx.lineTo(d.x, d.y);
+      ctx.stroke();
+    }
+
+    // splash droplets
+    for (var j = bits.length - 1; j >= 0; j--) {
+      var b = bits[j];
+      b.age += dt;
+      if (b.age >= b.life) { bits.splice(j, 1); continue; }
+      b.vy += 900 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+      ctx.fillStyle = 'rgba(' + ink + ',' + (0.35 * (1 - b.age / b.life)).toFixed(3) + ')';
+      ctx.fillRect(b.x, b.y, 1.2, 1.2);
+    }
+
+    // where a drop lands, a small flattened ring
+    for (var r = ripples.length - 1; r >= 0; r--) {
+      var p = ripples[r];
+      p.age += dt;
+      var t = p.age / p.life;
+      if (t >= 1) { ripples.splice(r, 1); continue; }
+      var rad = p.max * (1 - Math.pow(1 - t, 3));
+      ctx.strokeStyle = 'rgba(' + ink + ',' + (0.32 * Math.pow(1 - t, 1.6)).toFixed(3) + ')';
+      ctx.beginPath();
+      ctx.ellipse(p.x, p.y, rad, rad * 0.38, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(' + ink + ',0.2)';
+
+    if (raining || intensity > 0.01 || drops.length || bits.length || ripples.length) {
+      requestAnimationFrame(frame);
+    } else {
+      running = false;
+      ctx.clearRect(0, 0, W, H);
+    }
+  }
+
+  function setRain(on) {
+    raining = on;
+    btn.setAttribute('aria-pressed', String(on));
+    btn.setAttribute('aria-label', on ? 'Stop rain' : 'Rain');
+    if (on) start();
+  }
+  btn.addEventListener('click', function () { setRain(!raining); });
+  window.addEventListener('keydown', function (e) {
+    if ((e.key !== 'r' && e.key !== 'R') || e.metaKey || e.ctrlKey || e.altKey) return;
+    var tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    setRain(!raining);
+  });
+
+  window.addEventListener('resize', resize);
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readInk);
+  readInk(); resize();
+})();
 </script>
 </body>
 </html>
