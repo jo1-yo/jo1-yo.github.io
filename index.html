@@ -31,7 +31,8 @@
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
   body {
     margin: 0;
     background: var(--paper);
@@ -255,24 +256,24 @@
     // rain eases in and out instead of switching on
     intensity += ((raining ? 1 : 0) - intensity) * Math.min(dt * 1.2, 1);
     if (intensity > 0.01) {
-      var rate = 70 * intensity * Math.max(W / 1200, 0.45) * (reduce.matches ? 0.4 : 1);
+      var rate = 90 * intensity * Math.max(W / 1200, 0.45) * (reduce.matches ? 0.4 : 1);
       spawnAcc += rate * dt;
       while (spawnAcc >= 1) {
         spawnAcc -= 1;
         var vy = rand(900, 1250);
         drops.push({ x: rand(-40, W), y: rand(-60, -10), vy: vy, vx: vy * 0.06,
-                     len: rand(10, 20), ty: rand(H * 0.04, H) });
+                     len: rand(14, 26), ty: rand(H * 0.04, H) });
       }
     }
 
     // falling drops
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(' + ink + ',0.2)';
+    ctx.lineWidth = 1.3;
+    ctx.strokeStyle = 'rgba(' + ink + ',0.5)';
     for (var i = drops.length - 1; i >= 0; i--) {
       var d = drops[i];
       d.x += d.vx * dt; d.y += d.vy * dt;
       if (d.y >= d.ty) {
-        ripples.push({ x: d.x, y: d.ty, max: rand(7, 15), life: rand(0.6, 0.9), age: 0 });
+        ripples.push({ x: d.x, y: d.ty, max: rand(9, 18), life: rand(0.6, 0.9), age: 0 });
         var n = Math.random() < 0.6 ? 2 : 3;
         for (var k = 0; k < n; k++) {
           bits.push({ x: d.x, y: d.ty, vx: rand(-70, 70), vy: rand(-170, -90), age: 0, life: rand(0.25, 0.4) });
@@ -293,8 +294,8 @@
       b.age += dt;
       if (b.age >= b.life) { bits.splice(j, 1); continue; }
       b.vy += 900 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-      ctx.fillStyle = 'rgba(' + ink + ',' + (0.35 * (1 - b.age / b.life)).toFixed(3) + ')';
-      ctx.fillRect(b.x, b.y, 1.2, 1.2);
+      ctx.fillStyle = 'rgba(' + ink + ',' + (0.65 * (1 - b.age / b.life)).toFixed(3) + ')';
+      ctx.fillRect(b.x, b.y, 1.6, 1.6);
     }
 
     // where a drop lands, a small flattened ring
@@ -304,12 +305,12 @@
       var t = p.age / p.life;
       if (t >= 1) { ripples.splice(r, 1); continue; }
       var rad = p.max * (1 - Math.pow(1 - t, 3));
-      ctx.strokeStyle = 'rgba(' + ink + ',' + (0.32 * Math.pow(1 - t, 1.6)).toFixed(3) + ')';
+      ctx.strokeStyle = 'rgba(' + ink + ',' + (0.6 * Math.pow(1 - t, 1.6)).toFixed(3) + ')';
       ctx.beginPath();
       ctx.ellipse(p.x, p.y, rad, rad * 0.38, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.strokeStyle = 'rgba(' + ink + ',0.2)';
+    ctx.strokeStyle = 'rgba(' + ink + ',0.5)';
 
     if (raining || intensity > 0.01 || drops.length || bits.length || ripples.length) {
       requestAnimationFrame(frame);
