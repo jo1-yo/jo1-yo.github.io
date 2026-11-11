@@ -19,6 +19,7 @@
     --muted: #6e6e73;
     --faint: #a1a1a6;
     --line: #e8e8ed;
+    --underline: rgba(0, 0, 0, .16);
   }
   /* night follows the system unless the sun button picked one */
   @media (prefers-color-scheme: dark) {
@@ -28,6 +29,7 @@
       --muted: #9a9aa1;
       --faint: #66666d;
       --line: #2a2a2e;
+      --underline: rgba(255, 255, 255, .2);
       color-scheme: dark;
     }
   }
@@ -37,6 +39,7 @@
     --muted: #9a9aa1;
     --faint: #66666d;
     --line: #2a2a2e;
+    --underline: rgba(255, 255, 255, .2);
     color-scheme: dark;
   }
   :root[data-theme="light"] { color-scheme: light; }
@@ -61,7 +64,7 @@
   a {
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: transparent;
+    text-decoration-color: var(--underline);
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
     transition: text-decoration-color .25s ease, color .25s ease;
@@ -102,7 +105,7 @@
   .note input[type=text]:focus { outline: none; border-bottom-color: var(--muted); }
   .send {
     font: inherit; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer;
-    text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px;
+    text-decoration: underline; text-decoration-color: var(--underline); text-underline-offset: 4px;
   }
   .send:hover { text-decoration-color: var(--faint); }
   .status { min-height: 1.4em; margin-top: 6px; font-size: .9rem; color: var(--muted); }
