@@ -1019,7 +1019,7 @@
         <div class="fp-wrap" id="fpWrap"></div>
     </div>
     <!-- logo 放在 #oneDSite 外面: 否则树场景时 #oneDSite 的 opacity:0 会连它一起隐掉 -->
-    <button id="fpHome" title="View portfolio" aria-label="View portfolio">
+    <button id="fpHome" title="Back to imjane.top" aria-label="Back to imjane.top">
         <img src="images/jane-avatar.png" alt="Jane Zhang — open portfolio">
     </button>
 
@@ -5820,8 +5820,30 @@
             const show = oneDActive ? true : (journey < 0.06);
             h.classList.toggle('show', show);
         }
+        // Tree → homepage: fade to the homepage's own background, then load it (it fades its text in).
+        let handingOff = false;
+        function handoffToHome() {
+            if (handingOff) return;
+            handingOff = true;
+            const pre = document.createElement('link'); pre.rel = 'prefetch'; pre.href = '/'; document.head.appendChild(pre);
+            let dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            try { const t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') dark = t === 'dark'; } catch (e) {}
+            const quick = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const veil = document.createElement('div');
+            veil.style.cssText = 'position:fixed;inset:0;z-index:2147483647;pointer-events:none;opacity:0;' +
+                'background:' + (dark ? '#121214' : '#ffffff') + ';transition:opacity ' + (quick ? 200 : 900) + 'ms cubic-bezier(.4,0,.2,1);';
+            document.body.appendChild(veil);
+            try { sessionStorage.setItem('fromTree', '1'); } catch (e) {}
+            let gone = false;
+            const go = () => { if (gone) return; gone = true; location.assign('/'); };
+            veil.addEventListener('transitionend', go);
+            setTimeout(go, quick ? 400 : 1200);
+            requestAnimationFrame(() => requestAnimationFrame(() => { veil.style.opacity = '1'; }));
+        }
         function setOneDActive(active) {
             if (active === oneDActive) return;
+            // The tree's portfolio view is now the new homepage
+            if (active) { handoffToHome(); return; }
             oneDActive = active;
             if (active) dismissSwipeHint();
             // 作品页记在这条历史记录的 state 里 (网址不加任何后缀): 刷新/后退回来还是作品页, 回到树就清掉
@@ -5830,8 +5852,8 @@
             } catch (e) {}
             const home = document.getElementById('fpHome');
             if (home) {                                   // logo 双重身份: 树↔作品页
-                home.setAttribute('aria-label', active ? 'Back to the tree' : 'View portfolio');
-                home.setAttribute('title', active ? 'Back to the tree' : 'View portfolio');
+                home.setAttribute('aria-label', active ? 'Back to the tree' : 'Back to imjane.top');
+                home.setAttribute('title', active ? 'Back to the tree' : 'Back to imjane.top');
             }
             const site = document.getElementById('oneDSite');
             if (site) {
@@ -6138,6 +6160,9 @@
             if (!oneDActive && j >= 0.978) setOneDActive(true);
         }
 
+        // The old built-in portfolio page is retired: the tree now hands off to imjane.top instead.
+        function buildOneDSite() {}
+        /* Old portfolio (kept for reference, no longer runs):
         // 构建坍塌后的白色个人网站 (极简高级)
         function buildOneDSite() {
             const track = document.getElementById('fpWrap');
@@ -6242,6 +6267,7 @@
                 });
             }
         }
+        */
 
         // Hire Me 留言 → 存进 Google 表格 (Apps Script, 永久免费)。
         // 把你部署的 Apps Script Web App /exec 网址粘到下面这个常量里即可。
@@ -6545,6 +6571,11 @@
         createSnowShells();
         
         transitionSeason();
+    </script>
+    <script>
+        window.addEventListener('pageshow', function (e) {
+            if (e.persisted) location.reload();   // back from the homepage: start fresh at the tree
+        });
     </script>
 </body>
 </html>

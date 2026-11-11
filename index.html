@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
+<script>try { if (sessionStorage.getItem('fromTree')) { sessionStorage.removeItem('fromTree'); document.documentElement.classList.add('from-tree'); } } catch (e) {}</script>
 <title>Jane Zhang</title>
 <meta name="description" content="Jane Zhang. Computer science and cognitive science at Barnard, Columbia. Films with AI.">
 <link rel="icon" href="favicon.ico">
@@ -16,19 +19,27 @@
     --muted: #6e6e73;
     --faint: #a1a1a6;
     --line: #e8e8ed;
-    /* season colour, set by script from today's date */
-    --season: #a87b2c;
-    --season-soft: rgba(168, 123, 44, .32);
   }
+  /* night follows the system unless the sun button picked one */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --paper: #121214;
       --ink: #ededf0;
       --muted: #9a9aa1;
       --faint: #66666d;
       --line: #2a2a2e;
+      color-scheme: dark;
     }
   }
+  :root[data-theme="dark"] {
+    --paper: #121214;
+    --ink: #ededf0;
+    --muted: #9a9aa1;
+    --faint: #66666d;
+    --line: #2a2a2e;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
 
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; scrollbar-width: none; }
@@ -48,15 +59,15 @@
   .page { max-width: 35rem; margin: 0 auto; padding: 18vh 24px 14vh; }
 
   a {
-    color: inherit;
+    color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--season-soft);
+    text-decoration-color: transparent;
     text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-    transition: text-decoration-color .2s;
+    text-underline-offset: 4px;
+    transition: text-decoration-color .25s ease, color .25s ease;
   }
-  a:hover { text-decoration-color: var(--season); }
-  :focus-visible { outline: 2px solid var(--season); outline-offset: 3px; border-radius: 2px; }
+  a:hover { text-decoration-color: var(--faint); }
+  :focus-visible { outline: 1px solid var(--muted); outline-offset: 3px; border-radius: 2px; }
 
   header { display: flex; align-items: center; gap: 12px; }
   .avatar { width: 34px; height: 51px; flex: none; }
@@ -88,18 +99,18 @@
     padding: 4px 0; transition: border-color .2s;
   }
   .note input[type=text]::placeholder { color: var(--faint); }
-  .note input[type=text]:focus { outline: none; border-bottom-color: var(--season); }
+  .note input[type=text]:focus { outline: none; border-bottom-color: var(--muted); }
   .send {
     font: inherit; color: var(--ink); background: none; border: 0; padding: 0; cursor: pointer;
-    text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px;
+    text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px;
   }
-  .send:hover { text-decoration-color: var(--season); }
+  .send:hover { text-decoration-color: var(--faint); }
   .status { min-height: 1.4em; margin-top: 6px; font-size: .9rem; color: var(--muted); }
   .hp { position: absolute; left: -9999px; }
 
   .motto { margin: 4.5em 0 0; text-wrap: pretty; }
   footer { margin-top: 1.2em; font-size: .9rem; color: var(--faint); }
-  footer a { text-decoration-color: var(--line); }
+  footer a { color: var(--muted); }
 
   @media (max-width: 560px) {
     body { font-size: 16.5px; }
@@ -110,22 +121,52 @@
 
   /* rain layer */
   #water { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-  .rain-toggle {
-    position: fixed; top: 16px; right: 18px; z-index: 6;
+  .corner { position: fixed; top: 16px; right: 18px; z-index: 6; display: flex; gap: 4px; }
+  .corner-btn {
     width: 34px; height: 34px; display: grid; place-items: center;
     color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
     border-radius: 50%; transition: color .25s;
   }
+  .corner-btn:hover { color: var(--muted); }
+  .corner-btn:focus-visible { outline: 1px solid var(--line); outline-offset: 0; }
+  #themeToggle svg { width: 17px; height: 17px; overflow: visible; }
+  #themeToggle circle, #themeToggle .moon { fill: transparent; stroke: currentColor; stroke-width: 1.2; stroke-linejoin: round; }
+  #themeToggle line { stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+  #themeToggle .sun, #themeToggle .moon { transition: none; }
+  #themeToggle .moon { opacity: 0; }
+  :root[data-theme="dark"] #themeToggle .sun { opacity: 0; }
+  :root[data-theme="dark"] #themeToggle .moon { opacity: 1; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #themeToggle .sun { opacity: 0; }
+    :root:not([data-theme="light"]) #themeToggle .moon { opacity: 1; }
+  }
   .rain-toggle svg { width: 13px; height: 18px; overflow: visible; }
   .rain-toggle path { fill: transparent; stroke: currentColor; stroke-width: 1.2; transition: fill .3s; }
-  .rain-toggle:hover, .rain-toggle[aria-pressed="true"] { color: var(--muted); }
-  .rain-toggle:focus-visible { outline: 1px solid var(--line); outline-offset: 0; }
+  .rain-toggle[aria-pressed="true"] { color: var(--muted); }
   .rain-toggle[aria-pressed="true"] path { fill: currentColor; }
+
+  /* arriving from the tree: the background is already there, the words settle in */
+  html.from-tree .page, html.from-tree .corner { opacity: 0; transform: translateY(8px); }
+  html.arrived .page, html.arrived .corner {
+    transition: opacity 1.1s cubic-bezier(.2,.6,.2,1), transform 1.1s cubic-bezier(.2,.6,.2,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.from-tree .page, html.from-tree .corner { transform: none; }
+  }
+  /* day / night: one soft crossfade for everything */
+  ::view-transition-old(root), ::view-transition-new(root) {
+    animation-duration: .5s;
+    animation-timing-function: cubic-bezier(.4,0,.2,1);
+  }
+  html.theming, html.theming * {
+    transition: background-color .5s cubic-bezier(.4,0,.2,1), color .5s cubic-bezier(.4,0,.2,1),
+                border-color .5s cubic-bezier(.4,0,.2,1), opacity .5s cubic-bezier(.4,0,.2,1) !important;
+  }
 </style>
 </head>
 <body>
 <canvas id="water" aria-hidden="true"></canvas>
-<button type="button" class="rain-toggle" id="rainToggle" aria-pressed="false" aria-label="Rain" title="Rain (R)"><svg viewBox="0 0 13 18" aria-hidden="true"><path d="M6.5 1C6.5 1 1.2 7.6 1.2 11.4a5.3 5.3 0 0 0 10.6 0C11.8 7.6 6.5 1 6.5 1Z"/></svg></button>
+<div class="corner"><button type="button" class="corner-btn" id="themeToggle" aria-label="Switch to night" title="Day / night"><svg viewBox="0 0 18 18" aria-hidden="true"><g class="sun"><circle cx="9" cy="9" r="3.4"/><g class="rays"><line x1="9" y1="1.2" x2="9" y2="3"/><line x1="9" y1="15" x2="9" y2="16.8"/><line x1="1.2" y1="9" x2="3" y2="9"/><line x1="15" y1="9" x2="16.8" y2="9"/><line x1="3.5" y1="3.5" x2="4.8" y2="4.8"/><line x1="13.2" y1="13.2" x2="14.5" y2="14.5"/><line x1="3.5" y1="14.5" x2="4.8" y2="13.2"/><line x1="13.2" y1="4.8" x2="14.5" y2="3.5"/></g></g><path class="moon" d="M14.6 11.3A6 6 0 0 1 6.7 3.4a6 6 0 1 0 7.9 7.9Z"/></svg></button><button type="button" class="corner-btn rain-toggle" id="rainToggle" aria-pressed="false" aria-label="Rain" title="Rain (R)"><svg viewBox="0 0 13 18" aria-hidden="true"><path d="M6.5 1C6.5 1 1.2 7.6 1.2 11.4a5.3 5.3 0 0 0 10.6 0C11.8 7.6 6.5 1 6.5 1Z"/></svg></button></div>
 <main class="page">
 
   <header>
@@ -188,19 +229,39 @@
   <p class="motto">However long it takes, I stay on the boat.</p>
 
   <footer>My old site was <a href="tree.html">a tree</a>.</footer>
+
 </main>
 
 <script>
-  // Link colour follows the real season (northern hemisphere).
+  // Day / night: one tap flips it; the choice is remembered on this device
   (function () {
-    var m = new Date().getMonth();
-    var c = m >= 2 && m <= 4 ? ['#6f9a3e', 'rgba(111,154,62,.32)']
-          : m >= 5 && m <= 7 ? ['#2f7a4a', 'rgba(47,122,74,.32)']
-          : m >= 8 && m <= 10 ? ['#a87b2c', 'rgba(168,123,44,.32)']
-          : ['#7e93a6', 'rgba(126,147,166,.36)'];
-    document.documentElement.style.setProperty('--season', c[0]);
-    document.documentElement.style.setProperty('--season-soft', c[1]);
+    var root = document.documentElement, btn = document.getElementById('themeToggle');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : mq.matches; }
+    function label() { btn.setAttribute('aria-label', isDark() ? 'Switch to day' : 'Switch to night'); }
+    btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      var apply = function () { root.setAttribute('data-theme', next); document.dispatchEvent(new Event('themechange')); };
+      if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.startViewTransition(apply);
+      } else {
+        root.classList.add('theming');
+        apply();
+        setTimeout(function () { root.classList.remove('theming'); }, 550);
+      }
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      label();
+    });
+    mq.addEventListener('change', label);
+    label();
   })();
+
+  if (document.documentElement.classList.contains('from-tree')) {
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      document.documentElement.classList.add('arrived');
+      document.documentElement.classList.remove('from-tree');
+    }); });
+  }
 
   // Note → the same Google Apps Script sheet the old site used
   var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL_FQF5F4ObQd1aLx1nwJHrZspTvjC4iaftvmelRH1I3zeVRur0FOqZkeRauk9pVnfIg/exec';
@@ -220,7 +281,9 @@
   });
 </script>
 <script>
-/* Rain: the raindrop button (or R) lets it rain on the page; drops land and splash. */
+/* Rain: the raindrop button (or R) lets it rain on the page.
+   Every drop has a depth: far drops are small, faint, slow and land higher up;
+   near drops are long, bright, fast and land low with a bigger splash. Wind gusts drift. */
 (function () {
   var cv = document.getElementById('water');
   var ctx = cv.getContext('2d');
@@ -228,7 +291,7 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   var W = 0, H = 0, dpr = 1, ink = '29,29,31';
   var ripples = [], drops = [], bits = [];
-  var raining = false, intensity = 0, spawnAcc = 0;
+  var raining = false, intensity = 0, spawnAcc = 0, clock = 0;
   var running = false, last = 0;
 
   function readInk() {
@@ -242,6 +305,43 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   function rand(a, b) { return a + Math.random() * (b - a); }
+  function rgba(a) { return 'rgba(' + ink + ',' + Math.max(0, a).toFixed(3) + ')'; }
+
+  // slow, smooth wind and density gusts (sum of sines, no pattern you can see)
+  function wind(t) { return 0.10 + 0.05 * Math.sin(t * 0.37) + 0.03 * Math.sin(t * 1.13 + 1.7); }
+  function gust(t) { return 0.85 + 0.25 * Math.sin(t * 0.21 + 0.4) + 0.12 * Math.sin(t * 0.83); }
+
+  function spawn() {
+    var z = Math.pow(Math.random(), 1.7);               // most drops are far away
+    var vy = 380 + 1150 * z + rand(-40, 40);
+    var through = z > 0.93;                            // the very nearest just pass the lens
+    drops.push({
+      z: z,
+      x: rand(-0.15 * W, W * 1.05),
+      y: rand(-80, -10),
+      vy: vy,
+      len: 5 + 38 * z * z + rand(0, 4),
+      w: 0.5 + 1.5 * z,
+      a: 0.10 + 0.55 * z,
+      ty: through ? H + 60 : H * (0.06 + 0.9 * z) + rand(-0.06, 0.06) * H
+    });
+  }
+
+  function splash(d) {
+    var z = d.z;
+    // a brief, very flat flick where the drop hits; it fades almost at once
+    ripples.push({ x: d.x, y: d.ty, max: 1.5 + 6 * z + rand(0, 1.5), flat: 0.2 + 0.06 * z,
+                   life: 0.16 + 0.22 * z, age: 0, a: 0.10 + 0.28 * z, rings: 1 });
+    if (z < 0.25) return;                              // far drops are too small to splash visibly
+    // a little crown of droplets thrown up and out
+    var n = 2 + Math.round(z * 3 * Math.random());
+    for (var k = 0; k < n; k++) {
+      var ang = rand(-Math.PI * 0.85, -Math.PI * 0.15);
+      var sp = rand(40, 70 + 120 * z);
+      bits.push({ x: d.x + rand(-1, 1), y: d.ty, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp * 1.4,
+                  s: 0.7 + 1.1 * z, a: 0.25 + 0.4 * z, age: 0, life: rand(0.14, 0.22 + 0.16 * z) });
+    }
+  }
 
   function start() {
     if (running) return;
@@ -251,66 +351,62 @@
 
   function frame(now) {
     var dt = Math.max(0, Math.min((now - last) / 1000, 0.05)); last = now;
+    clock += dt;
     ctx.clearRect(0, 0, W, H);
 
-    // rain eases in and out instead of switching on
-    intensity += ((raining ? 1 : 0) - intensity) * Math.min(dt * 1.2, 1);
+    intensity += ((raining ? 1 : 0) - intensity) * Math.min(dt * 0.8, 1);
     if (intensity > 0.01) {
-      var rate = 90 * intensity * Math.max(W / 1200, 0.45) * (reduce.matches ? 0.4 : 1);
+      var rate = 120 * intensity * gust(clock) * Math.max(W / 1300, 0.45) * (reduce.matches ? 0.4 : 1);
       spawnAcc += rate * dt;
-      while (spawnAcc >= 1) {
-        spawnAcc -= 1;
-        var vy = rand(900, 1250);
-        drops.push({ x: rand(-40, W), y: rand(-60, -10), vy: vy, vx: vy * 0.06,
-                     len: rand(14, 26), ty: rand(H * 0.04, H) });
-      }
+      while (spawnAcc >= 1) { spawnAcc -= 1; spawn(); }
     }
 
-    // falling drops
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = 'rgba(' + ink + ',0.5)';
+    var wx = wind(clock);
+    ctx.lineCap = 'round';
     for (var i = drops.length - 1; i >= 0; i--) {
       var d = drops[i];
-      d.x += d.vx * dt; d.y += d.vy * dt;
+      var vx = d.vy * wx;
+      d.x += vx * dt; d.y += d.vy * dt;
       if (d.y >= d.ty) {
-        ripples.push({ x: d.x, y: d.ty, max: rand(9, 18), life: rand(0.6, 0.9), age: 0 });
-        var n = Math.random() < 0.6 ? 2 : 3;
-        for (var k = 0; k < n; k++) {
-          bits.push({ x: d.x, y: d.ty, vx: rand(-70, 70), vy: rand(-170, -90), age: 0, life: rand(0.25, 0.4) });
-        }
+        if (d.ty < H) splash(d);
         drops.splice(i, 1);
         continue;
       }
-      var k2 = d.len / d.vy;
-      ctx.beginPath();
-      ctx.moveTo(d.x - d.vx * k2, d.y - d.len);
-      ctx.lineTo(d.x, d.y);
-      ctx.stroke();
+      // a streak that is brightest at the head and fades toward the tail (motion blur)
+      var tx = d.x - vx / d.vy * d.len, tyy = d.y - d.len;
+      var g = ctx.createLinearGradient(tx, tyy, d.x, d.y);
+      g.addColorStop(0, rgba(0));
+      g.addColorStop(1, rgba(d.a));
+      ctx.strokeStyle = g;
+      ctx.lineWidth = d.w;
+      ctx.beginPath(); ctx.moveTo(tx, tyy); ctx.lineTo(d.x, d.y); ctx.stroke();
     }
 
-    // splash droplets
     for (var j = bits.length - 1; j >= 0; j--) {
       var b = bits[j];
       b.age += dt;
       if (b.age >= b.life) { bits.splice(j, 1); continue; }
-      b.vy += 900 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-      ctx.fillStyle = 'rgba(' + ink + ',' + (0.65 * (1 - b.age / b.life)).toFixed(3) + ')';
-      ctx.fillRect(b.x, b.y, 1.6, 1.6);
+      b.vy += 1100 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
+      ctx.fillStyle = rgba(b.a * (1 - b.age / b.life));
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.s / 2, 0, Math.PI * 2); ctx.fill();
     }
 
-    // where a drop lands, a small flattened ring
+    ctx.lineWidth = 1;
     for (var r = ripples.length - 1; r >= 0; r--) {
       var p = ripples[r];
       p.age += dt;
       var t = p.age / p.life;
       if (t >= 1) { ripples.splice(r, 1); continue; }
-      var rad = p.max * (1 - Math.pow(1 - t, 3));
-      ctx.strokeStyle = 'rgba(' + ink + ',' + (0.6 * Math.pow(1 - t, 1.6)).toFixed(3) + ')';
-      ctx.beginPath();
-      ctx.ellipse(p.x, p.y, rad, rad * 0.38, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      for (var q = 0; q < p.rings; q++) {
+        var tq = t - q * 0.22;
+        if (tq <= 0) continue;
+        var rad = p.max * (1 - Math.pow(1 - tq, 1.6)) * (1 - q * 0.35);
+        ctx.strokeStyle = rgba(p.a * Math.pow(1 - tq, 2.2) * (1 - q * 0.4));
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, rad, rad * p.flat, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
     }
-    ctx.strokeStyle = 'rgba(' + ink + ',0.5)';
 
     if (raining || intensity > 0.01 || drops.length || bits.length || ripples.length) {
       requestAnimationFrame(frame);
@@ -336,6 +432,7 @@
 
   window.addEventListener('resize', resize);
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readInk);
+  document.addEventListener('themechange', readInk);
   readInk(); resize();
 })();
 </script>

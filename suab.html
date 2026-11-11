@@ -1,804 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUAB - Jane Zhang</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Refined rose palette — sophisticated, not candy */
-            --rose-50:  #fdf4f6;
-            --rose-100: #fbe8ee;
-            --rose-200: #f6d2dd;
-            --rose-300: #ecaec1;
-            --rose-400: #de7d9c;
-            --rose-500: #c9577c;   /* primary accent */
-            --rose-600: #ad3f64;
-            --rose-700: #8c2f4f;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}</script>
+<title>SUAB · Student Union Against Bullying</title>
+<meta name="description" content="Student Union Against Bullying: a student-run nonprofit with 2,000+ members in four countries.">
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #6e6e73;
+    --faint: #a1a1a6;
+    --line: #e8e8ed;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121214;
+      --ink: #ededf0;
+      --muted: #9a9aa1;
+      --faint: #66666d;
+      --line: #2a2a2e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121214;
+    --ink: #ededf0;
+    --muted: #9a9aa1;
+    --faint: #66666d;
+    --line: #2a2a2e;
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
 
-            --primary: var(--rose-500);
-            --accent: var(--rose-600);
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scrollbar-width: none; }
+  html::-webkit-scrollbar { display: none; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Newsreader", Georgia, serif;
+    font-optical-sizing: auto;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
 
-            /* Warm neutrals */
-            --cream:    #fffafb;
-            --canvas:   #fdf4f8;   /* uniform page + overscroll background */
-            --paper:    #ffffff;
-            --ink:      #2a2026;   /* headings */
-            --body:     #5c5159;   /* body copy */
-            --muted:    #8a7d85;   /* captions */
-            --line:     rgba(42, 32, 38, 0.08);
+  .page { max-width: 35rem; margin: 0 auto; padding: 14vh 24px 14vh; }
 
-            --shadow-sm: 0 1px 2px rgba(42,32,38,0.04), 0 4px 12px rgba(140,47,79,0.05);
-            --shadow-md: 0 12px 28px rgba(140,47,79,0.10), 0 4px 10px rgba(42,32,38,0.05);
-            --shadow-lg: 0 28px 60px rgba(140,47,79,0.16), 0 10px 24px rgba(42,32,38,0.07);
+  a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: text-decoration-color .25s ease, color .25s ease;
+  }
+  a:hover { text-decoration-color: var(--faint); }
+  :focus-visible { outline: 1px solid var(--muted); outline-offset: 3px; border-radius: 2px; }
 
-            --radius: 18px;
-            --radius-sm: 12px;
-            --maxw: 1180px;
-            --ease: cubic-bezier(0.22, 1, 0.36, 1);
-            --transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+  .back { font-size: .95rem; color: var(--faint); text-decoration: none; }
+  .back:hover { color: var(--muted); }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  h1 { margin: 2.4em 0 0; font-size: 1.25rem; font-weight: 500; letter-spacing: -.005em; line-height: 1.3; }
+  .tag { margin: 14px 0 0; color: var(--muted); }
 
-        html {
-            scroll-behavior: smooth;
-            min-height: 100%;
-            /* The page must read as one endless canvas: pulling past either edge may never
-               reveal a color the page doesn't already have there.
-               1) Most browsers simply don't bounce any more.
-               2) iOS Safari ignores that, so the canvas background is a single tile twice
-                  the document's height: the strip revealed BELOW the page is the footer's
-                  pink, and the tile wraps so the strip revealed ABOVE it is the page cream. */
-            overscroll-behavior-y: none;
-            background-color: var(--canvas);
-            background-image: linear-gradient(to bottom,
-                var(--canvas)   0    50%,    /* behind the page itself */
-                var(--rose-400) 50%  75%,    /* revealed below the pink footer */
-                var(--canvas)   75%  100%);  /* wraps around: revealed above the header */
-            background-size: 100% 200%;
-            background-repeat: repeat-y;
-        }
+  p { margin: 0 0 1em; }
+  .lead { margin-top: 2.4em; }
+  .quote { font-style: italic; }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            line-height: 1.7;
-            color: var(--body);
-            background: transparent;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+  section { margin-top: 3.2em; }
+  h2 { margin: 0 0 .9em; font-size: 1rem; font-weight: 400; color: var(--faint); }
 
-        h1, h2, h3 {
-            font-family: 'Poppins', 'Inter', sans-serif;
-            color: var(--ink);
-            font-weight: 500;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-        }
+  /* the same two-column index as the homepage */
+  .row {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr;
+    column-gap: 1rem;
+    padding: .22em 0;
+  }
+  .row dt { margin: 0; }
+  .row dd { margin: 0; color: var(--muted); }
+  dl { margin: 0; }
+  .wechat { display: block; color: var(--faint); font-size: .92rem; }
 
-        a { color: inherit; }
+  /* events: a photo, then a line or two */
+  .event { margin: 0 0 2.6em; }
+  .event img {
+    display: block; width: 100%; height: auto;
+    aspect-ratio: 3 / 2; object-fit: cover;
+    border-radius: 4px;
+    background: var(--line);
+  }
+  .event h3 { margin: 14px 0 4px; font-size: 1rem; font-weight: 500; }
+  .event p { margin: 0; color: var(--muted); }
 
-        .container {
-            max-width: var(--maxw);
-            margin: 0 auto;
-            padding: 0 40px;
-            width: 100%;
-        }
+  footer { margin-top: 4em; font-size: .9rem; color: var(--faint); }
 
-        /* ---------- Eyebrow / section header ---------- */
-        .eyebrow {
-            display: inline-block;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.22em;
-            text-transform: uppercase;
-            color: var(--rose-500);
-            margin-bottom: 1rem;
-        }
+  /* day / night */
+  .corner { position: fixed; top: 16px; right: 18px; z-index: 6; }
+  .corner-btn {
+    width: 34px; height: 34px; display: grid; place-items: center;
+    color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
+    border-radius: 50%; transition: color .25s;
+  }
+  .corner-btn:hover { color: var(--muted); }
+  .corner-btn:focus-visible { outline: 1px solid var(--line); outline-offset: 0; }
+  #themeToggle svg { width: 17px; height: 17px; overflow: visible; }
+  #themeToggle circle, #themeToggle .moon { fill: transparent; stroke: currentColor; stroke-width: 1.2; stroke-linejoin: round; }
+  #themeToggle line { stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
+  #themeToggle .sun, #themeToggle .moon { transition: none; }
+  #themeToggle .moon { opacity: 0; }
+  :root[data-theme="dark"] #themeToggle .sun { opacity: 0; }
+  :root[data-theme="dark"] #themeToggle .moon { opacity: 1; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) #themeToggle .sun { opacity: 0; }
+    :root:not([data-theme="light"]) #themeToggle .moon { opacity: 1; }
+  }
 
-        /* ---------- Home link ---------- */
-        .home-link {
-            position: fixed;
-            top: 22px;
-            right: 26px;
-            z-index: 200;
-        }
-
-        .home-link a {
-            display: block;
-            width: 66px;
-            height: 66px;
-            transition: var(--transition);
-        }
-
-        .home-link a img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            filter: drop-shadow(0 5px 12px rgba(140, 47, 79, 0.20));
-        }
-
-        .home-link a:hover {
-            transform: translateY(-2px) scale(1.06);
-        }
-
-        /* ---------- Hero ---------- */
-        header {
-            position: relative;
-            text-align: center;
-            padding: 3rem 0 3rem;
-            overflow: hidden;
-            /* hero glow lives only in the header now, so the global canvas stays a single
-               flat color that matches the overscroll color exactly */
-            background: radial-gradient(1200px 640px at 50% -120px, var(--rose-100) 0%, rgba(251, 232, 238, 0) 62%);
-        }
-
-        /* soft floating accent orb */
-        header::before {
-            content: "";
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(8px);
-            opacity: 0.45;
-            pointer-events: none;
-            width: 220px; height: 220px;
-            top: 12%; left: -70px;
-            background: radial-gradient(circle at 30% 30%, var(--rose-200), rgba(246,210,221,0));
-        }
-
-        .header-content {
-            position: relative;
-            z-index: 1;
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 0 40px;
-        }
-
-        h1 {
-            font-size: clamp(2.5rem, 6vw, 4.4rem);
-            font-weight: 400;
-            letter-spacing: -0.02em;
-            margin-bottom: 1.4rem;
-            color: var(--ink);
-        }
-        h1 .accent { color: var(--rose-500); font-weight: 500; }
-
-        .tagline {
-            font-size: clamp(1.05rem, 2.2vw, 1.3rem);
-            font-weight: 400;
-            color: var(--muted);
-            max-width: 580px;
-            margin: 0 auto;
-        }
-
-        /* ---------- Sections ---------- */
-        .section {
-            padding: 2rem 0;
-        }
-        .section:first-of-type {
-            padding-top: 1rem;
-        }
-
-        .section-head {
-            text-align: center;
-            max-width: 680px;
-            margin: 0 auto 2rem;
-        }
-        .section-head .eyebrow { margin-bottom: 0.85rem; }
-        .section-title {
-            font-size: clamp(2rem, 4.2vw, 2.9rem);
-            margin: 0 auto;
-        }
-        .section-head .lede {
-            margin-top: 1.1rem;
-            font-size: 1.1rem;
-            color: var(--muted);
-        }
-
-        /* legacy hook used by JS — kept harmless */
-        .section-title { position: relative; }
-
-        /* ---------- Story / split layout ---------- */
-        .story-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            align-items: center;
-            gap: 64px;
-        }
-        .story-container.reverse .story-text { order: 2; }
-        .story-container.reverse .story-image { order: 1; }
-
-        .story-text p {
-            margin-bottom: 1.35rem;
-            font-size: 1.12rem;
-            line-height: 1.85;
-            color: var(--body);
-        }
-        .story-text p:last-child { margin-bottom: 0; }
-
-        .quote {
-            font-family: 'Poppins', 'Inter', sans-serif;
-            font-style: italic;
-            font-weight: 500;
-            font-size: clamp(1.2rem, 2.3vw, 1.5rem);
-            line-height: 1.5;
-            color: var(--ink);
-            margin: 2.2rem 0;
-            padding: 0.4rem 0 0.4rem 1.6rem;
-            border-left: 3px solid var(--rose-400);
-        }
-
-        .story-image {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-            aspect-ratio: 4 / 3;
-            background: var(--rose-100);
-        }
-        .story-image::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius);
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
-            pointer-events: none;
-        }
-        .story-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.9s var(--ease);
-        }
-        .story-image:hover img { transform: scale(1.05); }
-
-        /* Certificate — show the whole document, no frame/mat */
-        .story-image.is-document {
-            aspect-ratio: auto;
-            background: transparent;
-            box-shadow: var(--shadow-md);
-            max-width: 460px;
-            margin-inline: auto;
-        }
-        .story-image.is-document::after { display: none; }
-        .story-image.is-document img {
-            height: auto;
-            object-fit: contain;
-        }
-        .story-image.is-document:hover img { transform: none; }
-
-        /* ---------- Branches ---------- */
-        .branches {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            max-width: 880px;
-            margin: 0 auto;
-        }
-        .branch-list {
-            display: flex;
-            flex-direction: column;
-            gap: 52px;
-            flex: 1;
-        }
-        .branch {
-            display: flex;
-            align-items: center;
-            gap: 26px;
-        }
-        .branch-logo {
-            width: 220px;
-            height: 220px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            object-fit: contain;
-            background: var(--rose-50);
-            border: 1px solid var(--rose-100);
-            padding: 16px;
-        }
-        .branch-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.25rem;
-        }
-        .branch-diff {
-            color: var(--body);
-            font-size: 1.02rem;
-            margin-bottom: 0.45rem;
-        }
-        .branch-wechat {
-            font-size: 0.85rem;
-            font-weight: 500;
-            letter-spacing: 0.01em;
-            color: var(--rose-600);
-        }
-
-        /* ---------- Past Events — full-bleed horizontal scroller ---------- */
-        .achievements {
-            display: flex;
-            gap: 44px;
-            overflow-x: auto;
-            scroll-behavior: auto;
-            -webkit-overflow-scrolling: touch;
-            /* a centered band, a bit wider than the text column, framed by EQUAL margins
-               on both sides (capped so they never get too wide). Cards fill it edge to
-               edge — no dead gap at either end. */
-            width: min(calc(100vw - 120px), 1500px);
-            position: relative;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 2px 36px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--rose-200) transparent;
-        }
-        .achievements::-webkit-scrollbar { height: 7px; }
-        .achievements::-webkit-scrollbar-track { background: transparent; }
-        .achievements::-webkit-scrollbar-thumb {
-            background: var(--rose-200);
-            border-radius: 100px;
-        }
-        .achievements::-webkit-scrollbar-thumb:hover { background: var(--rose-300); }
-
-        /* gallery speed control */
-        .events-controls {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 26px;
-            color: var(--muted);
-            font-size: 0.82rem;
-            letter-spacing: 0.02em;
-        }
-        .events-controls input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 170px;
-            height: 4px;
-            border-radius: 100px;
-            background: var(--rose-200);
-            outline: none;
-            cursor: pointer;
-        }
-        .events-controls input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 17px; height: 17px;
-            border-radius: 50%;
-            background: var(--rose-500);
-            border: 2px solid #fff;
-            box-shadow: var(--shadow-sm);
-        }
-        .events-controls input[type="range"]::-moz-range-thumb {
-            width: 17px; height: 17px;
-            border-radius: 50%;
-            background: var(--rose-500);
-            border: 2px solid #fff;
-        }
-
-        .achievement-card {
-            flex: 0 0 clamp(280px, 26vw, 372px);
-            background: var(--paper);
-            border: 1px solid rgba(42, 32, 38, 0.03);
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 14px 40px rgba(140, 47, 79, 0.06);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
-        }
-        .achievement-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 26px 56px rgba(140, 47, 79, 0.12);
-        }
-
-        .achievement-image {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 3 / 2;
-            overflow: hidden;
-            background: var(--rose-50);
-        }
-        .achievement-image::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(42,32,38,0) 55%, rgba(42,32,38,0.18));
-            opacity: 0;
-            transition: opacity 0.45s var(--ease);
-        }
-        .achievement-card:hover .achievement-image::after { opacity: 1; }
-        .achievement-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            transition: transform 0.8s var(--ease);
-        }
-        .achievement-card:hover .achievement-image img { transform: scale(1.07); }
-
-        .achievement-content {
-            padding: 1.6rem 1.65rem 1.8rem;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        .achievement-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--ink);
-            margin-bottom: 0.65rem;
-        }
-        .achievement-content p {
-            font-size: 0.98rem;
-            line-height: 1.7;
-            color: var(--body);
-            margin: 0;
-        }
-
-        .website-link {
-            color: var(--rose-600);
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 1px solid var(--rose-200);
-            transition: var(--transition);
-        }
-        .website-link:hover {
-            color: var(--rose-700);
-            border-bottom-color: var(--rose-500);
-        }
-
-        /* ---------- CTA ---------- */
-        .cta-section {
-            position: relative;
-            overflow: hidden;
-            padding: 6rem 0 3.4rem;
-            text-align: center;
-            background: linear-gradient(135deg, var(--rose-500), var(--rose-400) 60%, var(--rose-300));
-            color: #fff;
-        }
-        .cta-section::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(600px 300px at 15% 0%, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%),
-                radial-gradient(500px 280px at 90% 100%, rgba(255,255,255,0.14), rgba(255,255,255,0) 70%);
-            pointer-events: none;
-        }
-        .cta-content {
-            position: relative;
-            z-index: 1;
-            max-width: 720px;
-            margin: 0 auto;
-        }
-        .cta-content .eyebrow { color: rgba(255,255,255,0.85); }
-        .cta-content h2 {
-            font-size: clamp(2rem, 4.5vw, 2.9rem);
-            color: #fff;
-            margin-bottom: 1.1rem;
-        }
-        .cta-content p {
-            font-size: 1.12rem;
-            line-height: 1.75;
-            color: rgba(255,255,255,0.94);
-            max-width: 520px;
-            margin: 0 auto;
-            text-align: left;
-        }
-        .cta-content a {
-            color: #fff;
-            font-weight: 600;
-            text-decoration: underline;
-            text-underline-offset: 3px;
-            text-decoration-color: rgba(255,255,255,0.55);
-            transition: var(--transition);
-        }
-        .cta-content a:hover { text-decoration-color: #fff; }
-
-        /* ---------- CTA copyright ---------- */
-        .cta-copyright {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            margin: 3.2rem auto 0;
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.72);
-        }
-
-        /* ---------- Scroll reveal ---------- */
-        .reveal {
-            opacity: 0;
-            transform: translateY(28px);
-            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-            will-change: opacity, transform;
-        }
-        .reveal.animate {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-            .reveal { opacity: 1; transform: none; }
-        }
-
-        /* ---------- Responsive ---------- */
-        @media (max-width: 980px) {
-            .achievement-card { flex-basis: clamp(280px, 64vw, 360px); }
-        }
-
-        @media (max-width: 768px) {
-            .container { padding: 0 22px; }
-            .home-link { top: 14px; right: 14px; }
-            .home-link a { width: 54px; height: 54px; }
-
-            header { padding: 8.5rem 0 5rem; }
-            .header-content { padding: 0 22px; }
-
-            .section { padding: 4.2rem 0; }
-            .section-head { margin-bottom: 2.6rem; }
-
-            .story-container {
-                grid-template-columns: 1fr;
-                gap: 34px;
-            }
-            .story-container.reverse .story-text { order: 1; }
-            .story-container.reverse .story-image { order: 2; }
-            .story-image { aspect-ratio: 16 / 10; }
-
-            .branches { gap: 20px; max-width: 460px; }
-            .branches .brace { width: 28px; }
-            .branch { gap: 18px; }
-            .branch-list { gap: 38px; }
-            .branch-logo { width: 84px; height: 84px; padding: 9px; }
-
-            /* 基础规则的 width: calc(100vw - 120px) 在手机上只剩 ~270px, 比 82vw 的卡片
-               还窄 → 每张卡都被裁掉右边。这里改成真·全出血: 占满整个视口宽,
-               用 padding 留出与 .container 一致的 22px 边距。 */
-            .achievements { width: 100vw; margin: 0; gap: 18px; padding: 10px 22px 26px; scroll-padding-left: 22px; }
-            .achievement-card { flex-basis: 82vw; }
-
-            .quote { font-size: 1.3rem; margin: 1.8rem 0; }
-
-            /* show content immediately on mobile to avoid blank flashes */
-            .reveal { opacity: 1; transform: none; transition: none; }
-        }
-
-        @media (max-width: 400px) {
-            .container { padding: 0 18px; }
-        }
-    </style>
+  @media (max-width: 560px) {
+    body { font-size: 16.5px; }
+    .page { padding: 10vh 20px 10vh; }
+    .row { grid-template-columns: 1fr; padding: .4em 0; }
+  }
+  /* day / night: one soft crossfade for everything */
+  ::view-transition-old(root), ::view-transition-new(root) {
+    animation-duration: .5s;
+    animation-timing-function: cubic-bezier(.4,0,.2,1);
+  }
+  html.theming, html.theming * {
+    transition: background-color .5s cubic-bezier(.4,0,.2,1), color .5s cubic-bezier(.4,0,.2,1),
+                border-color .5s cubic-bezier(.4,0,.2,1), opacity .5s cubic-bezier(.4,0,.2,1) !important;
+  }
+</style>
 </head>
 <body>
-    <!-- Avatar — links back to portfolio -->
-    <div class="home-link">
-        <a href="index.html" aria-label="Back to Jane Zhang's portfolio">
-            <img src="images/jane-avatar.png" alt="Jane Zhang">
-        </a>
+<div class="corner"><button type="button" class="corner-btn" id="themeToggle" aria-label="Switch to night" title="Day / night"><svg viewBox="0 0 18 18" aria-hidden="true"><g class="sun"><circle cx="9" cy="9" r="3.4"/><line x1="9" y1="1.2" x2="9" y2="3"/><line x1="9" y1="15" x2="9" y2="16.8"/><line x1="1.2" y1="9" x2="3" y2="9"/><line x1="15" y1="9" x2="16.8" y2="9"/><line x1="3.5" y1="3.5" x2="4.8" y2="4.8"/><line x1="13.2" y1="13.2" x2="14.5" y2="14.5"/><line x1="3.5" y1="14.5" x2="4.8" y2="13.2"/><line x1="13.2" y1="4.8" x2="14.5" y2="3.5"/></g><path class="moon" d="M14.6 11.3A6 6 0 0 1 6.7 3.4a6 6 0 1 0 7.9 7.9Z"/></svg></button></div>
+
+<main class="page">
+
+  <a class="back" href="/">Jane Zhang</a>
+
+  <h1>Student Union Against Bullying</h1>
+  <p class="tag">A student-run nonprofit, registered in Massachusetts. 2,000+ members in four countries.</p>
+
+  <p class="lead">Everyone deserves to feel safe and respected at school.</p>
+  <p class="quote">“I was bullied in middle school, and in three years I made only one friend.”</p>
+  <p>That was me. I now lead SUAB, a community where anyone affected by bullying can be heard and find support. When we speak up, we speak for everyone still suffering in silence.</p>
+
+  <section>
+    <h2>Branches</h2>
+    <dl>
+      <div class="row"><dt>SUAB</dt><dd>The founding U.S. chapter, registered in Massachusetts.<span class="wechat">WeChat: SUAB, ID KENTSUAB</span></dd></div>
+      <div class="row"><dt>SUAB Beijing</dt><dd>A coalition of a dozen-plus schools across Beijing.<span class="wechat">WeChat: SUAB Hutong Guardian, ID gh_6172ea08af2c</span></dd></div>
+    </dl>
+  </section>
+
+  <section>
+    <h2>What we've done</h2>
+
+    <div class="event">
+      <img src="images/vab.jpg" alt="Students writing messages on the Empathy Wall" loading="lazy" width="1000" height="1316">
+      <h3>Vassar Anti-Bullying Week</h3>
+      <p>A campus-wide week sponsored by the Engaged Pluralism Office. 300+ participants; 100+ people left messages of support on the Empathy Wall.</p>
     </div>
 
-    <header>
-        <div class="header-content">
-            <h1>Student Union<br>Against <span class="accent">Bullying</span></h1>
-            <p class="tagline">A nonprofit officially registered in Massachusetts</p>
-        </div>
-    </header>
+    <div class="event">
+      <img src="images/vab2.jpg" alt="Students painting together" loading="lazy" width="1200" height="902">
+      <h3>Paint for Care</h3>
+      <p>Two hours of open painting and free snacks during finals week, on anti-bullying themes.</p>
+    </div>
 
-    <section class="section">
-        <div class="container">
-            <div class="section-head reveal">
-                <h2 class="section-title">Our Mission</h2>
-            </div>
-            <div class="story-container reveal">
-                <div class="story-text">
-                    <p>Everyone deserves to feel safe and respected at school.</p>
-                    <p>“I was bullied in middle school, and in three years I made only one friend,” says Jane Zhang, president of SUAB. Today she helps other students facing what she once went through alone.</p>
-                    <p class="quote">When we speak up, we speak not just for ourselves, but for everyone still suffering in silence.</p>
-                    <p>SUAB is a community where anyone affected by bullying can be heard and find support. With more than 2,000 members across four countries, we welcome everyone who wants to help make schools kinder and safer.</p>
-                </div>
-                <div class="story-image is-document">
-                    <img src="images/mission-illustration.jpg" alt="SUAB Certificate of Good Standing from the Commonwealth of Massachusetts">
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="event">
+      <img src="images/suab-team.jpg" alt="Debate participants on stage" loading="lazy" width="834" height="712">
+      <h3>Anti-Bullying Debate</h3>
+      <p>Hosted with the International Department of the High School Affiliated to Peking University. One motion: are bullies truly guilty, and how should that guilt be defined?</p>
+    </div>
 
-    <section class="section tinted about-section">
-        <div class="container">
-            <div class="section-head reveal">
-                <h2 class="section-title">About SUAB</h2>
-                <p class="lede">Two branches, united by one mission.</p>
-            </div>
+    <div class="event">
+      <img src="images/charity-sales.jpg" alt="A charity sale stall at school" loading="lazy" width="539" height="561">
+      <h3>Charity Sales</h3>
+      <p>Sales at schools across Beijing raised over 20,000 yuan for anti-bullying work and support for students who were bullied.</p>
+    </div>
 
-            <div class="branches reveal">
-                <div class="branch-list">
-                    <div class="branch">
-                        <img class="branch-logo" src="images/suab-main-logo.png" alt="SUAB logo">
-                        <div>
-                            <h3 class="branch-name">SUAB</h3>
-                            <p class="branch-diff">The founding U.S. chapter, registered in Massachusetts.</p>
-                            <p class="branch-wechat">WeChat: SUAB · ID: KENTSUAB</p>
-                        </div>
-                    </div>
-                    <div class="branch">
-                        <img class="branch-logo" src="images/suab-beijing-logo.png" alt="SUAB Beijing Branch logo">
-                        <div>
-                            <h3 class="branch-name">SUAB Beijing Branch</h3>
-                            <p class="branch-diff">A coalition of a dozen-plus schools across Beijing.</p>
-                            <p class="branch-wechat">WeChat: SUAB Hutong Guardian · ID: gh_6172ea08af2c</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="event">
+      <img src="images/workshops-drama.jpg" alt="Students performing a drama workshop" loading="lazy" width="544" height="382">
+      <h3>Workshops and Drama</h3>
+      <p>Interactive workshops and plays on campus that teach prevention through storytelling and role-play.</p>
+    </div>
 
-    <section class="section">
-        <div class="container">
-            <div class="section-head reveal">
-                <h2 class="section-title">Past Events</h2>
-            </div>
-            <div class="achievements">
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/suab-team.jpg" alt="Students at the anti-bullying debate holding certificates" loading="lazy" decoding="async" width="834" height="712">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Anti-Bullying Debate</h3>
-                        <p>An anti-bullying debate hosted by the International Department of the High School Affiliated to Peking University, where students argued questions such as "Are bullies truly guilty — and how should that guilt be defined?"</p>
-                    </div>
-                </div>
+    <div class="event">
+      <img src="images/pink-day.jpg" alt="Pink Day decorations on campus" loading="lazy" width="1200" height="800">
+      <h3>Pink Day</h3>
+      <p>Pink across campus as a visible sign of solidarity and kindness.</p>
+    </div>
 
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/charity-sales.jpg" alt="Charity sales at schools" loading="lazy" decoding="async" width="539" height="561">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Charity Sales</h3>
-                        <p>Organized charity sales at various schools in Beijing, successfully raising over 20,000 yuan in donations to support anti-bullying initiatives and victim assistance programs.</p>
-                    </div>
-                </div>
+    <div class="event">
+      <img src="images/digital-avatar.jpg" alt="Jane's digital avatar on the SUAB website" loading="lazy" width="1200" height="785">
+      <h3>Digital pamphlet</h3>
+      <p>A website where my digital avatar walks visitors through anti-bullying resources. <a href="https://studentunionagainstbullying.github.io/janepamphlet/" target="_blank" rel="noopener">Visit it</a>.</p>
+    </div>
+  </section>
 
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/workshops-drama.jpg" alt="Campus workshops and drama performances" loading="lazy" decoding="async" width="544" height="382">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Workshops &amp; Drama</h3>
-                        <p>Conducted interactive workshops and drama performances on campuses to educate students about bullying prevention and create empathy through storytelling and role-playing.</p>
-                    </div>
-                </div>
+  <section>
+    <h2>Join us</h2>
+    <p>Have a story to share, or want to help? Write to <a href="mailto:janezzz@stanford.edu">janezzz@stanford.edu</a>.</p>
+  </section>
 
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/pink-day.jpg" alt="Pink Day events" loading="lazy" decoding="async" width="1200" height="800">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Pink Day Events</h3>
-                        <p>Organized Pink Day events with pink-themed decorations to raise awareness about bullying, creating a visual symbol of solidarity and promoting a culture of kindness on campus.</p>
-                    </div>
-                </div>
+  <footer>© 2026 Student Union Against Bullying</footer>
+</main>
 
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/digital-avatar.jpg" alt="Anti-bullying website with digital avatar" loading="lazy" decoding="async" width="1200" height="785">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Digital Education Platform</h3>
-                        <p>As the president, I developed an anti-bullying website featuring my digital avatar to guide visitors through anti-bullying pamphlets and resources. Visit <a href="https://studentunionagainstbullying.github.io/janepamphlet/" target="_blank" class="website-link">our educational platform</a>.</p>
-                    </div>
-                </div>
-
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/vab.jpg" alt="Vassar Anti-Bullying Week" loading="lazy" decoding="async" width="1000" height="1316">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Vassar Anti-Bullying Week</h3>
-                        <p>Vassar Anti-Bullying Week was a campus-wide initiative sponsored by the Engaged Pluralism Office, engaging 300+ participants, with 100+ community members contributing messages of support and kindness on the Empathy Wall.</p>
-                    </div>
-                </div>
-
-                <div class="achievement-card reveal">
-                    <div class="achievement-image">
-                        <img src="images/vab2.jpg" alt="Paint for Care" loading="lazy" decoding="async" width="1200" height="902">
-                    </div>
-                    <div class="achievement-content">
-                        <h3 class="achievement-title">Paint for Care</h3>
-                        <p>Paint for Care was a two-hour open painting event with free snacks, where students freely expressed themselves around anti-bullying themes while unwinding during finals week.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="cta-section">
-        <div class="container cta-content reveal">
-            <h2>Join Us</h2>
-            <p>Have a story to share, or want to get involved? Reach out at <a href="mailto:janezzz@stanford.edu">janezzz@stanford.edu</a>.</p>
-        </div>
-        <p class="cta-copyright">© 2026 Student Union Against Bullying. All Rights Reserved.</p>
-    </section>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var reveals = document.querySelectorAll('.reveal');
-
-            if ('IntersectionObserver' in window) {
-                var observer = new IntersectionObserver(function (entries) {
-                    entries.forEach(function (entry) {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add('animate');
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-
-                reveals.forEach(function (el) { observer.observe(el); });
-            } else {
-                reveals.forEach(function (el) { el.classList.add('animate'); });
-            }
-
-            // Past Events — auto-rotating gallery with manual speed control
-            var track = document.querySelector('.achievements');
-            var speedInput = document.getElementById('events-speed');
-            if (track && speedInput && track.children.length) {
-                var count = track.children.length;
-                for (var i = 0; i < count; i++) {
-                    var clone = track.children[i].cloneNode(true);
-                    clone.classList.remove('reveal');
-                    clone.classList.add('animate');
-                    clone.setAttribute('aria-hidden', 'true');
-                    track.appendChild(clone);
-                }
-
-                var loopWidth = track.children[count].offsetLeft - track.children[0].offsetLeft;
-                window.addEventListener('resize', function () {
-                    loopWidth = track.children[count].offsetLeft - track.children[0].offsetLeft;
-                });
-
-                var speed = parseFloat(speedInput.value); // px per second
-                var paused = false;
-                var carry = 0;
-                var last = null;
-
-                speedInput.addEventListener('input', function () { speed = parseFloat(speedInput.value); });
-                track.addEventListener('pointerenter', function () { paused = true; });
-                track.addEventListener('pointerleave', function () { paused = false; });
-
-                function tick(ts) {
-                    if (last === null) last = ts;
-                    var dt = (ts - last) / 1000;
-                    last = ts;
-                    if (!paused && speed > 0 && loopWidth > 0) {
-                        carry += speed * dt;
-                        var whole = Math.floor(carry);
-                        if (whole > 0) {
-                            carry -= whole;
-                            var next = track.scrollLeft + whole;
-                            if (next >= loopWidth) next -= loopWidth;
-                            track.scrollLeft = next;
-                        }
-                    }
-                    requestAnimationFrame(tick);
-                }
-                requestAnimationFrame(tick);
-            }
-        });
-    </script>
+<script>
+  (function () {
+    var root = document.documentElement, btn = document.getElementById('themeToggle');
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    function isDark() { var t = root.getAttribute('data-theme'); return t ? t === 'dark' : mq.matches; }
+    function label() { btn.setAttribute('aria-label', isDark() ? 'Switch to day' : 'Switch to night'); }
+    btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      var apply = function () { root.setAttribute('data-theme', next); };
+      if (document.startViewTransition && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.startViewTransition(apply);
+      } else {
+        root.classList.add('theming');
+        apply();
+        setTimeout(function () { root.classList.remove('theming'); }, 550);
+      }
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      label();
+    });
+    mq.addEventListener('change', label);
+    label();
+  })();
+</script>
 </body>
 </html>
