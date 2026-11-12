@@ -124,14 +124,17 @@
 
   /* rain layer */
   #water { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
-  .corner { position: fixed; top: 16px; right: 18px; z-index: 6; display: flex; gap: 4px; }
+  .corner { position: fixed; top: calc(28px + env(safe-area-inset-top)); right: calc(32px + env(safe-area-inset-right)); z-index: 6; display: flex; gap: 6px; }
+  @media (max-width: 600px) { .corner { top: calc(18px + env(safe-area-inset-top)); right: calc(14px + env(safe-area-inset-right)); } }
   .corner-btn {
     width: 34px; height: 34px; display: grid; place-items: center;
     color: var(--faint); background: none; border: 0; padding: 0; cursor: pointer;
     border-radius: 50%; transition: color .25s;
+    -webkit-tap-highlight-color: transparent; outline: none;
   }
   .corner-btn:hover { color: var(--muted); }
-  .corner-btn:focus-visible { outline: 1px solid var(--line); outline-offset: 0; }
+  .corner-btn:focus, .corner-btn:focus-visible { outline: none; }
+  .corner-btn:focus-visible { color: var(--ink); }
   #themeToggle svg { width: 17px; height: 17px; overflow: visible; }
   #themeToggle circle, #themeToggle .moon { fill: transparent; stroke: currentColor; stroke-width: 1.2; stroke-linejoin: round; }
   #themeToggle line { stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; }
