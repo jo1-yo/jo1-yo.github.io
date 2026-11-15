@@ -1478,10 +1478,10 @@
 
         const TRUNK_H = 8.9;
         let trunkCurve = null;
-        const trunkRadius = (u) => 0.62 + 0.72 * Math.pow(1 - u, 1.1);   // 贴地 ~1.35, 分叉处 ~0.68
+        const trunkRadius = (u) => 0.78 + 0.8 * Math.pow(1 - u, 1.1);   // 贴地 ~1.6, 分叉处 ~0.85
 
         function buildSkeleton() {
-            const MIN_R = IS_TOUCH ? 0.11 : 0.08;   // 最细的枝梢, 由网格精度决定 (再细会断成一节节)
+            const MIN_R = IS_TOUCH ? 0.12 : 0.1;   // 最细的枝梢, 由网格精度决定 (再细会断成一节节)
             const caps = [];
             branchDataList = [];
             branchTips = [];
@@ -1491,21 +1491,23 @@
             // 树干
             const tpts = [];
             for (let k = 0; k <= 6; k++) {
-                const y = -1.4 + k * (TRUNK_H + 1.4) / 6;
+                const y = -2.6 + k * (TRUNK_H + 2.6) / 6;
                 const lean = Math.min(1, Math.max(0, y) / 6) * 0.6;
                 tpts.push(new THREE.Vector3(0.32 * Math.sin(y * 0.23 + 0.5) * lean, y, 0.24 * Math.sin(y * 0.17 + 2.1) * lean));
             }
             trunkCurve = new THREE.CatmullRomCurve3(tpts, false, 'centripetal');
             capsulesAlong(caps, trunkCurve, (u) => {
-                const y = -1.4 + u * (TRUNK_H + 1.4);
-                return trunkRadius(Math.max(0, y) / TRUNK_H) + 0.28 * Math.exp(-Math.max(0, y) / 0.8);   // 贴地处略宽
+                const y = -2.6 + u * (TRUNK_H + 2.6);
+                return trunkRadius(Math.max(0, y) / TRUNK_H) + 0.16 * Math.exp(-Math.max(0, y) / 1.6);   // 贴地处缓缓放宽一点, 不要喇叭口
             }, 48, 'trunk');   // 切得够细, 相邻两段的粗细差几乎为零, 不会留下一圈圈的接痕
 
             // 五根主枝, 从树干上段里面起步
-            const limbHeights = [7.0, 7.4, 7.8, 8.2, 8.6];
+            const limbHeights = [7.0, 7.4, 7.8, 8.2, 7.6, 8.6];
+            // 方位: 前五根按黄金角螺旋, 第六根补在右边 (默认机位在 +z, 右边是 +x 偏前), 那一侧原来空
+            const limbAz = [0, 1, 2, 3].map((n) => 0.6 + n * 2.39996).concat([0.15, 0.6 + 4 * 2.39996]);
             limbHeights.forEach((h, li) => {
                 const u0 = h / TRUNK_H;
-                const az = 0.6 + li * 2.39996 + rr(-0.2, 0.2);
+                const az = limbAz[li] + rr(-0.2, 0.2);
                 const out = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
                 const start = trunkCurve.getPointAt(u0);
                 const central = li === limbHeights.length - 1;
@@ -1517,7 +1519,7 @@
                 const fix = target.clone().sub(pts[pts.length - 1]);
                 pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 2.2)));
                 const limb = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-                const r0 = trunkRadius(u0) * 0.52;   // 主枝不跟着树干一起变粗
+                const r0 = trunkRadius(u0) * 0.56;
                 const limbR = (u) => Math.max(MIN_R, r0 * (1 - 0.8 * Math.pow(u, 0.85)));
                 capsulesAlong(caps, limb, limbR, 24, 'limb' + li);
                 branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
@@ -1529,7 +1531,7 @@
                     const side = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
                     const d = tan.clone().multiplyScalar(0.5).addScaledVector(side, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
                     const len = rr(2.6, 3.6) * (1 - fu * 0.2);
-                    const sr0 = limbR(fu) * 0.55;
+                    const sr0 = limbR(fu) * 0.62;
                     const sub = new THREE.CatmullRomCurve3(growPath(at, d, len, -0.1, 0.06), false, 'centripetal');
                     capsulesAlong(caps, sub, (u) => Math.max(MIN_R, sr0 * (1 - 0.75 * u)), 14, `limb${li}_s${fi}`);
                     branchTips.push({ p: sub.getPointAt(1), w: 1.0 });
@@ -1547,7 +1549,7 @@
                 lo.min(new THREE.Vector3(Math.min(c.a.x, c.b.x) - r, Math.min(c.a.y, c.b.y) - r, Math.min(c.a.z, c.b.z) - r));
                 hi.max(new THREE.Vector3(Math.max(c.a.x, c.b.x) + r, Math.max(c.a.y, c.b.y) + r, Math.max(c.a.z, c.b.z) + r));
             });
-            lo.y = Math.max(lo.y, -1.2);   // 底面封口留在地下, 地面上看不到
+            lo.y = Math.max(lo.y, -2.2);   // 底面封口留在地下, 地面上看不到
             const nx = Math.ceil((hi.x - lo.x) / voxel) + 2, ny = Math.ceil((hi.y - lo.y) / voxel) + 2, nz = Math.ceil((hi.z - lo.z) / voxel) + 2;
             const field = new Float32Array(nx * ny * nz).fill(9);
             const thick = new Uint8Array(nx * ny * nz);   // 最近那根枝的半径 ×100: 树皮起伏跟着粗细走
@@ -1586,8 +1588,16 @@
                             const x = lo.x + i * voxel;
                             pa.set(x - c.a.x, y - c.a.y, z - c.a.z);
                             const t = Math.min(1, Math.max(0, pa.dot(ab) / L2));
-                            const dx = pa.x - ab.x * t, dy = pa.y - ab.y * t, dz = pa.z - ab.z * t;
-                            const d = Math.sqrt(dx * dx + dy * dy + dz * dz) - (c.ra + (c.rb - c.ra) * t);
+                            // 精确的锥形胶囊距离 (Inigo Quilez 的 round cone): 一串胶囊首尾相接时表面严丝合缝,
+                            // 近似公式会在每个接口留一道细棱, 树干上就是一圈圈的横纹
+                            const py = pa.dot(ab), pz = py - L2;
+                            const xvx = pa.x * L2 - ab.x * py, xvy = pa.y * L2 - ab.y * py, xvz = pa.z * L2 - ab.z * py;
+                            const x2 = xvx * xvx + xvy * xvy + xvz * xvz, y2 = py * py * L2, z2 = pz * pz * L2;
+                            const rd = c.ra - c.rb, a2 = L2 - rd * rd, kk = Math.sign(rd) * rd * rd * x2, il2 = 1 / L2;
+                            let d;
+                            if (Math.sign(pz) * a2 * z2 > kk) d = Math.sqrt(x2 + z2) * il2 - c.rb;
+                            else if (Math.sign(py) * a2 * y2 < kk) d = Math.sqrt(x2 + y2) * il2 - c.ra;
+                            else d = (Math.sqrt(x2 * a2 * il2) + py * rd) * il2 - c.ra;
                             if (d > pad) continue;
                             const q = at(i, j, l);
                             if (d < one[q]) {
@@ -1661,7 +1671,7 @@
                 nbr[A].push(B, C); nbr[B].push(A, C); nbr[C].push(A, B);
             }
             let P = Float32Array.from(pos);
-            for (let it = 0; it < 3; it++) {
+            for (let it = 0; it < 6; it++) {
                 const Q = new Float32Array(P.length);
                 for (let v = 0; v < nv; v++) {
                     const ns = nbr[v];
