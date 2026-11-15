@@ -2806,14 +2806,7 @@
                     const nose = mesh(new THREE.SphereGeometry(0.042, 16, 12), glossy, false);
                     nose.scale.set(0.9, 0.78, 1.25);
                     nose.position.set(0.47, -0.035, 0);
-                    // 两颊白色蓬毛（尖尖向外）
-                    const ruffs = [1, -1].map(s => {
-                        const r = mesh(new THREE.ConeGeometry(0.1, 0.24, 16), creamMat, false);
-                        r.position.set(0.02, -0.1, s * 0.25);
-                        r.rotation.set(s * 1.9, 0, 0.25);
-                        r.scale.set(1, 1, 0.6);
-                        return r;
-                    });
+                    // 两颊不再加尖尖的白色蓬毛 (两个圆锥看着像角, 去掉)
                     // 眼睛：杏仁形 + 高光，可眨眼
                     const eyes = [1, -1].map(s => {
                         const g = new THREE.Group();
@@ -2845,7 +2838,7 @@
                         g.userData.baseRX = s * 0.32;
                         return g;
                     });
-                    head.add(skull, muzzle, nose, ...ruffs, ...eyes, ...ears);
+                    head.add(skull, muzzle, nose, ...eyes, ...ears);
 
                     // ---- 尾巴：可变粗细的管子，从身后绕到身侧贴地，白尖 ----
                     const TS = 36, TR = 14;
