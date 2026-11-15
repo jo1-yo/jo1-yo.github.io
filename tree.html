@@ -3642,171 +3642,253 @@
             return material;
         }
 
-        function createRiver() {
-            const cfg = RIVER_CONFIG;
-            
-            // === 1. 创建蜿蜒的样条曲线路径 ===
-            // 河流从场景远处蜿蜒穿过，延伸到雾中消失
-            // 控制点来自 RIVER_PATH: 两端都收在地面圆盘内，靠着色器的 edgeFade
-            // 和雾色淡出收尾，而不是伸出地平线。
-            const curvePoints = RIVER_PATH.map(([x, z]) => new THREE.Vector3(x, 0, z));
-            
-            riverCurve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
-            
-            // === 2. 沿样条曲线生成河流几何体 ===
-            const riverGeo = createRiverGeometry(riverCurve, cfg.width, cfg.segments);
-            
-            // === 3. 河床几何体 (略宽，在水面下方) ===
-            const riverbedGeo = createRiverGeometry(riverCurve, cfg.width + 3, cfg.segments);
-            const riverbedMat = clipToGround(new THREE.MeshStandardMaterial({
-                color: 0x2a1a0a,
-                roughness: 0.95,
-                metalness: 0
-            }));
-            riverbedMesh = new THREE.Mesh(riverbedGeo, riverbedMat);
-            riverbedMesh.position.y = -0.08; // 河床贴近地面
-            riverbedMesh.receiveShadow = true;
-            riverbedMesh.userData.type = 'river';
-            riverbedMesh.userData.season = 'autumn';
-            riverbedMesh.visible = false;
-            scene.add(riverbedMesh);
-            
-            // === 4. 河岸过渡带 (沿样条曲线生成) ===
-            const bankColors = [0x7a9b5a, 0x6a8b4a, 0x5a7b3a]; // 更柔和的绿色
-            
-            for (let side = -1; side <= 1; side += 2) {
-                for (let layer = 0; layer < 3; layer++) {
-                    const bankWidth = cfg.width + 2 + layer * 1.5;
-                    const bankGeo = createRiverGeometry(riverCurve, bankWidth, cfg.segments);
-                    const bankMat = clipToGround(new THREE.MeshStandardMaterial({
-                        color: bankColors[layer],
-                        roughness: 0.85,
-                        metalness: 0,
-                transparent: true,
-                        opacity: 0.9 - layer * 0.15
-                    }));
-                    const bank = new THREE.Mesh(bankGeo, bankMat);
-                    bank.position.y = 0.014 - layer * 0.004; // 河岸略高于地面 (最低一层也不与地面共面, 否则闪烁)
-                    bank.receiveShadow = true;
-                    bank.userData.type = 'river';
-                    bank.userData.season = 'autumn';
-                    bank.visible = false;
-                    scene.add(bank);
-                    riverBanks.push(bank);
+        // ============================================
+        // 小溪 (2026-11-15 重做): 像真的小溪 —
+        //   宽窄沿途有变化; 水边浅、看得见水底, 中间深; 水面的细波纹顺着水流往下游走, 太阳照出
+        //   零星的闪光, 斜着看能映出天色; 水的边缘不是一条硬线, 而是不规则地淡进岸边;
+        //   岸是湿泥和沙, 毛毛糙糙地融进草地; 岸边散着鹅卵石, 水里有几块露出水面的石头。
+        // ============================================
+        // 一条沿曲线的带子: 横向 nAcross 段, uv.x = 0..1 (左→右), uv.y = 沿途弧长 (世界单位, 用来让波纹按真实尺度流动)
+        function createStripGeometry(curve, halfWidthAt, segments, nAcross, extra) {
+            const pos = [], uv = [], idx = [], ext = [];
+            const pts = curve.getSpacedPoints(segments);
+            const len = curve.getLength();
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments, p = pts[i], tan = curve.getTangentAt(t);
+                const nrm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+                const hw = halfWidthAt(t);
+                for (let k = 0; k <= nAcross; k++) {
+                    const a = k / nAcross * 2 - 1;                       // -1 … 1
+                    pos.push(p.x + nrm.x * a * hw, p.y, p.z + nrm.z * a * hw);
+                    uv.push(k / nAcross, t * len);
+                    if (extra) ext.push(extra(t, a, hw));
                 }
             }
-            
-            // 创建两个不同比例的程序化法线贴图
-            waterNormal1 = createProceduralNormalMap(256, 4, 1.0);
-            waterNormal2 = createProceduralNormalMap(256, 8, 2.5);
-            
-            // 设置不同的重复比例避免明显平铺
-            waterNormal1.repeat.set(2, 12);
-            waterNormal2.repeat.set(6, 30);
-            
-            // 自定义水面着色器 - 双法线混合 + 菲涅尔
+            const row = nAcross + 1;
+            for (let i = 0; i < segments; i++) for (let k = 0; k < nAcross; k++) {
+                const a = i * row + k, b = a + 1, c = a + row, d = c + 1;
+                idx.push(a, c, b, b, c, d);
+            }
+            const g = new THREE.BufferGeometry();
+            g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+            if (extra) g.setAttribute('aEdge', new THREE.Float32BufferAttribute(ext, 1));
+            g.setIndex(idx);
+            g.computeVertexNormals();
+            return g;
+        }
+
+        const GLSL_NOISE = `
+            float hash21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+            float vnoise(vec2 p) {
+                vec2 i = floor(p), f = fract(p), u = f * f * (3.0 - 2.0 * f);
+                return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x), mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);
+            }
+            float fbm(vec2 p) { float s = 0.0, a = 0.5; for (int k = 0; k < 4; k++) { s += a * vnoise(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
+        `;
+
+        function createRiver() {
+            const cfg = RIVER_CONFIG;
+            const curvePoints = RIVER_PATH.map(([x, z]) => new THREE.Vector3(x, 0, z));
+            riverCurve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.5);
+            const SEG = IS_TOUCH ? 220 : 360;
+
+            // 宽窄: 一条小溪, 平均 ~5 宽, 沿途时宽时窄
+            const waterHalf = (t) => 2.6 * (1 + 0.22 * Math.sin(t * 19 + 0.7) + 0.12 * Math.sin(t * 47 + 2.1));
+            const shoreHalf = (t) => waterHalf(t) + 2.0 + 0.6 * Math.sin(t * 31 + 1.3);
+
+            // === 岸 + 水底: 一整条, 中间 (水下) 是深色的湿泥和石子, 往外是沙, 再毛糙地淡进草地 ===
+            const shoreGeo = createStripGeometry(riverCurve, shoreHalf, SEG, 16, (t, a, hw) => {
+                const d = Math.abs(a) * hw;                               // 离中线的距离
+                return d / hw;                                            // 0 中线 → 1 最外
+            });
+            // 每个顶点再记下"水边在哪": 水半宽 / 岸半宽, 着色器里分水下 / 湿岸 / 干沙 / 草
+            {
+                const pos = shoreGeo.attributes.position, ratio = [];
+                for (let i = 0; i <= SEG; i++) {
+                    const t = i / SEG, r = waterHalf(t) / shoreHalf(t);
+                    for (let k = 0; k <= 16; k++) ratio.push(r);
+                }
+                shoreGeo.setAttribute('aWater', new THREE.Float32BufferAttribute(ratio, 1));
+            }
+            const shoreMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0, transparent: true, depthWrite: false });
+            shoreMat.onBeforeCompile = (shader) => {
+                shader.uniforms.uClipRadius = { value: RIVER_CLIP_RADIUS };
+                shader.vertexShader = 'attribute float aEdge;\nattribute float aWater;\nvarying float vEdge;\nvarying float vWater;\nvarying vec3 vWPos;\nvarying float vClipR;\n' +
+                    shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n vEdge = aEdge; vWater = aWater; vClipR = length(position.xz); vWPos = (modelMatrix * vec4(position, 1.0)).xyz;');
+                shader.fragmentShader = 'uniform float uClipRadius;\nvarying float vEdge;\nvarying float vWater;\nvarying vec3 vWPos;\nvarying float vClipR;\n' + GLSL_NOISE +
+                    shader.fragmentShader.replace('void main() {', 'void main() {\n if (vClipR > uClipRadius) discard;')
+                    .replace('#include <color_fragment>', `#include <color_fragment>
+                        vec2 wp = vWPos.xz;
+                        float n = fbm(wp * 0.55);
+                        float grit = vnoise(wp * 7.0) * 0.5 + vnoise(wp * 15.0) * 0.5;      // 沙粒 / 碎石
+                        float e = vEdge + (n - 0.5) * 0.22;                                    // 边界扭一扭, 不是直线
+                        // 这个场景灯很亮, 颜色要压暗一些才不会发白; 草的颜色就是地面的草色
+                        vec3 bed  = vec3(0.17, 0.16, 0.11);                                    // 水底: 深色湿泥
+                        vec3 wet  = vec3(0.27, 0.24, 0.16);                                    // 水边湿沙
+                        vec3 sand = vec3(0.47, 0.42, 0.31);                                    // 干沙
+                        vec3 grass = vec3(0.29, 0.486, 0.247);
+                        float w = vWater;
+                        vec3 c = mix(bed, wet, smoothstep(w * 0.55, w * 1.02, e));
+                        c = mix(c, sand, smoothstep(w * 1.02, w + (1.0 - w) * 0.45, e));
+                        c = mix(c, grass, smoothstep(w + (1.0 - w) * 0.45, 1.0, e));
+                        c *= 0.86 + grit * 0.28;
+                        diffuseColor.rgb = c;
+                        diffuseColor.a *= 1.0 - smoothstep(0.78, 1.0, e + (n - 0.5) * 0.25);   // 毛糙地淡进草地`);
+            };
+            const shore = new THREE.Mesh(shoreGeo, shoreMat);
+            shore.position.y = 0.012;
+            shore.receiveShadow = true;
+            shore.renderOrder = 1;
+            shore.userData.type = 'river';
+            shore.userData.season = 'autumn';
+            shore.visible = false;
+            scene.add(shore);
+            riverBanks.push(shore);
+
+            // 旧的河床 mesh 保留 (秋季显隐/宇宙之旅淡出的代码会碰它), 但藏在地面下面不出现
+            riverbedMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.01, 0.01), new THREE.MeshBasicMaterial({ visible: false }));
+            riverbedMesh.position.y = -1;
+            riverbedMesh.userData.type = 'river';
+            riverbedMesh.visible = false;
+            scene.add(riverbedMesh);
+
+            // === 鹅卵石 (岸边) 和几块露出水面的石头 ===
+            const stoneGeo = new THREE.IcosahedronGeometry(1, 2);
+            {
+                const sp = stoneGeo.attributes.position;
+                for (let k = 0; k < sp.count; k++) {                      // 磨圆但不规则
+                    const x = sp.getX(k), y = sp.getY(k), z = sp.getZ(k);
+                    const f = 1 + simplex.noise3D(x * 1.3, y * 1.3, z * 1.3) * 0.12;
+                    sp.setXYZ(k, x * f, y * f, z * f);
+                }
+                stoneGeo.computeVertexNormals();
+            }
+            const stoneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, metalness: 0, transparent: true });
+            const stones = [];
+            const stoneRand = (() => { let a = 4242; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
+            const sr = (lo, hi) => lo + (hi - lo) * stoneRand();
+            const len = riverCurve.getLength();
+            for (let k = 0; k < 200; k++) {                                // 岸边的鹅卵石, 聚在水线附近
+                const t = stoneRand(), p = riverCurve.getPointAt(t), tan = riverCurve.getTangentAt(t);
+                const nrm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+                const side = stoneRand() < 0.5 ? -1 : 1;
+                const off = waterHalf(t) + sr(-0.4, 0.9);
+                const x = p.x + nrm.x * off * side, z = p.z + nrm.z * off * side;
+                if (Math.hypot(x, z) > RIVER_CLIP_RADIUS - 1) continue;
+                const s = sr(0.07, 0.2);
+                stones.push({ x, z, y: 0.01, sx: s * sr(1.0, 1.6), sy: s * sr(0.35, 0.6), sz: s, ry: sr(0, Math.PI), c: sr(0, 1) });
+            }
+            for (let k = 0; k < 9; k++) {                                  // 水里的大石头, 露出一截
+                const t = 0.18 + k * 0.08 + sr(-0.02, 0.02), p = riverCurve.getPointAt(t), tan = riverCurve.getTangentAt(t);
+                const nrm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+                const off = sr(-0.6, 0.6) * waterHalf(t);
+                const x = p.x + nrm.x * off, z = p.z + nrm.z * off;
+                if (Math.hypot(x, z) > RIVER_CLIP_RADIUS - 2) continue;
+                const s = sr(0.35, 0.7);
+                stones.push({ x, z, y: -s * 0.35, sx: s * sr(1.1, 1.5), sy: s * sr(0.6, 0.8), sz: s, ry: sr(0, Math.PI), c: sr(0, 1) });
+            }
+            const stoneMesh = new THREE.InstancedMesh(stoneGeo, stoneMat, stones.length);
+            const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
+            stones.forEach((st, k) => {
+                q.setFromEuler(new THREE.Euler(0, st.ry, 0));
+                m4.compose(new THREE.Vector3(st.x, st.y, st.z), q, new THREE.Vector3(st.sx, st.sy, st.sz));
+                stoneMesh.setMatrixAt(k, m4);
+                col.setHSL(0.08 + st.c * 0.05, 0.08 + st.c * 0.1, 0.26 + st.c * 0.16);   // 灰、米、浅褐 (场景灯亮, 压暗)
+                stoneMesh.setColorAt(k, col);
+            });
+            stoneMesh.castShadow = true;
+            stoneMesh.receiveShadow = true;
+            stoneMesh.userData.type = 'river';
+            stoneMesh.userData.season = 'autumn';
+            stoneMesh.visible = false;
+            scene.add(stoneMesh);
+            riverBanks.push(stoneMesh);
+
+            // === 水面 ===
+            const riverGeo = createStripGeometry(riverCurve, waterHalf, SEG, 12);
             const waterVertexShader = `
                 varying vec2 vUv;
                 varying vec3 vWorldPos;
                 varying vec3 vViewDir;
                 varying float vRadius;
-                
                 void main() {
                     vUv = uv;
-                    vRadius = length(position.xz); // 局部坐标 → 与地面圆盘同一尺度
+                    vRadius = length(position.xz);
                     vec4 worldPos = modelMatrix * vec4(position, 1.0);
                     vWorldPos = worldPos.xyz;
                     vViewDir = normalize(cameraPosition - worldPos.xyz);
                     gl_Position = projectionMatrix * viewMatrix * worldPos;
                 }
             `;
-            
             const waterFragmentShader = `
-                uniform sampler2D uNormal1;
-                uniform sampler2D uNormal2;
-                uniform vec2 uOffset1;
-                uniform vec2 uOffset2;
+                uniform float uTime;
                 uniform vec3 uShallowColor;
                 uniform vec3 uDeepColor;
                 uniform vec3 uFogColor;
                 uniform float uOpacity;
-                uniform float uNormalScale;
-                uniform float uFresnelPower;
                 uniform float uFogNear;
                 uniform float uFogFar;
                 uniform float uGroundRadius;
-                
                 varying vec2 vUv;
                 varying vec3 vWorldPos;
                 varying vec3 vViewDir;
                 varying float vRadius;
-                
+                ${GLSL_NOISE}
+                // 水面起伏: 两层不同尺度的噪声, 沿水流方向 (uv.y 是沿途的真实距离) 往下游走, 再横向扭一点
+                float waves(vec2 q) {
+                    vec2 warp = vec2(fbm(q * 0.35 + vec2(0.0, uTime * 0.15)), 0.0) * 1.2;
+                    return fbm(q * vec2(0.9, 0.5) + warp - vec2(0.0, uTime * 0.6)) * 0.7
+                         + vnoise(q * vec2(2.2, 1.3) - vec2(0.0, uTime * 1.1)) * 0.3;
+                }
                 void main() {
-                    // 采样两层法线并混合 (调整UV比例适配蜿蜒河流)
-                    vec2 uv1 = vUv * vec2(1.5, 8.0) + uOffset1;
-                    vec2 uv2 = vUv * vec2(4.0, 20.0) + uOffset2;
-                    
-                    vec3 n1 = texture2D(uNormal1, uv1).rgb * 2.0 - 1.0;
-                    vec3 n2 = texture2D(uNormal2, uv2).rgb * 2.0 - 1.0;
-                    
-                    // 混合法线 (第二层权重较小)
-                    vec3 normal = normalize(vec3(
-                        n1.x * uNormalScale + n2.x * uNormalScale * 0.5,
-                        n1.y * uNormalScale + n2.y * uNormalScale * 0.5,
-                        1.0
-                    ));
-                    
-                    // 菲涅尔效果
-                    float fresnel = pow(1.0 - max(dot(vViewDir, vec3(0.0, 1.0, 0.0)), 0.0), uFresnelPower);
-                    
-                    // 深度颜色渐变 (基于UV的X方向模拟河流中心更深)
-                    float depthFactor = 1.0 - abs(vUv.x - 0.5) * 2.0;
-                    depthFactor = smoothstep(0.0, 1.0, depthFactor);
-                    vec3 waterColor = mix(uShallowColor, uDeepColor, depthFactor * 0.5);
-                    
-                    // 法线影响的高光
-                    vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
-                    vec3 halfVec = normalize(lightDir + vViewDir);
-                    float spec = pow(max(dot(normal, halfVec), 0.0), 48.0) * 0.3;
-                    
-                    // 流动高光条纹 (更柔和)
-                    float flowStreak = sin(vUv.y * 25.0 + uOffset1.y * 40.0) * 0.5 + 0.5;
-                    flowStreak = pow(flowStreak, 6.0) * 0.1;
-                    
-                    // 最终颜色
-                    vec3 finalColor = waterColor;
-                    finalColor += vec3(0.75, 0.88, 1.0) * fresnel * 0.35;
-                    finalColor += vec3(1.0) * spec;
-                    finalColor += vec3(1.0) * flowStreak;
-                    
-                    // === 雾效: 与场景雾 (THREE.Fog, 线性) 完全一致, 每帧同步 near/far/color ===
-                    // 以前用自己更浓的 25→60 雾, 远处的河先变成奶白色而草地还是绿的,
-                    // 看起来就像河在半路突然消失了
+                    if (vRadius > uGroundRadius) discard;
+                    float across = vUv.x * 2.0 - 1.0;                  // -1 … 1
+                    vec2 q = vec2(across * 2.6, vUv.y);                // 横向按 ~5 宽, 纵向按真实距离
+                    float e = 0.04;
+                    float h  = waves(q);
+                    float hx = waves(q + vec2(e, 0.0)) - h;
+                    float hy = waves(q + vec2(0.0, e)) - h;
+                    vec3 n = normalize(vec3(-hx / e * 0.09, 1.0, -hy / e * 0.09));
+
+                    // 深浅: 水边浅而清 (看得见水底), 中间深; 边缘的形状也被噪声扭一下
+                    float edgeN = fbm(vWorldPos.xz * 0.6) - 0.5;
+                    float a = abs(across) + edgeN * 0.12;
+                    float depth = 1.0 - smoothstep(0.0, 1.0, a);
+                    depth = pow(depth, 0.7);
+                    vec3 col = mix(uShallowColor, uDeepColor, depth);
+
+                    // 天光反射 (斜看更亮) + 太阳的零星闪光 + 波峰上一点点白
+                    float fres = pow(1.0 - max(dot(vViewDir, n), 0.0), 3.0);
+                    vec3 sky = mix(uFogColor, vec3(0.86, 0.93, 1.0), 0.6);
+                    col = mix(col, sky, fres * 0.55);
+                    vec3 L = normalize(vec3(0.45, 1.0, 0.25));
+                    float spec = pow(max(dot(n, normalize(L + vViewDir)), 0.0), 60.0);
+                    col += vec3(1.0, 0.98, 0.92) * spec * 0.45;
+                    col += vec3(1.0) * smoothstep(0.66, 0.78, h) * 0.06 * depth;
+
+                    // 雾: 与场景雾一致
                     float fogDistance = length(vWorldPos - cameraPosition);
                     float fogFactor = clamp((fogDistance - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0);
-                    finalColor = mix(finalColor, uFogColor, fogFactor);
-                    
-                    // 边缘淡出: 只在地面圆盘最外一圈淡掉, 河一直流到地平线
-                    if (vRadius > uGroundRadius) discard;
-                    float edgeFade = smoothstep(uGroundRadius, uGroundRadius - 2.5, vRadius);
-                    float finalOpacity = uOpacity * edgeFade;
-                    
-                    gl_FragColor = vec4(finalColor, finalOpacity);
+                    col = mix(col, uFogColor, fogFactor);
+
+                    // 透明度: 水边几乎透明 (水底和石子透上来), 中间不透; 边缘柔柔地淡掉
+                    float alpha = mix(0.12, 0.72, smoothstep(0.0, 0.8, depth));
+                    alpha *= 1.0 - smoothstep(0.86, 1.0, a);
+                    alpha *= smoothstep(uGroundRadius, uGroundRadius - 2.5, vRadius);
+                    gl_FragColor = vec4(col, alpha * uOpacity);
                 }
             `;
-            
             const riverMat = new THREE.ShaderMaterial({
                 uniforms: {
-                    uNormal1: { value: waterNormal1 },
-                    uNormal2: { value: waterNormal2 },
+                    uTime: { value: 0 },
+                    // updateRiverAnimation 里还在推这两个偏移, 保留
                     uOffset1: { value: new THREE.Vector2(0, 0) },
                     uOffset2: { value: new THREE.Vector2(0, 0) },
-                    uShallowColor: { value: new THREE.Color(cfg.color) },
-                    uDeepColor: { value: new THREE.Color(cfg.deepColor) },
-                    uFogColor: { value: new THREE.Color(0xfaf0e6) }, // 匹配场景雾色
-                    uOpacity: { value: cfg.opacity },
-                    uNormalScale: { value: cfg.normalScale },
-                    uFresnelPower: { value: 2.2 },
+                    uShallowColor: { value: new THREE.Color(0x9ec4b8) },
+                    uDeepColor: { value: new THREE.Color(0x5a92a0) },
+                    uFogColor: { value: new THREE.Color(0xfaf0e6) },
+                    uOpacity: { value: 1.0 },
                     uFogNear: { value: 20 },
                     uFogFar: { value: 80 },
                     uGroundRadius: { value: RIVER_CLIP_RADIUS }
@@ -3814,20 +3896,20 @@
                 vertexShader: waterVertexShader,
                 fragmentShader: waterFragmentShader,
                 transparent: true,
+                depthWrite: false,
                 side: THREE.DoubleSide
             });
-            
             riverMesh = new THREE.Mesh(riverGeo, riverMat);
-            riverMesh.position.y = cfg.waterLevel; // 水面贴近地面
+            riverMesh.position.y = cfg.waterLevel;
+            riverMesh.renderOrder = 2;
             riverMesh.userData.type = 'river';
             riverMesh.userData.season = 'autumn';
             riverMesh.visible = false;
             scene.add(riverMesh);
-            
-            // === 创建跳鱼和水花系统 ===
+
             createFishAndSplashSystem();
         }
-        
+
         // ============================================
         // 跳鱼与水花系统
         // ============================================
@@ -4007,6 +4089,7 @@
             const cfg = RIVER_CONFIG;
             const uniforms = riverMesh.material.uniforms;
             
+            if (uniforms.uTime) uniforms.uTime.value = (uniforms.uTime.value + deltaTime) % 1000;   // 水流
             // 滚动UV偏移而非顶点位移
             uniforms.uOffset1.value.y -= deltaTime * cfg.flowSpeed1;
             uniforms.uOffset2.value.y -= deltaTime * cfg.flowSpeed2;
