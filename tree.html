@@ -1400,118 +1400,133 @@
         function createTree() {
             tree = new THREE.Group();
 
-            // 创建高精度真实感树干
+            // 树干 (含向上收细的主梢) 单独一个 mesh, 冬季积雪用
             trunkMesh = createRealisticTrunk();
             tree.add(trunkMesh);
 
-            // Main branches (保存引用用于冬季积雪)
+            // 主枝 → 侧枝 → 细枝, 全部合成一个 mesh (保存引用用于冬季积雪)
             branchMeshes = [];
             createBranches(tree);
 
-            // Foliage
+            // 叶球成簇长在枝梢
             createFoliage(tree);
 
             scene.add(tree);
         }
 
         // ============================================
-        // 创建真实感树干 (Simplex Noise + 结疤)
+        // 自然树 (2026-11-15)
+        // 像真树一样长: 树干微弯、根部外扩成几道板根, 一路收细成主梢; 主枝在不同高度
+        // 螺旋着伸出、向上弯; 侧枝从主枝中段分出, 细枝再从侧枝分出, 越往外越细;
+        // 叶球成簇长在枝梢。随机数用固定种子, 每次打开都是同一棵树。
         // ============================================
-        function createRealisticTrunk() {
+        const treeRand = (() => {
+            let a = 20261115;
+            return () => {
+                a |= 0; a = (a + 0x6D2B79F5) | 0;
+                let t = Math.imul(a ^ (a >>> 15), 1 | a);
+                t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        })();
+        const rr = (a, b) => a + (b - a) * treeRand();
+
+        // 沿一组点生成一根带树皮起伏的管子, 半径由 radiusAt(u, θ) 给 (u: 0 根部 → 1 梢)。
+        // 顶点追加进 builder, 多根枝合成一个几何体 (一次 draw call)。
+        // 返回曲线, 并把几段轴线记进 branchDataList (苹果防穿模要用)。
+        function tubeInto(builder, pts, radiusAt, opts = {}) {
+            const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+            const len = curve.getLength();
+            const segs = opts.segments || Math.max(6, Math.round(len * 3.2));
+            const radial = opts.radial || 10;
             const cfg = TRUNK_CONFIG;
-            
-            // 高精度圆柱几何体
-            const trunkGeo = new THREE.CylinderGeometry(
-                cfg.radiusTop,
-                cfg.radiusBottom,
-                cfg.height,
-                cfg.radialSegments,
-                cfg.heightSegments,
-                false  // 不封口，便于查看效果
-            );
-
-            const positions = trunkGeo.attributes.position;
-            const normals = trunkGeo.attributes.normal;
-            
-            // 定义结疤位置 (高度比例, 角度)
-            const knots = [
-                { y: 0.25, angle: 0.5, size: cfg.knotSize * 1.2 },
-                { y: 0.55, angle: 2.8, size: cfg.knotSize },
-                { y: 0.75, angle: 4.5, size: cfg.knotSize * 0.8 }
-            ];
-
-            // 遍历所有顶点应用位移
-            for (let i = 0; i < positions.count; i++) {
-                let x = positions.getX(i);
-                let y = positions.getY(i);
-                let z = positions.getZ(i);
-                
-                // 计算当前点的圆柱坐标
-                const angle = Math.atan2(z, x);
-                const radius = Math.sqrt(x * x + z * z);
-                const heightRatio = (y + cfg.height / 2) / cfg.height; // 0-1
-                
-                // === 1. Simplex Noise 树皮位移 ===
-                // 使用3D噪声，让树皮纹理在各方向自然过渡
-                const noiseX = simplex.noise3D(
-                    x * cfg.noiseScale, 
-                    y * cfg.noiseScale * 0.5,  // Y方向压缩，产生纵向纹理
-                    z * cfg.noiseScale
-                );
-                const noiseZ = simplex.noise3D(
-                    x * cfg.noiseScale + 100, 
-                    y * cfg.noiseScale * 0.5, 
-                    z * cfg.noiseScale + 100
-                );
-                
-                // 噪声位移 (沿径向)
-                const barkDisplace = noiseX * cfg.noiseStrength;
-                
-                // === 2. 结疤 Bulge 位移 ===
-                let knotDisplace = 0;
-                for (const knot of knots) {
-                    const knotY = knot.y * cfg.height - cfg.height / 2;
-                    const distY = Math.abs(y - knotY);
-                    const distAngle = Math.min(
-                        Math.abs(angle - knot.angle),
-                        Math.abs(angle - knot.angle + Math.PI * 2),
-                        Math.abs(angle - knot.angle - Math.PI * 2)
-                    );
-                    
-                    // 高斯衰减
-                    const knotRadius = knot.size;
-                    const dist = Math.sqrt(distY * distY + (distAngle * radius) * (distAngle * radius));
-                    if (dist < knotRadius * 2) {
-                        const falloff = Math.exp(-(dist * dist) / (knotRadius * knotRadius));
-                        knotDisplace += falloff * cfg.knotStrength;
-                    }
+            const up = new THREE.Vector3(0, 1, 0), side = new THREE.Vector3(1, 0, 0);
+            let prevT = curve.getTangentAt(0);
+            const normal = new THREE.Vector3().crossVectors(prevT, Math.abs(prevT.y) < 0.9 ? up : side).normalize();
+            const base = builder.pos.length / 3;
+            const c = new THREE.Vector3(), dir = new THREE.Vector3(), p = new THREE.Vector3();
+            for (let i = 0; i <= segs; i++) {
+                const u = i / segs;
+                curve.getPointAt(u, c);
+                const t = curve.getTangentAt(u);
+                // 平行移动标架: 管子沿弯曲处不会拧麻花
+                const axis = new THREE.Vector3().crossVectors(prevT, t);
+                if (axis.lengthSq() > 1e-10) normal.applyAxisAngle(axis.normalize(), Math.acos(THREE.MathUtils.clamp(prevT.dot(t), -1, 1)));
+                prevT = t;
+                const bin = new THREE.Vector3().crossVectors(t, normal).normalize();
+                const nrm = new THREE.Vector3().crossVectors(bin, t).normalize();
+                for (let j = 0; j <= radial; j++) {
+                    const th = (j % radial) / radial * Math.PI * 2;
+                    dir.copy(nrm).multiplyScalar(Math.cos(th)).addScaledVector(bin, Math.sin(th));
+                    let r = radiusAt(u, th);
+                    p.copy(c).addScaledVector(dir, r);
+                    // 树皮: 纵向拉长的噪声, 细枝上减弱
+                    const nz = simplex.noise3D(p.x * cfg.noiseScale * 0.8, p.y * cfg.noiseScale * 0.3, p.z * cfg.noiseScale * 0.8);
+                    r = Math.max(0.006, r + nz * cfg.noiseStrength * Math.min(1, r * 1.4));
+                    p.copy(c).addScaledVector(dir, r);
+                    builder.pos.push(p.x, p.y, p.z);
                 }
-                
-                // === 3. 应用总位移 ===
-                const totalDisplace = barkDisplace + knotDisplace;
-                const newRadius = radius + totalDisplace;
-                
-                positions.setX(i, Math.cos(angle) * newRadius);
-                positions.setZ(i, Math.sin(angle) * newRadius);
-                
-                // 轻微Y向位移增加有机感
-                positions.setY(i, y + noiseZ * cfg.noiseStrength * 0.3);
             }
-            
-            positions.needsUpdate = true;
-            trunkGeo.computeVertexNormals(); // 重新计算法线
+            for (let i = 0; i < segs; i++) {
+                for (let j = 0; j < radial; j++) {
+                    const a = base + i * (radial + 1) + j, b = a + radial + 1;
+                    builder.idx.push(a, a + 1, b, b, a + 1, b + 1);   // 法线朝外
+                }
+            }
+            if (opts.id) {
+                const n = 4;
+                for (let k = 0; k < n; k++) {
+                    const u0 = k / n, u1 = (k + 1) / n;
+                    branchDataList.push({
+                        id: opts.id + '_' + k,
+                        start: curve.getPointAt(u0), end: curve.getPointAt(u1),
+                        radius: radiusAt((u0 + u1) / 2, 0)
+                    });
+                }
+            }
+            return curve;
+        }
 
-            // 统一树皮材质 - 树干和分支共用
-            const trunk = new THREE.Mesh(trunkGeo, sharedBarkMaterial);
-            trunk.position.y = cfg.height / 2;
+        function meshFromBuilder(builder) {
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(builder.pos, 3));
+            geo.setIndex(builder.idx);
+            geo.computeVertexNormals();
+            return new THREE.Mesh(geo, sharedBarkMaterial);
+        }
+
+        // 树干: 曲线和半径函数也给主枝用 (主枝从树干表面长出来)
+        const TRUNK_H = 17.2;
+        let trunkCurve = null;
+        const trunkRadius = (u) => 0.05 + 0.95 * Math.pow(1 - u, 1.45);
+
+        function createRealisticTrunk() {
+            const pts = [];
+            for (let k = 0; k <= 8; k++) {
+                const y = -0.3 + k * (TRUNK_H + 0.3) / 8;
+                // 微微的 S 形, 根部正、越往上越偏一点
+                const lean = Math.min(1, Math.max(0, y) / 6);
+                pts.push(new THREE.Vector3(
+                    0.32 * Math.sin(y * 0.23 + 0.5) * lean,
+                    y,
+                    0.24 * Math.sin(y * 0.17 + 2.1) * lean
+                ));
+            }
+            const builder = { pos: [], idx: [] };
+            trunkCurve = tubeInto(builder, pts, (u, th) => {
+                const y = u * TRUNK_H;
+                // 根部外扩成五道板根, 1.5 米以上就收回圆干
+                const flare = 0.85 * Math.exp(-y / 0.75) * (1 + 0.38 * Math.cos(5 * th + 0.7));
+                return trunkRadius(u) + flare;
+            }, { segments: IS_TOUCH ? 56 : 80, radial: IS_TOUCH ? 18 : 24 });
+            const trunk = meshFromBuilder(builder);
             trunk.castShadow = true;
             // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
             trunk.receiveShadow = false;
             trunk.userData.isTrunk = true;
-
             return trunk;
         }
-        
+
         // ============================================
         // 统一树皮材质 (树干和分支共用)
         // ============================================
@@ -1524,337 +1539,118 @@
             flatShading: false
         });
 
-        // ============================================
-        // 严格 start/end 驱动的树枝系统
-        // ============================================
-        const BRANCH_CONFIG = {
-            radialSegments: 12,       // 分支圆周分段
-            heightSegments: 8,        // 分支高度分段
-            collarSize: 1.4,          // 接头大小倍数
-            collarTubeRatio: 0.4      // 接头管半径比例
-        };
-        
-        // 存储所有分支数据用于 snapBranchJoints
+        // 枝条轴线 (苹果防穿模用) 和枝梢 (叶簇长在这里)
         let branchDataList = [];
-        let collarMeshes = [];
-        
+        let branchTips = [];
+
+        // 从 start 沿 dir 长出一根枝: 中途向上弯 (向光), 带一点随机摆动
+        function growPath(start, dir, length, rise, wobble) {
+            const pts = [start.clone()];
+            const d = dir.clone().normalize();
+            const p = start.clone();
+            const steps = 4;
+            for (let k = 1; k <= steps; k++) {
+                d.y += rise / steps;
+                d.x += rr(-wobble, wobble); d.z += rr(-wobble, wobble);
+                d.normalize();
+                p.addScaledVector(d, length / steps);
+                pts.push(p.clone());
+            }
+            return pts;
+        }
+
         function createBranches(parent) {
             branchDataList = [];
-            collarMeshes = [];
-            branchMeshes = [];
-            
-            // 计算树干在指定高度的半径 (线性插值)
-            function getTrunkRadiusAtHeight(y) {
-                const cfg = TRUNK_CONFIG;
-                const t = Math.max(0, Math.min(1, y / cfg.height));
-                return cfg.radiusBottom + (cfg.radiusTop - cfg.radiusBottom) * t;
-            }
-            
-            // 主分支配置 - 定义目标方向和高度
-            const mainBranchConfigs = [
-                { height: 7.0, angle: 0.5, end: [5, 12, 3], radius: 0.4, id: 'main1' },
-                { height: 7.5, angle: 2.5, end: [-4, 13, 2], radius: 0.35, id: 'main2' },
-                { height: 8.0, angle: 4.0, end: [3, 14, -4], radius: 0.3, id: 'main3' },
-                { height: 6.5, angle: 3.8, end: [-5, 11, -3], radius: 0.38, id: 'main4' },
-                { height: 8.35, angle: 1.57, end: [0.75, 13.05, -0.45], radius: 0.24, id: 'main5' },
-                { height: 7.2, angle: 5.5, end: [4, 11, -3], radius: 0.32, id: 'main6' },
-                { height: 8.8, angle: 2.0, end: [-3, 14, -1], radius: 0.28, id: 'main7' },
-                { height: 6.8, angle: 1.0, end: [2, 10, 4], radius: 0.3, id: 'main8' },
-            ];
+            branchTips = [];
+            const builder = { pos: [], idx: [] };
+            const up = new THREE.Vector3(0, 1, 0);
+            const CROWN = { y: 14.8, rx: 7.8, ry: 4.4 };   // 树冠大致轮廓, 苹果挂在它的外缘
 
-            mainBranchConfigs.forEach(config => {
-                // 计算分支起点 - 稍微深入树干内部以确保连接
-                const trunkRadius = getTrunkRadiusAtHeight(config.height);
-                // 起点设置在树干内部 (50% 深度) 以确保重叠
-                const penetration = trunkRadius * 0.5;
-                const effectiveRadius = trunkRadius - penetration;
-                const startX = Math.cos(config.angle) * effectiveRadius;
-                const startZ = Math.sin(config.angle) * effectiveRadius;
-                const startVec = new THREE.Vector3(startX, config.height, startZ);
-                const endVec = new THREE.Vector3(...config.end);
-                
-                // 创建主分支段 - 使用更大的底部半径
-                const branchData = createBranchSegment(startVec, endVec, config.radius, config.id, null, trunkRadius);
-                parent.add(branchData.group);
-                branchMeshes.push(branchData.mesh);
-                branchDataList.push(branchData);
-                
-                // 严格从 parent.end 开始创建子分支
-                for (let i = 0; i < 3; i++) {
-                    // 子分支的 start 严格等于父分支的 end
-                    const subStart = endVec.clone();
-                    const subEnd = subStart.clone().add(new THREE.Vector3(
-                        (Math.random() - 0.5) * 3,
-                        1 + Math.random() * 2,
-                        (Math.random() - 0.5) * 3
-                    ));
-                    const subRadius = config.radius * 0.5;
-                    
-                    // 直接创建子分支（无接头）
-                    const subBranchData = createBranchSegment(
-                        subStart, subEnd, subRadius, 
-                        `${config.id}_sub${i}`,
-                        config.id // 父分支 ID
-                    );
-                    parent.add(subBranchData.group);
-                    branchMeshes.push(subBranchData.mesh);
-                    branchDataList.push(subBranchData);
-                }
-            });
-        }
+            // 主梢 (树干顶端) 也长叶
+            branchTips.push({ p: trunkCurve.getPointAt(1), w: 2.2 });
 
-        // ============================================
-        // 创建单个分支段 (使用 Unit Cylinder + Group Scale)
-        // ============================================
-        function createBranchSegment(startVec, endVec, radius, id, parentId = null, connectToTrunkRadius = null) {
-            const direction = new THREE.Vector3().subVectors(endVec, startVec);
-            const length = direction.length();
-            const dirNorm = direction.clone().normalize();
-            
-            // 创建 Group 作为分支容器
-            const group = new THREE.Group();
-            group.position.copy(startVec);
-            
-            // 计算底部半径 - 如果连接到树干，使用更大的底部以确保重叠
-            let bottomRadius, topRadius;
-            if (connectToTrunkRadius) {
-                // 连接到树干的主分支：底部要大到能覆盖树干
-                bottomRadius = connectToTrunkRadius * 0.8; // 底部接近树干半径
-                topRadius = radius * 0.5;
-            } else {
-                // 普通分支
-                bottomRadius = radius * 0.85;
-                topRadius = radius * 0.45;
-            }
-            
-            // 使用 Unit Cylinder (高度=1, 中心在 y=0.5)
-            // 通过 scale.y 拉伸到实际长度
-            const unitGeo = new THREE.CylinderGeometry(
-                topRadius,      // 顶部半径
-                bottomRadius,   // 底部半径
-                1,              // 单位高度
-                BRANCH_CONFIG.radialSegments,
-                BRANCH_CONFIG.heightSegments
-            );
-            
-            // 应用树皮噪声变形
-            applyBarkNoise(unitGeo, startVec, length, radius);
-            unitGeo.computeVertexNormals();
-            
-            const branchMesh = new THREE.Mesh(unitGeo, sharedBarkMaterial);
-            
-            // 关键: mesh 的 position.y = 0.5 使底部对齐 group 原点
-            branchMesh.position.y = 0.5;
-            
-            // 通过 group.scale.y 拉伸到实际长度
-            group.scale.y = length;
-            
-            // 对齐方向
-            group.quaternion.setFromUnitVectors(
-                new THREE.Vector3(0, 1, 0),
-                dirNorm
-            );
-            
-            group.add(branchMesh);
-            
-            branchMesh.castShadow = true;
-            branchMesh.receiveShadow = true;
-            branchMesh.userData.isBranch = true;
-            
-            return {
-                id: id,
-                parentId: parentId,
-                group: group,
-                mesh: branchMesh,
-                start: startVec.clone(),
-                end: endVec.clone(),
-                direction: dirNorm,
-                length: length,
-                radius: radius
-            };
-        }
-        
-        // 对分支几何体应用树皮噪声
-        function applyBarkNoise(geometry, startVec, length, radius) {
-            const positions = geometry.attributes.position;
-            const cfg = TRUNK_CONFIG;
-            
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const y = positions.getY(i); // 0 到 1
-                const z = positions.getZ(i);
-                
-                // 计算世界坐标用于噪声采样
-                const worldX = startVec.x + x;
-                const worldY = startVec.y + y * length;
-                const worldZ = startVec.z + z;
-                
-                const noiseScale = 1.0 - y * 0.4; // 顶部噪声减弱
-                const noise = simplex.noise3D(
-                    worldX * cfg.noiseScale * 0.8,
-                    worldY * cfg.noiseScale * 0.4,
-                    worldZ * cfg.noiseScale * 0.8
-                ) * cfg.noiseStrength * 0.4 * noiseScale;
-                
-                const angle = Math.atan2(z, x);
-                const r = Math.sqrt(x * x + z * z);
-                if (r > 0.01) {
-                    const newR = r + noise;
-                    positions.setX(i, Math.cos(angle) * newR);
-                    positions.setZ(i, Math.sin(angle) * newR);
-                }
-            }
-            positions.needsUpdate = true;
-        }
-        
-        // ============================================
-        // 创建分支接头 (木结/collar) - 平滑融合到树干
-        // ============================================
-        function createBranchCollar(startVec, endVec, branchRadius, trunkRadius = null) {
-            const direction = new THREE.Vector3().subVectors(endVec, startVec).normalize();
-            const cfg = BRANCH_CONFIG;
-            const tcfg = TRUNK_CONFIG;
-            
-            // 接头大小 - 如果有树干半径，使用更大的接头融入树干
-            const baseSize = trunkRadius 
-                ? Math.max(branchRadius * 1.5, trunkRadius * 0.6) 
-                : branchRadius * cfg.collarSize;
-            
-            // 使用变形的椭球体创建自然的木结
-            const collarGeo = new THREE.SphereGeometry(baseSize, 14, 10);
-            const positions = collarGeo.attributes.position;
-            
-            // 计算从起点指向树干中心的方向（用于让接头向树干内部延伸）
-            const toCenter = new THREE.Vector3(-startVec.x, 0, -startVec.z).normalize();
-            
-            for (let i = 0; i < positions.count; i++) {
-                let x = positions.getX(i);
-                let y = positions.getY(i);
-                let z = positions.getZ(i);
-                
-                // 沿分支方向压扁
-                const alongBranch = x * direction.x + y * direction.y + z * direction.z;
-                x -= alongBranch * direction.x * 0.4;
-                y -= alongBranch * direction.y * 0.4;
-                z -= alongBranch * direction.z * 0.4;
-                
-                // 向树干方向拉伸（创建融合效果）
-                if (trunkRadius) {
-                    const toCenterDot = x * toCenter.x + z * toCenter.z;
-                    if (toCenterDot > 0) {
-                        // 向树干内部延伸
-                        x += toCenter.x * toCenterDot * 0.5;
-                        z += toCenter.z * toCenterDot * 0.5;
-                    }
-                }
-                
-                // 应用树皮噪声
-                const worldX = x + startVec.x;
-                const worldY = y + startVec.y;
-                const worldZ = z + startVec.z;
-                
-                const noise = simplex.noise3D(
-                    worldX * tcfg.noiseScale * 0.8,
-                    worldY * tcfg.noiseScale * 0.4,
-                    worldZ * tcfg.noiseScale * 0.8
-                ) * tcfg.noiseStrength * 0.5;
-                
-                const dist = Math.sqrt(x * x + z * z);
-                if (dist > 0.01) {
-                    const scale = 1 + noise;
-                    positions.setX(i, x * scale);
-                    positions.setZ(i, z * scale);
-                } else {
-                    positions.setX(i, x);
-                    positions.setZ(i, z);
-                }
-                positions.setY(i, y + noise * 0.15);
-            }
-            positions.needsUpdate = true;
-            collarGeo.computeVertexNormals();
-            
-            const collar = new THREE.Mesh(collarGeo, sharedBarkMaterial);
-            
-            // 位置略微向树干内部偏移
-            const offsetPos = startVec.clone();
-            if (trunkRadius) {
-                offsetPos.add(toCenter.multiplyScalar(baseSize * 0.3));
-            }
-            collar.position.copy(offsetPos);
-            
-            // 朝向分支方向倾斜
-            const upDir = new THREE.Vector3(0, 1, 0);
-            const tiltedDir = direction.clone().lerp(upDir, 0.5).normalize();
-            collar.quaternion.setFromUnitVectors(upDir, tiltedDir);
-            
-            collar.castShadow = true;
-            collar.receiveShadow = true;
-            collar.userData.isCollar = true;
-            
-            return collar;
-        }
-        
-        // ============================================
-        // snapBranchJoints() - 修复分支接缝
-        // 确保 child.start === parent.end
-        // ============================================
-        function snapBranchJoints() {
-            branchDataList.forEach(branchData => {
-                if (branchData.parentId) {
-                    // 找到父分支
-                    const parent = branchDataList.find(b => b.id === branchData.parentId);
-                    if (parent) {
-                        // 计算偏移量
-                        const offset = new THREE.Vector3().subVectors(parent.end, branchData.start);
-                        
-                        if (offset.length() > 0.001) {
-                            // 吸附 start 到 parent.end
-                            branchData.start.copy(parent.end);
-                            
-                            // 更新 group 位置 (保持方向和长度不变)
-                            branchData.group.position.copy(branchData.start);
-                            
-                            // 更新 end 位置
-                            branchData.end.copy(branchData.start).add(
-                                branchData.direction.clone().multiplyScalar(branchData.length)
-                            );
-                        }
-                    }
-                }
+            // 六根主枝: 高度错开, 方位按黄金角螺旋
+            const limbHeights = [5.6, 6.6, 7.6, 8.6, 9.7, 10.9, 12.3];
+            limbHeights.forEach((h, li) => {
+                const u0 = h / TRUNK_H;
+                const az = 0.35 + li * 2.39996 + rr(-0.25, 0.25);
+                const out = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
+                const tr = trunkRadius(u0);
+                const start = trunkCurve.getPointAt(u0).addScaledVector(out, tr * 0.25);
+                // 主枝伸向树冠外缘: 低处的伸得远, 高处的更往上
+                const reach = CROWN.rx * rr(0.66, 0.8) * (1 - li * 0.06);
+                const target = new THREE.Vector3(out.x * reach, CROWN.y + (h - 8.5) * 0.8 + rr(-0.3, 0.8), out.z * reach);
+                const toT = target.clone().sub(start);
+                const length = toT.length();
+                const dir0 = out.clone().multiplyScalar(0.9).add(up.clone().multiplyScalar(0.55 + li * 0.08));
+                const pts = growPath(start, dir0, length, 0.35, 0.12);
+                // 末端拉向目标点, 整根顺势弯过去
+                const end = pts[pts.length - 1];
+                const fix = target.clone().sub(end);
+                pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 1.6)));
+                const r0 = tr * 0.62;
+                const limbR = (u) => r0 * (1 - 0.86 * u);
+                const limb = tubeInto(builder, pts, (u) => limbR(u) * (1 + 0.45 * Math.exp(-u * 16)), { id: 'limb' + li, radial: IS_TOUCH ? 10 : 14 });
+                branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
+
+                // 侧枝: 从主枝中段往外分
+                const forks = [0.38, 0.58, 0.78].filter(() => treeRand() < 0.9);
+                forks.forEach((fu, fi) => {
+                    const at = limb.getPointAt(fu + rr(-0.05, 0.05));
+                    const tan = limb.getTangentAt(fu);
+                    const sideDir = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
+                    const d = tan.clone().multiplyScalar(0.55).addScaledVector(sideDir, rr(0.55, 0.9)).addScaledVector(up, rr(0.25, 0.55));
+                    const len = rr(2.2, 3.4) * (1 - fu * 0.2);
+                    const sr0 = limbR(fu) * 0.6;
+                    const sp = growPath(at, d, len, 0.3, 0.18);
+                    const sub = tubeInto(builder, sp, (u) => sr0 * (1 - 0.85 * u) * (1 + 0.35 * Math.exp(-u * 14)), { id: `limb${li}_s${fi}`, radial: 8 });
+                    branchTips.push({ p: sub.getPointAt(1), w: 1.0 });
+
+                    // 细枝
+                    const twigs = treeRand() < 0.5 ? [0.55] : [0.45, 0.8];
+                    twigs.forEach((tu, ti) => {
+                        const tat = sub.getPointAt(tu);
+                        const ttan = sub.getTangentAt(tu);
+                        const tside = new THREE.Vector3(rr(-1, 1), 0, rr(-1, 1)).normalize();
+                        const td = ttan.clone().multiplyScalar(0.6).addScaledVector(tside, 0.7).addScaledVector(up, rr(0.2, 0.6));
+                        const tr0 = Math.max(0.025, sr0 * (1 - 0.85 * tu) * 0.6);
+                        const tp = growPath(tat, td, rr(0.8, 1.5), 0.25, 0.2);
+                        const twig = tubeInto(builder, tp, (u) => tr0 * (1 - 0.8 * u), { id: `limb${li}_s${fi}_t${ti}`, radial: 6, segments: 6 });
+                        branchTips.push({ p: twig.getPointAt(1), w: 0.8 });
+                    });
+                });
             });
-            
-            // 更新 collar 位置
-            collarMeshes.forEach((collar, index) => {
-                if (index < branchDataList.length) {
-                    collar.position.copy(branchDataList[index].start);
-                }
-            });
-        }
-        
-        // 旧函数保持向后兼容 (重定向到新系统)
-        function createBranch(start, end, radius) {
-            const startVec = Array.isArray(start) ? new THREE.Vector3(...start) : start;
-            const endVec = Array.isArray(end) ? new THREE.Vector3(...end) : end;
-            return createBranchSegment(startVec, endVec, radius, 'compat_' + Math.random()).mesh;
+
+            const branches = meshFromBuilder(builder);
+            branches.castShadow = true;
+            branches.receiveShadow = false;   // 和树干一样不吃叶影, 不然枝条发黑
+            branches.userData.isBranch = true;
+            parent.add(branches);
+            branchMeshes.push(branches);
         }
 
         function createFoliage(parent) {
-            const leafPositions = [];
             const leafCount = 1000;
+            const leafPositions = [];
+            // 叶子按枝梢的权重分配: 主梢、主枝梢簇大, 细枝梢簇小
+            const total = branchTips.reduce((s, t) => s + t.w, 0);
+            branchTips.forEach((tip, ti) => {
+                const n = ti === branchTips.length - 1
+                    ? leafCount - leafPositions.length
+                    : Math.round(leafCount * tip.w / total);
+                const R = 1.35 + tip.w * 0.6;   // 叶簇半径
+                for (let k = 0; k < n && leafPositions.length < leafCount; k++) {
+                    // 簇内: 靠中心密、外缘疏, 稍往上、往外长
+                    const v = new THREE.Vector3(rr(-1, 1), rr(-0.7, 1), rr(-1, 1));
+                    if (v.lengthSq() > 1) v.setLength(rr(0, 1));
+                    const d = Math.pow(treeRand(), 0.6);
+                    const out = new THREE.Vector3(tip.p.x, 0, tip.p.z).normalize().multiplyScalar(0.35);
+                    const pos = tip.p.clone().addScaledVector(v.normalize(), d * R).add(out).add(new THREE.Vector3(0, 0.25, 0));
+                    leafPositions.push({ x: pos.x, y: pos.y, z: pos.z, edge: d });
+                }
+            });
 
-            for (let i = 0; i < leafCount; i++) {
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.random() * Math.PI * 0.6;
-                const r = 4 + Math.random() * 6;
-
-                const x = r * Math.sin(phi) * Math.cos(theta);
-                const y = 12 + r * Math.cos(phi) * 0.7 + Math.random() * 3;
-                const z = r * Math.sin(phi) * Math.sin(theta);
-
-                leafPositions.push({ x, y, z });
-            }
-
-            // Create leaf clusters — 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
+            // 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
             // 每帧 ~2000 次 draw call (含阴影 pass), 手机上是卡顿主因; 现在 1 次。
             leafMaterial = new THREE.MeshStandardMaterial({
                 color: 0x5f8f34,
@@ -1863,23 +1659,30 @@
                 transparent: true,
                 opacity: 0.9
             });
-            // 球体段数加密 (原来 6×4 是多面体, 一眼像泡泡纸); 颜色材质不变
             const leafSeg = IS_TOUCH ? [10, 8] : [16, 12];
             leafInstanced = new THREE.InstancedMesh(new THREE.SphereGeometry(1, leafSeg[0], leafSeg[1]), leafMaterial, leafCount);
             leafInstanced.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
             leafInstanced.castShadow = true;
             leafInstanced.frustumCulled = false;   // 包围球只按单个球算, 会被误裁
+            const tint = new THREE.Color();
             leafPositions.forEach((pos, i) => {
                 const leaf = new THREE.Object3D();
-                const radius = 0.25 + Math.random() * 0.2;
-                leaf.scale.setScalar(radius);
+                // 簇心的叶球大、外缘的小; 略扁, 方向随意 — 像一团团叶子而不是泡泡
+                const radius = 0.24 + (1 - pos.edge) * 0.24 + treeRand() * 0.12;
+                leaf.scale.set(radius, radius * rr(0.78, 0.92), radius);
+                leaf.rotation.set(rr(-0.4, 0.4), rr(0, Math.PI), rr(-0.4, 0.4));
                 leaf.position.set(pos.x, pos.y, pos.z);
                 leaf.userData.radius = radius;
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
-                leaf.userData.phase = Math.random() * Math.PI * 2;
+                leaf.userData.phase = treeRand() * Math.PI * 2;
                 leaves.push(leaf);
+                // 深浅不一: 乘在季节颜色上, 换季照样生效
+                const b = rr(0.82, 1.1);
+                tint.setRGB(b * rr(0.96, 1.02), b, b * rr(0.9, 1.0));
+                leafInstanced.setColorAt(i, tint);
             });
+            if (leafInstanced.instanceColor) leafInstanced.instanceColor.needsUpdate = true;
             syncLeafInstances();
             parent.add(leafInstanced);
         }
