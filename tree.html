@@ -1025,6 +1025,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- 只为拿 Marching Cubes 的查表 (THREE.edgeTable / THREE.triTable): 树干和树枝合成一整块光滑的木头 -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/MarchingCubes.js"></script>
     <script>
         // ============================================
         // SIMPLEX NOISE 实现 (用于树皮位移)
@@ -1400,15 +1402,12 @@
         function createTree() {
             tree = new THREE.Group();
 
-            // 树干 (含向上收细的主梢) 单独一个 mesh, 冬季积雪用
+            // 树干、主枝、侧枝是一整块木头 (trunkMesh, 冬季积雪也用它)
             trunkMesh = createRealisticTrunk();
             tree.add(trunkMesh);
-
-            // 主枝 → 侧枝 → 细枝, 全部合成一个 mesh (保存引用用于冬季积雪)
             branchMeshes = [];
-            createBranches(tree);
 
-            // 叶球成簇长在枝梢
+            // 叶子: 一大圈圆冠
             createFoliage(tree);
 
             scene.add(tree);
@@ -1416,9 +1415,12 @@
 
         // ============================================
         // 自然树 (2026-11-15)
-        // 像真树一样长: 树干微弯、根部外扩成几道板根, 一路收细成主梢; 主枝在不同高度
-        // 螺旋着伸出、向上弯; 侧枝从主枝中段分出, 细枝再从侧枝分出, 越往外越细;
-        // 叶球成簇长在枝梢。随机数用固定种子, 每次打开都是同一棵树。
+        // 骨架: 树干微弯、贴地处略宽, 长到八九米分成五根主枝; 主枝从树干里面起步, 先近乎竖直、
+        // 再向外拱开; 每根主枝两根侧枝, 平着向两侧伸。
+        // 皮肉: 不是一根根管子拼起来 (拼接处会露出断面和硬折痕), 而是把整副骨架当成一个
+        // 隐式曲面 — 每段是一个锥形胶囊, 用平滑并集 (smooth min) 融在一起, 分叉处自然长出
+        // 一层"蹼"; 再加一点纵向噪声做树皮, 最后用 Marching Cubes 一次网格化成一整块。
+        // 随机数用固定种子, 每次打开都是同一棵树。
         // ============================================
         const treeRand = (() => {
             let a = 20261115;
@@ -1431,105 +1433,7 @@
         })();
         const rr = (a, b) => a + (b - a) * treeRand();
 
-        // 沿一组点生成一根带树皮起伏的管子, 半径由 radiusAt(u, θ) 给 (u: 0 根部 → 1 梢)。
-        // 顶点追加进 builder, 多根枝合成一个几何体 (一次 draw call)。
-        // 返回曲线, 并把几段轴线记进 branchDataList (苹果防穿模要用)。
-        function tubeInto(builder, pts, radiusAt, opts = {}) {
-            const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-            const len = curve.getLength();
-            const segs = opts.segments || Math.max(6, Math.round(len * 3.2));
-            const radial = opts.radial || 10;
-            const cfg = TRUNK_CONFIG;
-            const up = new THREE.Vector3(0, 1, 0), side = new THREE.Vector3(1, 0, 0);
-            let prevT = curve.getTangentAt(0);
-            const normal = new THREE.Vector3().crossVectors(prevT, Math.abs(prevT.y) < 0.9 ? up : side).normalize();
-            const base = builder.pos.length / 3;
-            const c = new THREE.Vector3(), dir = new THREE.Vector3(), p = new THREE.Vector3();
-            for (let i = 0; i <= segs; i++) {
-                const u = i / segs;
-                curve.getPointAt(u, c);
-                const t = curve.getTangentAt(u);
-                // 平行移动标架: 管子沿弯曲处不会拧麻花
-                const axis = new THREE.Vector3().crossVectors(prevT, t);
-                if (axis.lengthSq() > 1e-10) normal.applyAxisAngle(axis.normalize(), Math.acos(THREE.MathUtils.clamp(prevT.dot(t), -1, 1)));
-                prevT = t;
-                const bin = new THREE.Vector3().crossVectors(t, normal).normalize();
-                const nrm = new THREE.Vector3().crossVectors(bin, t).normalize();
-                for (let j = 0; j <= radial; j++) {
-                    const th = (j % radial) / radial * Math.PI * 2;
-                    dir.copy(nrm).multiplyScalar(Math.cos(th)).addScaledVector(bin, Math.sin(th));
-                    let r = radiusAt(u, th);
-                    p.copy(c).addScaledVector(dir, r);
-                    // 树皮: 纵向拉长的噪声, 细枝上减弱
-                    const nz = simplex.noise3D(p.x * cfg.noiseScale * 0.8, p.y * cfg.noiseScale * 0.3, p.z * cfg.noiseScale * 0.8);
-                    r = Math.max(0.006, r + nz * cfg.noiseStrength * Math.min(1, r * 1.4));
-                    p.copy(c).addScaledVector(dir, r);
-                    builder.pos.push(p.x, p.y, p.z);
-                }
-            }
-            for (let i = 0; i < segs; i++) {
-                for (let j = 0; j < radial; j++) {
-                    const a = base + i * (radial + 1) + j, b = a + radial + 1;
-                    builder.idx.push(a, a + 1, b, b, a + 1, b + 1);   // 法线朝外
-                }
-            }
-            if (opts.id) {
-                const n = 4;
-                for (let k = 0; k < n; k++) {
-                    const u0 = k / n, u1 = (k + 1) / n;
-                    branchDataList.push({
-                        id: opts.id + '_' + k,
-                        start: curve.getPointAt(u0), end: curve.getPointAt(u1),
-                        radius: radiusAt((u0 + u1) / 2, 0)
-                    });
-                }
-            }
-            return curve;
-        }
-
-        function meshFromBuilder(builder) {
-            const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(builder.pos, 3));
-            geo.setIndex(builder.idx);
-            geo.computeVertexNormals();
-            return new THREE.Mesh(geo, sharedBarkMaterial);
-        }
-
-        // 树干: 曲线和半径函数也给主枝用 (主枝从树干表面长出来)
-        const TRUNK_H = 8.9;   // 树干长到这里就分成几根主枝, 不再有一根粗主梢穿过树冠
-        let trunkCurve = null;
-        const trunkRadius = (u) => 0.22 + 1.08 * Math.pow(1 - u, 0.75) - 0.12 * Math.max(0, u - 0.8) * 5;   // 贴地 ~1.3, 分叉处 ~0.6, 顶端收进主枝里
-
-        function createRealisticTrunk() {
-            const pts = [];
-            for (let k = 0; k <= 8; k++) {
-                const y = -0.3 + k * (TRUNK_H + 0.3) / 8;
-                // 微微的 S 形, 根部正、越往上越偏一点
-                const lean = Math.min(1, Math.max(0, y) / 6) * 0.6;
-                pts.push(new THREE.Vector3(
-                    0.32 * Math.sin(y * 0.23 + 0.5) * lean,
-                    y,
-                    0.24 * Math.sin(y * 0.17 + 2.1) * lean
-                ));
-            }
-            const builder = { pos: [], idx: [] };
-            trunkCurve = tubeInto(builder, pts, (u, th) => {
-                const y = u * TRUNK_H;
-                // 树脚和原来一样: 一段宽而平实的根颈, 不加根
-                const flare = 0.22 * Math.exp(-Math.max(0, y) / 0.7);
-                return trunkRadius(u) + flare;
-            }, { segments: IS_TOUCH ? 56 : 80, radial: IS_TOUCH ? 18 : 24 });
-            const trunk = meshFromBuilder(builder);
-            trunk.castShadow = true;
-            // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
-            trunk.receiveShadow = false;
-            trunk.userData.isTrunk = true;
-            return trunk;
-        }
-
-        // ============================================
-        // 统一树皮材质 (树干和分支共用)
-        // ============================================
+        // 统一树皮材质
         const sharedBarkMaterial = new THREE.MeshStandardMaterial({
             color: 0x352a1d,
             emissive: 0x050302,
@@ -1539,11 +1443,11 @@
             flatShading: false
         });
 
-        // 枝条轴线 (苹果防穿模用) 和枝梢 (叶簇长在这里)
+        // 枝条轴线 (苹果防穿模用)
         let branchDataList = [];
         let branchTips = [];
 
-        // 从 start 沿 dir 长出一根枝: 中途向上弯 (向光), 带一点随机摆动
+        // 从 start 沿 dir 长出一根枝: 每一步方向往上/往下偏一点, 带轻微摆动
         function growPath(start, dir, length, rise, wobble) {
             const pts = [start.clone()];
             const d = dir.clone().normalize();
@@ -1559,58 +1463,191 @@
             return pts;
         }
 
-        function createBranches(parent) {
+        // 把一条曲线切成锥形胶囊, 半径由 radiusAt(u) 给
+        function capsulesAlong(caps, curve, radiusAt, n, id) {
+            for (let k = 0; k < n; k++) {
+                const u0 = k / n, u1 = (k + 1) / n;
+                const a = curve.getPointAt(u0), b = curve.getPointAt(u1);
+                const ra = radiusAt(u0), rb = radiusAt(u1);
+                caps.push({ a, b, ra, rb });
+                if (id) branchDataList.push({ id: id + '_' + k, start: a, end: b, radius: (ra + rb) / 2 });
+            }
+        }
+
+        const TRUNK_H = 8.9;
+        let trunkCurve = null;
+        const trunkRadius = (u) => 0.5 + 0.62 * Math.pow(1 - u, 1.1);   // 贴地 ~1.1, 分叉处 ~0.55
+
+        function buildSkeleton() {
+            const caps = [];
             branchDataList = [];
             branchTips = [];
-            const builder = { pos: [], idx: [] };
             const up = new THREE.Vector3(0, 1, 0);
-            const CROWN = { y: 14.8, rx: 7.8, ry: 4.4 };   // 树冠大致轮廓, 苹果挂在它的外缘
+            const CROWN = { rx: 7.8 };
 
+            // 树干
+            const tpts = [];
+            for (let k = 0; k <= 6; k++) {
+                const y = -0.6 + k * (TRUNK_H + 0.6) / 6;
+                const lean = Math.min(1, Math.max(0, y) / 6) * 0.6;
+                tpts.push(new THREE.Vector3(0.32 * Math.sin(y * 0.23 + 0.5) * lean, y, 0.24 * Math.sin(y * 0.17 + 2.1) * lean));
+            }
+            trunkCurve = new THREE.CatmullRomCurve3(tpts, false, 'centripetal');
+            capsulesAlong(caps, trunkCurve, (u) => {
+                const y = -0.6 + u * (TRUNK_H + 0.6);
+                return trunkRadius(Math.max(0, y) / TRUNK_H) + 0.28 * Math.exp(-Math.max(0, y) / 0.8);   // 贴地处略宽
+            }, 14, 'trunk');
 
-            // 树干在顶上分成五根主枝: 每根都从树干里面起步 (轴线附近), 先几乎竖直地长出来,
-            // 再慢慢转向外, 这样分叉处是树干自己"分开", 而不是几根棍子插在树干侧面。
-            // 其中一根偏中间往上, 顶替原来的主梢。
-            const limbHeights = [7.7, 7.95, 8.2, 8.45, 8.7];
+            // 五根主枝, 从树干上段里面起步
+            const limbHeights = [7.0, 7.4, 7.8, 8.2, 8.6];
             limbHeights.forEach((h, li) => {
                 const u0 = h / TRUNK_H;
                 const az = 0.6 + li * 2.39996 + rr(-0.2, 0.2);
                 const out = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
-                const tr = trunkRadius(u0);
-                const start = trunkCurve.getPointAt(u0).addScaledVector(out, tr * 0.05);
+                const start = trunkCurve.getPointAt(u0);
                 const central = li === limbHeights.length - 1;
                 const reach = central ? rr(1.0, 1.8) : CROWN.rx * rr(0.55, 0.68);
                 const target = new THREE.Vector3(out.x * reach, (central ? 16.2 : 13.4 + li * 0.35) + rr(-0.3, 0.5), out.z * reach);
                 const length = target.distanceTo(start) * 1.05;
-                const dir0 = out.clone().multiplyScalar(central ? 0.08 : 0.3).add(up.clone());   // 起步近乎竖直
-                const pts = growPath(start, dir0, length, central ? 0 : -0.75, 0.04);      // 慢慢转平, 向外拱
-                const end = pts[pts.length - 1];
-                const fix = target.clone().sub(end);
+                const dir0 = out.clone().multiplyScalar(central ? 0.08 : 0.35).add(up);
+                const pts = growPath(start, dir0, length, central ? 0 : -0.75, 0.04);
+                const fix = target.clone().sub(pts[pts.length - 1]);
                 pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 2.2)));
-                const r0 = Math.max(0.42, tr * 0.8);
-                const limbR = (u) => r0 * (1 - 0.72 * Math.pow(u, 0.9));
-                const limb = tubeInto(builder, pts, limbR, { id: 'limb' + li, radial: IS_TOUCH ? 12 : 16 });
+                const limb = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+                const r0 = trunkRadius(u0) * 0.78;
+                const limbR = (u) => Math.max(0.16, r0 * (1 - 0.7 * Math.pow(u, 0.9)));
+                capsulesAlong(caps, limb, limbR, 10, 'limb' + li);
                 branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
 
-                // 侧枝: 每根主枝两枝, 从中上段平着往两侧伸, 梢头钝一点 (不要细刺)
+                // 侧枝: 每根主枝两枝, 平着向两侧伸, 梢头钝
                 [0.5, 0.74].forEach((fu, fi) => {
                     const at = limb.getPointAt(fu);
                     const tan = limb.getTangentAt(fu);
-                    const sideDir = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
-                    const d = tan.clone().multiplyScalar(0.5).addScaledVector(sideDir, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
+                    const side = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
+                    const d = tan.clone().multiplyScalar(0.5).addScaledVector(side, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
                     const len = rr(2.2, 3.1) * (1 - fu * 0.25);
                     const sr0 = limbR(fu) * 0.62;
-                    const sp = growPath(at.clone().addScaledVector(d.clone().normalize(), -limbR(fu) * 0.5), d, len, -0.1, 0.06);
-                    const sub = tubeInto(builder, sp, (u) => Math.max(0.07, sr0 * (1 - 0.65 * u)), { id: `limb${li}_s${fi}`, radial: 10 });
+                    const sub = new THREE.CatmullRomCurve3(growPath(at, d, len, -0.1, 0.06), false, 'centripetal');
+                    capsulesAlong(caps, sub, (u) => Math.max(0.13, sr0 * (1 - 0.55 * u)), 6, `limb${li}_s${fi}`);
                     branchTips.push({ p: sub.getPointAt(1), w: 1.0 });
                 });
             });
+            return caps;
+        }
 
-            const branches = meshFromBuilder(builder);
-            branches.castShadow = true;
-            branches.receiveShadow = false;   // 和树干一样不吃叶影, 不然枝条发黑
-            branches.userData.isBranch = true;
-            parent.add(branches);
-            branchMeshes.push(branches);
+        // 隐式曲面 → 网格: 锥形胶囊的距离场, 平滑并集, 加树皮噪声, 再 Marching Cubes
+        function woodMesh(caps, voxel, blend) {
+            const pad = blend + 0.25;
+            const lo = new THREE.Vector3(Infinity, Infinity, Infinity), hi = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+            caps.forEach(c => {
+                const r = Math.max(c.ra, c.rb) + pad;
+                lo.min(new THREE.Vector3(Math.min(c.a.x, c.b.x) - r, Math.min(c.a.y, c.b.y) - r, Math.min(c.a.z, c.b.z) - r));
+                hi.max(new THREE.Vector3(Math.max(c.a.x, c.b.x) + r, Math.max(c.a.y, c.b.y) + r, Math.max(c.a.z, c.b.z) + r));
+            });
+            lo.y = Math.max(lo.y, -0.5);   // 地下的部分不要
+            const nx = Math.ceil((hi.x - lo.x) / voxel) + 2, ny = Math.ceil((hi.y - lo.y) / voxel) + 2, nz = Math.ceil((hi.z - lo.z) / voxel) + 2;
+            const field = new Float32Array(nx * ny * nz).fill(9);
+            const thick = new Float32Array(nx * ny * nz);   // 离这里最近那段的半径: 树皮沟纹深浅跟着粗细走
+            const at = (i, j, l) => i + nx * (j + ny * l);
+            const smin = (a, b) => { const h = Math.max(blend - Math.abs(a - b), 0) / blend; return Math.min(a, b) - h * h * blend * 0.25; };
+            const ab = new THREE.Vector3(), pa = new THREE.Vector3();
+            caps.forEach(c => {
+                ab.subVectors(c.b, c.a);
+                const L2 = Math.max(ab.lengthSq(), 1e-6);
+                const r = Math.max(c.ra, c.rb) + pad;
+                const i0 = Math.max(0, Math.floor((Math.min(c.a.x, c.b.x) - r - lo.x) / voxel)), i1 = Math.min(nx - 1, Math.ceil((Math.max(c.a.x, c.b.x) + r - lo.x) / voxel));
+                const j0 = Math.max(0, Math.floor((Math.min(c.a.y, c.b.y) - r - lo.y) / voxel)), j1 = Math.min(ny - 1, Math.ceil((Math.max(c.a.y, c.b.y) + r - lo.y) / voxel));
+                const l0 = Math.max(0, Math.floor((Math.min(c.a.z, c.b.z) - r - lo.z) / voxel)), l1 = Math.min(nz - 1, Math.ceil((Math.max(c.a.z, c.b.z) + r - lo.z) / voxel));
+                for (let l = l0; l <= l1; l++) {
+                    const z = lo.z + l * voxel;
+                    for (let j = j0; j <= j1; j++) {
+                        const y = lo.y + j * voxel;
+                        for (let i = i0; i <= i1; i++) {
+                            const x = lo.x + i * voxel;
+                            pa.set(x - c.a.x, y - c.a.y, z - c.a.z);
+                            const t = Math.min(1, Math.max(0, pa.dot(ab) / L2));
+                            const dx = pa.x - ab.x * t, dy = pa.y - ab.y * t, dz = pa.z - ab.z * t;
+                            const d = Math.sqrt(dx * dx + dy * dy + dz * dz) - (c.ra + (c.rb - c.ra) * t);
+                            if (d > pad) continue;
+                            const q = at(i, j, l);
+                            if (d < field[q]) thick[q] = c.ra + (c.rb - c.ra) * t;
+                            field[q] = smin(field[q], d);
+                        }
+                    }
+                }
+            });
+            // 树皮: 只在表面附近加纵向拉长的噪声 (竖着的沟纹)
+            const cfg = TRUNK_CONFIG;
+            for (let l = 0; l < nz; l++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+                const q = at(i, j, l);
+                if (Math.abs(field[q]) > 0.3) continue;
+                const x = lo.x + i * voxel, y = lo.y + j * voxel, z = lo.z + l * voxel;
+                const k = Math.min(1, Math.max(0.15, (thick[q] - 0.15) / 0.7));   // 细枝几乎光滑, 树干沟纹最深
+                field[q] += (simplex.noise3D(x * cfg.noiseScale * 1.1, y * cfg.noiseScale * 0.25, z * cfg.noiseScale * 1.1) * 0.06
+                          + simplex.noise3D(x * 0.9, y * 0.35, z * 0.9) * 0.03) * k;
+            }
+            // Marching Cubes (查表来自 three r128 的 MarchingCubes.js)
+            const ET = THREE.edgeTable, TT = THREE.triTable;
+            const pos = [], idx = [], seen = new Map();
+            const cornerOff = [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]];
+            const edgeCorners = [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]];
+            const v = new Float32Array(8), g = new Int32Array(8), ev = new Int32Array(12);
+            for (let l = 0; l < nz - 1; l++) for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+                let ci = 0, any = false;
+                for (let k = 0; k < 8; k++) {
+                    const o = cornerOff[k];
+                    const q = at(i + o[0], j + o[1], l + o[2]);
+                    g[k] = q; v[k] = field[q];
+                    if (v[k] < 0) ci |= 1 << k;
+                    if (v[k] < 8) any = true;
+                }
+                if (!any || ci === 0 || ci === 255) continue;
+                const edges = ET[ci];
+                for (let e = 0; e < 12; e++) {
+                    if (!(edges & (1 << e))) continue;
+                    const [a, b] = edgeCorners[e];
+                    const ga = Math.min(g[a], g[b]), gb = Math.max(g[a], g[b]);
+                    const key = ga * 3 + (gb - ga === 1 ? 0 : gb - ga === nx ? 1 : 2);
+                    let vi = seen.get(key);
+                    if (vi === undefined) {
+                        const t = v[a] / (v[a] - v[b]);
+                        const oa = cornerOff[a], ob = cornerOff[b];
+                        pos.push(
+                            lo.x + (i + oa[0] + (ob[0] - oa[0]) * t) * voxel,
+                            lo.y + (j + oa[1] + (ob[1] - oa[1]) * t) * voxel,
+                            lo.z + (l + oa[2] + (ob[2] - oa[2]) * t) * voxel
+                        );
+                        vi = pos.length / 3 - 1;
+                        seen.set(key, vi);
+                    }
+                    ev[e] = vi;
+                }
+                for (let t = ci * 16; TT[t] !== -1; t += 3) idx.push(ev[TT[t]], ev[TT[t + 1]], ev[TT[t + 2]]);
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setIndex(idx);
+            geo.computeVertexNormals();
+            // 法线朝外: 取最右边的一个顶点, 法线应朝 +x; 反了就整体翻面
+            let far = 0;
+            for (let k = 0; k < pos.length; k += 3) if (pos[k] > pos[far]) far = k;
+            if (geo.attributes.normal.getX(far / 3) < 0) {
+                for (let k = 0; k < idx.length; k += 3) { const tmp = idx[k + 1]; idx[k + 1] = idx[k + 2]; idx[k + 2] = tmp; }
+                geo.setIndex(idx);
+                geo.computeVertexNormals();
+            }
+            return geo;
+        }
+
+        function createRealisticTrunk() {
+            const caps = buildSkeleton();
+            const geo = woodMesh(caps, IS_TOUCH ? 0.11 : 0.075, 0.45);
+            const wood = new THREE.Mesh(geo, sharedBarkMaterial);
+            wood.castShadow = true;
+            // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
+            wood.receiveShadow = false;
+            wood.userData.isTrunk = true;
+            return wood;
         }
 
         function createFoliage(parent) {
