@@ -2157,6 +2157,29 @@
                 }
             });
 
+            // 树冠随枝条生长而定, 硬编码的苹果可能离叶子太远、像悬在空中。苹果不挪 (这些位置
+            // 从默认机位看得见、点得到), 而是从冠心挪一小撮本来就被挡住的叶球, 在苹果靠树心
+            // 那一侧长成一小簇 — 看上去苹果挂在一根伸出来的枝梢上。
+            const nearestLeafGap = (ap, apR) => leaves.reduce((m, lf) => Math.min(m,
+                Math.hypot(lf.userData.originalX - ap.position.x, lf.userData.originalY - ap.position.y, lf.position.z - ap.position.z) - lf.userData.radius - apR), Infinity);
+            const inner = leaves.slice().sort((a, b) =>
+                Math.hypot(a.userData.originalX, a.position.z) - Math.hypot(b.userData.originalX, b.position.z));
+            let take = 0;
+            springApples.forEach(ap => {
+                const apR = 0.445 * ap.scale.x;
+                if (nearestLeafGap(ap, apR) < 0.4) return;
+                const h = Math.hypot(ap.position.x, ap.position.z) || 1;
+                const anchor = new THREE.Vector3(ap.position.x - ap.position.x / h * 1.1, ap.position.y + 0.55, ap.position.z - ap.position.z / h * 1.1);
+                for (let k = 0; k < 14 && take < inner.length; k++, take++) {
+                    const lf = inner[take];
+                    const v = new THREE.Vector3(rr(-1, 1), rr(-0.4, 1), rr(-1, 1)).setLength(rr(0.2, 1.0));
+                    const np = anchor.clone().add(v);
+                    lf.userData.originalX = np.x;
+                    lf.userData.originalY = np.y;
+                    lf.position.set(np.x, np.y, np.z);
+                }
+            });
+
             for (let pass = 0; pass < 2; pass++) {
                 springApples.forEach(ap => {
                     const apR = 0.445 * ap.scale.x + 0.28;
