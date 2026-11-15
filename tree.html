@@ -1583,8 +1583,16 @@
                 if (Math.abs(field[q]) > 0.3) continue;
                 const x = lo.x + i * voxel, y = lo.y + j * voxel, z = lo.z + l * voxel;
                 const k = Math.min(1, Math.max(0.15, (thick[q] - 0.15) / 0.7));   // 细枝几乎光滑, 树干沟纹最深
-                field[q] += (simplex.noise3D(x * cfg.noiseScale * 1.1, y * cfg.noiseScale * 0.25, z * cfg.noiseScale * 1.1) * 0.06
-                          + simplex.noise3D(x * 0.9, y * 0.35, z * 0.9) * 0.03) * k;
+                // 不要一眼看得出的规律: 先把采样点扭一扭 (domain warp), 沟纹就会弯、会断、会并;
+                // 再叠几层不同尺度的噪声; 粗糙度本身也一块块不同 (有的地方光、有的地方深)
+                const wx = x + simplex.noise3D(x * 0.45 + 11, y * 0.3, z * 0.45) * 0.9;
+                const wy = y + simplex.noise3D(x * 0.45, y * 0.3 + 23, z * 0.45) * 1.6;
+                const wz = z + simplex.noise3D(x * 0.45, y * 0.3, z * 0.45 + 37) * 0.9;
+                const groove = 1 - Math.abs(simplex.noise3D(wx * 2.6, wy * 0.8, wz * 2.6));       // 起伏不一的纵沟 (ridged)
+                const fine = simplex.noise3D(wx * 6.5, wy * 3.2, wz * 6.5);                      // 细碎的树皮
+                const lump = simplex.noise3D(x * 0.7 + 5, y * 0.5, z * 0.7 - 5);                 // 大的鼓包和凹陷
+                const rough = 0.55 + 0.45 * simplex.noise3D(x * 0.35 - 9, y * 0.22, z * 0.35 + 9); // 一块光一块糙
+                field[q] += ((groove - 0.6) * 0.07 * rough + fine * 0.018 + lump * 0.035) * k;
             }
             // Marching Cubes (查表来自 three r128 的 MarchingCubes.js)
             const ET = THREE.edgeTable, TT = THREE.triTable;
