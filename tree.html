@@ -1502,19 +1502,18 @@
             }, 48, 'trunk');   // 切得够细, 相邻两段的粗细差几乎为零, 不会留下一圈圈的接痕
 
             // 五根主枝, 从树干上段里面起步
-            const limbHeights = [7.0, 7.4, 7.8, 8.2, 7.6, 6.5, 8.6];
-            // 方位: 前四根按黄金角螺旋; 右边 (默认机位在 +z, 右边是 +x) 那一侧原来空, 补两根:
-            // 一根偏前, 一根更低、往右后方平着伸出去; 最后一根居中向上
-            const limbAz = [0, 1, 2, 3].map((n) => 0.6 + n * 2.39996).concat([0.15, -0.45, 0.6 + 4 * 2.39996]);
+            // 简单清楚: 五根主枝绕树干均匀分开 (每根占 72°, 其中一根朝右 +x), 外加一根居中向上;
+            // 侧枝只在自己那一片里往外长, 不跨到别的主枝前面 — 枝条之间不交叉
+            const limbHeights = [6.8, 7.3, 7.0, 7.6, 7.2, 8.4];
+            const limbAz = [0, 1, 2, 3, 4].map((n) => 0.05 + n * Math.PI * 2 / 5).concat([1.2]);
             limbHeights.forEach((h, li) => {
                 const u0 = h / TRUNK_H;
-                const az = limbAz[li] + rr(-0.2, 0.2);
+                const az = limbAz[li] + rr(-0.1, 0.1);
                 const out = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
                 const start = trunkCurve.getPointAt(u0);
                 const central = li === limbHeights.length - 1;
                 const reach = central ? rr(1.0, 1.8) : CROWN.rx * rr(0.55, 0.68);
-                const low = li === 5;   // 右边那根低的: 伸得更远、更平
-                const target = new THREE.Vector3(out.x * reach * (low ? 1.15 : 1), (central ? 16.2 : low ? 12.4 : 13.4 + li * 0.35) + rr(-0.3, 0.5), out.z * reach * (low ? 1.15 : 1));
+                const target = new THREE.Vector3(out.x * reach, (central ? 16.2 : 13.2 + rr(-0.3, 0.9)), out.z * reach);
                 const length = target.distanceTo(start) * 1.05;
                 const dir0 = out.clone().multiplyScalar(central ? 0.08 : 0.35).add(up);
                 const pts = growPath(start, dir0, length, central ? 0 : -0.75, 0.04);
@@ -1526,12 +1525,13 @@
                 capsulesAlong(caps, limb, limbR, 24, 'limb' + li);
                 branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
 
-                // 侧枝: 每根主枝两枝, 平着向两侧伸, 梢头钝
-                [0.5, 0.74].forEach((fu, fi) => {
+                // 侧枝: 每根外围主枝两枝, 一左一右偏开 ~35°, 但始终朝外 (离开树心), 不横穿树冠
+                if (central) return;
+                [0.5, 0.76].forEach((fu, fi) => {
                     const at = limb.getPointAt(fu);
-                    const tan = limb.getTangentAt(fu);
-                    const side = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
-                    const d = tan.clone().multiplyScalar(0.5).addScaledVector(side, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
+                    const turn = (fi ? -1 : 1) * rr(0.5, 0.7);
+                    const outward = new THREE.Vector3(Math.cos(az + turn), 0, Math.sin(az + turn));
+                    const d = outward.multiplyScalar(0.9).addScaledVector(up, rr(0.35, 0.6));
                     const len = rr(2.6, 3.6) * (1 - fu * 0.2);
                     const sr0 = limbR(fu) * 0.62;
                     const sub = new THREE.CatmullRomCurve3(growPath(at, d, len, -0.1, 0.06), false, 'centripetal');
