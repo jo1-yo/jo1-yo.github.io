@@ -1558,15 +1558,17 @@
             const flush = () => {
                 for (let n = 0; n < touched.length; n++) {
                     const q = touched[n], d = one[q];
+                    // 融合的圆角跟着这根枝的粗细走: 树干分叉处宽厚, 细侧枝接上去只是一点点过渡 (不鼓包)
+                    const k = Math.min(blend, Math.max(0.05, oneThick[q] / 100 * 0.9));
                     if (d < field[q]) thick[q] = oneThick[q];
-                    field[q] = smin(field[q], d);
+                    field[q] = smin(field[q], d, k);
                     one[q] = 9;
                 }
                 touched = [];
             };
             let group = -1;
             const at = (i, j, l) => i + nx * (j + ny * l);
-            const smin = (a, b) => { const h = Math.max(blend - Math.abs(a - b), 0) / blend; return Math.min(a, b) - h * h * blend * 0.25; };
+            const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; };
             const ab = new THREE.Vector3(), pa = new THREE.Vector3();
             caps.forEach(c => {
                 if (c.g !== group) { flush(); group = c.g; }
@@ -1652,13 +1654,34 @@
                 }
                 for (let t = ci * 16; TT[t] !== -1; t += 3) idx.push(ev[TT[t]], ev[TT[t + 1]], ev[TT[t + 2]]);
             }
+            // 磨光: 每个顶点往相邻顶点的平均位置挪一点, 跑几遍 — 去掉网格化留下的细小台阶和起伏
+            const nv = pos.length / 3, nbr = Array.from({ length: nv }, () => []);
+            for (let k = 0; k < idx.length; k += 3) {
+                const A = idx[k], B = idx[k + 1], C = idx[k + 2];
+                nbr[A].push(B, C); nbr[B].push(A, C); nbr[C].push(A, B);
+            }
+            let P = Float32Array.from(pos);
+            for (let it = 0; it < 3; it++) {
+                const Q = new Float32Array(P.length);
+                for (let v = 0; v < nv; v++) {
+                    const ns = nbr[v];
+                    if (!ns.length) { Q[v * 3] = P[v * 3]; Q[v * 3 + 1] = P[v * 3 + 1]; Q[v * 3 + 2] = P[v * 3 + 2]; continue; }
+                    let x = 0, y = 0, z = 0;
+                    for (const n of ns) { x += P[n * 3]; y += P[n * 3 + 1]; z += P[n * 3 + 2]; }
+                    const m = 1 / ns.length, w = it % 2 ? -0.52 : 0.5;   // Taubin: 一次收一次放, 磨光但不缩细
+                    Q[v * 3] = P[v * 3] + (x * m - P[v * 3]) * w;
+                    Q[v * 3 + 1] = P[v * 3 + 1] + (y * m - P[v * 3 + 1]) * w;
+                    Q[v * 3 + 2] = P[v * 3 + 2] + (z * m - P[v * 3 + 2]) * w;
+                }
+                P = Q;
+            }
             const geo = new THREE.BufferGeometry();
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
             geo.setIndex(idx);
             geo.computeVertexNormals();
             // 法线朝外: 取最右边的一个顶点, 法线应朝 +x; 反了就整体翻面
             let far = 0;
-            for (let k = 0; k < pos.length; k += 3) if (pos[k] > pos[far]) far = k;
+            for (let k = 0; k < P.length; k += 3) if (P[k] > P[far]) far = k;
             if (geo.attributes.normal.getX(far / 3) < 0) {
                 for (let k = 0; k < idx.length; k += 3) { const tmp = idx[k + 1]; idx[k + 1] = idx[k + 2]; idx[k + 2] = tmp; }
                 geo.setIndex(idx);
