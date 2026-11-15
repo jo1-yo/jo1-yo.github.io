@@ -1612,7 +1612,7 @@
                 const wz = z + simplex.noise3D(x * 0.5, y * 0.5, z * 0.5 + 37) * 0.7;
                 const big = simplex.noise3D(wx * 1.3, wy * 1.3, wz * 1.3);
                 const small = simplex.noise3D(wx * 3.4 + 7, wy * 3.4, wz * 3.4 - 7);
-                field[q] += (big * 0.035 + small * 0.012) * k;
+                field[q] += (big * 0.016 + small * 0.004) * k;   // 很淡: 只是让表面不死板, 不要褶皱感
             }
             // Marching Cubes (查表来自 three r128 的 MarchingCubes.js)
             const ET = THREE.edgeTable, TT = THREE.triTable;
