@@ -1496,16 +1496,16 @@
         }
 
         // 树干: 曲线和半径函数也给主枝用 (主枝从树干表面长出来)
-        const TRUNK_H = 17.2;
+        const TRUNK_H = 8.9;   // 树干长到这里就分成几根主枝, 不再有一根粗主梢穿过树冠
         let trunkCurve = null;
-        const trunkRadius = (u) => 0.1 + 1.2 * Math.pow(1 - u, 1.15);   // 贴地 ~1.3, 分枝处 ~0.75
+        const trunkRadius = (u) => 0.22 + 1.08 * Math.pow(1 - u, 0.75) - 0.12 * Math.max(0, u - 0.8) * 5;   // 贴地 ~1.3, 分叉处 ~0.6, 顶端收进主枝里
 
         function createRealisticTrunk() {
             const pts = [];
             for (let k = 0; k <= 8; k++) {
                 const y = -0.3 + k * (TRUNK_H + 0.3) / 8;
                 // 微微的 S 形, 根部正、越往上越偏一点
-                const lean = Math.min(1, Math.max(0, y) / 6);
+                const lean = Math.min(1, Math.max(0, y) / 6) * 0.6;
                 pts.push(new THREE.Vector3(
                     0.32 * Math.sin(y * 0.23 + 0.5) * lean,
                     y,
@@ -1566,54 +1566,42 @@
             const up = new THREE.Vector3(0, 1, 0);
             const CROWN = { y: 14.8, rx: 7.8, ry: 4.4 };   // 树冠大致轮廓, 苹果挂在它的外缘
 
-            // 主梢 (树干顶端) 也长叶
-            branchTips.push({ p: trunkCurve.getPointAt(1), w: 2.2 });
 
-            // 五根主枝: 树干长到六七米才分, 先陡陡地往上, 再慢慢向外拱开 (阔叶树撑开树冠的样子)
-            const limbHeights = [6.3, 6.9, 7.6, 8.4, 9.3];
+            // 树干在顶上分成五根主枝: 每根都从树干里面起步 (轴线附近), 先几乎竖直地长出来,
+            // 再慢慢转向外, 这样分叉处是树干自己"分开", 而不是几根棍子插在树干侧面。
+            // 其中一根偏中间往上, 顶替原来的主梢。
+            const limbHeights = [7.7, 7.95, 8.2, 8.45, 8.7];
             limbHeights.forEach((h, li) => {
                 const u0 = h / TRUNK_H;
                 const az = 0.6 + li * 2.39996 + rr(-0.2, 0.2);
                 const out = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
                 const tr = trunkRadius(u0);
-                const start = trunkCurve.getPointAt(u0).addScaledVector(out, tr * 0.2);
-                const reach = CROWN.rx * rr(0.58, 0.7);
-                const target = new THREE.Vector3(out.x * reach, 13.6 + li * 0.35 + rr(-0.3, 0.6), out.z * reach);
+                const start = trunkCurve.getPointAt(u0).addScaledVector(out, tr * 0.05);
+                const central = li === limbHeights.length - 1;
+                const reach = central ? rr(1.0, 1.8) : CROWN.rx * rr(0.55, 0.68);
+                const target = new THREE.Vector3(out.x * reach, (central ? 16.2 : 13.4 + li * 0.35) + rr(-0.3, 0.5), out.z * reach);
                 const length = target.distanceTo(start) * 1.05;
-                const dir0 = out.clone().multiplyScalar(0.5).add(up.clone());          // 起步约 60° 仰角
-                const pts = growPath(start, dir0, length, -0.6, 0.05);                // 越长越平, 向外拱
+                const dir0 = out.clone().multiplyScalar(central ? 0.08 : 0.3).add(up.clone());   // 起步近乎竖直
+                const pts = growPath(start, dir0, length, central ? 0 : -0.75, 0.04);      // 慢慢转平, 向外拱
                 const end = pts[pts.length - 1];
                 const fix = target.clone().sub(end);
-                pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 2)));
-                const r0 = tr * 0.72;
-                const limbR = (u) => r0 * (1 - 0.82 * u);
-                const limb = tubeInto(builder, pts, (u) => limbR(u) * (1 + 0.35 * Math.exp(-u * 18)), { id: 'limb' + li, radial: IS_TOUCH ? 12 : 16 });
+                pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 2.2)));
+                const r0 = Math.max(0.42, tr * 0.8);
+                const limbR = (u) => r0 * (1 - 0.72 * Math.pow(u, 0.9));
+                const limb = tubeInto(builder, pts, limbR, { id: 'limb' + li, radial: IS_TOUCH ? 12 : 16 });
                 branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
 
-                // 侧枝: 从主枝中上段分出, 更平地向两侧伸, 梢头微微下垂
-                [0.42, 0.62, 0.8].forEach((fu, fi) => {
-                    const at = limb.getPointAt(fu + rr(-0.04, 0.04));
+                // 侧枝: 每根主枝两枝, 从中上段平着往两侧伸, 梢头钝一点 (不要细刺)
+                [0.5, 0.74].forEach((fu, fi) => {
+                    const at = limb.getPointAt(fu);
                     const tan = limb.getTangentAt(fu);
                     const sideDir = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
-                    const d = tan.clone().multiplyScalar(0.45).addScaledVector(sideDir, rr(0.7, 1.0)).addScaledVector(up, rr(0.05, 0.3));
-                    const len = rr(2.6, 3.8) * (1 - fu * 0.3);
-                    const sr0 = limbR(fu) * 0.55;
-                    const sp = growPath(at, d, len, -0.12, 0.1);
-                    const sub = tubeInto(builder, sp, (u) => sr0 * (1 - 0.85 * u) * (1 + 0.3 * Math.exp(-u * 14)), { id: `limb${li}_s${fi}`, radial: 8 });
+                    const d = tan.clone().multiplyScalar(0.5).addScaledVector(sideDir, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
+                    const len = rr(2.2, 3.1) * (1 - fu * 0.25);
+                    const sr0 = limbR(fu) * 0.62;
+                    const sp = growPath(at.clone().addScaledVector(d.clone().normalize(), -limbR(fu) * 0.5), d, len, -0.1, 0.06);
+                    const sub = tubeInto(builder, sp, (u) => Math.max(0.07, sr0 * (1 - 0.65 * u)), { id: `limb${li}_s${fi}`, radial: 10 });
                     branchTips.push({ p: sub.getPointAt(1), w: 1.0 });
-
-                    // 细枝: 朝上朝外, 去够光
-                    const twigs = treeRand() < 0.5 ? [0.55] : [0.45, 0.8];
-                    twigs.forEach((tu, ti) => {
-                        const tat = sub.getPointAt(tu);
-                        const ttan = sub.getTangentAt(tu);
-                        const tside = new THREE.Vector3(rr(-1, 1), 0, rr(-1, 1)).normalize();
-                        const td = ttan.clone().multiplyScalar(0.6).addScaledVector(tside, 0.6).addScaledVector(up, rr(0.15, 0.45));
-                        const tr0 = Math.max(0.03, sr0 * (1 - 0.85 * tu) * 0.6);
-                        const tp = growPath(tat, td, rr(0.9, 1.6), 0.1, 0.15);
-                        const twig = tubeInto(builder, tp, (u) => tr0 * (1 - 0.8 * u), { id: `limb${li}_s${fi}_t${ti}`, radial: 6, segments: 6 });
-                        branchTips.push({ p: twig.getPointAt(1), w: 0.8 });
-                    });
                 });
             });
 
