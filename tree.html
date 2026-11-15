@@ -1464,21 +1464,24 @@
         }
 
         // 把一条曲线切成锥形胶囊, 半径由 radiusAt(u) 给
+        let capGroup = 0;
         function capsulesAlong(caps, curve, radiusAt, n, id) {
+            const g = ++capGroup;   // 同一根枝的各段之间直接相并, 不同的枝之间才平滑融合
             for (let k = 0; k < n; k++) {
                 const u0 = k / n, u1 = (k + 1) / n;
                 const a = curve.getPointAt(u0), b = curve.getPointAt(u1);
                 const ra = radiusAt(u0), rb = radiusAt(u1);
-                caps.push({ a, b, ra, rb });
+                caps.push({ a, b, ra, rb, g });
                 if (id) branchDataList.push({ id: id + '_' + k, start: a, end: b, radius: (ra + rb) / 2 });
             }
         }
 
         const TRUNK_H = 8.9;
         let trunkCurve = null;
-        const trunkRadius = (u) => 0.5 + 0.62 * Math.pow(1 - u, 1.1);   // 贴地 ~1.1, 分叉处 ~0.55
+        const trunkRadius = (u) => 0.62 + 0.72 * Math.pow(1 - u, 1.1);   // 贴地 ~1.35, 分叉处 ~0.68
 
         function buildSkeleton() {
+            const MIN_R = IS_TOUCH ? 0.11 : 0.08;   // 最细的枝梢, 由网格精度决定 (再细会断成一节节)
             const caps = [];
             branchDataList = [];
             branchTips = [];
@@ -1488,15 +1491,15 @@
             // 树干
             const tpts = [];
             for (let k = 0; k <= 6; k++) {
-                const y = -0.6 + k * (TRUNK_H + 0.6) / 6;
+                const y = -1.4 + k * (TRUNK_H + 1.4) / 6;
                 const lean = Math.min(1, Math.max(0, y) / 6) * 0.6;
                 tpts.push(new THREE.Vector3(0.32 * Math.sin(y * 0.23 + 0.5) * lean, y, 0.24 * Math.sin(y * 0.17 + 2.1) * lean));
             }
             trunkCurve = new THREE.CatmullRomCurve3(tpts, false, 'centripetal');
             capsulesAlong(caps, trunkCurve, (u) => {
-                const y = -0.6 + u * (TRUNK_H + 0.6);
+                const y = -1.4 + u * (TRUNK_H + 1.4);
                 return trunkRadius(Math.max(0, y) / TRUNK_H) + 0.28 * Math.exp(-Math.max(0, y) / 0.8);   // 贴地处略宽
-            }, 14, 'trunk');
+            }, 48, 'trunk');   // 切得够细, 相邻两段的粗细差几乎为零, 不会留下一圈圈的接痕
 
             // 五根主枝, 从树干上段里面起步
             const limbHeights = [7.0, 7.4, 7.8, 8.2, 8.6];
@@ -1514,9 +1517,9 @@
                 const fix = target.clone().sub(pts[pts.length - 1]);
                 pts.forEach((pt, k) => pt.addScaledVector(fix, Math.pow(k / (pts.length - 1), 2.2)));
                 const limb = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-                const r0 = trunkRadius(u0) * 0.78;
-                const limbR = (u) => Math.max(0.16, r0 * (1 - 0.7 * Math.pow(u, 0.9)));
-                capsulesAlong(caps, limb, limbR, 10, 'limb' + li);
+                const r0 = trunkRadius(u0) * 0.52;   // 主枝不跟着树干一起变粗
+                const limbR = (u) => Math.max(MIN_R, r0 * (1 - 0.8 * Math.pow(u, 0.85)));
+                capsulesAlong(caps, limb, limbR, 24, 'limb' + li);
                 branchTips.push({ p: limb.getPointAt(1), w: 1.6 });
 
                 // 侧枝: 每根主枝两枝, 平着向两侧伸, 梢头钝
@@ -1525,10 +1528,10 @@
                     const tan = limb.getTangentAt(fu);
                     const side = new THREE.Vector3().crossVectors(tan, up).normalize().multiplyScalar(fi % 2 ? 1 : -1);
                     const d = tan.clone().multiplyScalar(0.5).addScaledVector(side, rr(0.7, 0.95)).addScaledVector(up, rr(0.1, 0.3));
-                    const len = rr(2.2, 3.1) * (1 - fu * 0.25);
-                    const sr0 = limbR(fu) * 0.62;
+                    const len = rr(2.6, 3.6) * (1 - fu * 0.2);
+                    const sr0 = limbR(fu) * 0.55;
                     const sub = new THREE.CatmullRomCurve3(growPath(at, d, len, -0.1, 0.06), false, 'centripetal');
-                    capsulesAlong(caps, sub, (u) => Math.max(0.13, sr0 * (1 - 0.55 * u)), 6, `limb${li}_s${fi}`);
+                    capsulesAlong(caps, sub, (u) => Math.max(MIN_R, sr0 * (1 - 0.75 * u)), 14, `limb${li}_s${fi}`);
                     branchTips.push({ p: sub.getPointAt(1), w: 1.0 });
                 });
             });
@@ -1544,14 +1547,29 @@
                 lo.min(new THREE.Vector3(Math.min(c.a.x, c.b.x) - r, Math.min(c.a.y, c.b.y) - r, Math.min(c.a.z, c.b.z) - r));
                 hi.max(new THREE.Vector3(Math.max(c.a.x, c.b.x) + r, Math.max(c.a.y, c.b.y) + r, Math.max(c.a.z, c.b.z) + r));
             });
-            lo.y = Math.max(lo.y, -0.5);   // 地下的部分不要
+            lo.y = Math.max(lo.y, -1.2);   // 底面封口留在地下, 地面上看不到
             const nx = Math.ceil((hi.x - lo.x) / voxel) + 2, ny = Math.ceil((hi.y - lo.y) / voxel) + 2, nz = Math.ceil((hi.z - lo.z) / voxel) + 2;
             const field = new Float32Array(nx * ny * nz).fill(9);
-            const thick = new Float32Array(nx * ny * nz);   // 离这里最近那段的半径: 树皮沟纹深浅跟着粗细走
+            const thick = new Uint8Array(nx * ny * nz);   // 最近那根枝的半径 ×100: 树皮起伏跟着粗细走
+            // 先把一根枝自己的各段直接相并 (放在 one 里), 整根算完再和别的枝平滑融合 —
+            // 段与段之间不做平滑, 否则每个接口都会鼓一圈
+            const one = new Float32Array(nx * ny * nz).fill(9), oneThick = new Uint8Array(nx * ny * nz);
+            let touched = [];
+            const flush = () => {
+                for (let n = 0; n < touched.length; n++) {
+                    const q = touched[n], d = one[q];
+                    if (d < field[q]) thick[q] = oneThick[q];
+                    field[q] = smin(field[q], d);
+                    one[q] = 9;
+                }
+                touched = [];
+            };
+            let group = -1;
             const at = (i, j, l) => i + nx * (j + ny * l);
             const smin = (a, b) => { const h = Math.max(blend - Math.abs(a - b), 0) / blend; return Math.min(a, b) - h * h * blend * 0.25; };
             const ab = new THREE.Vector3(), pa = new THREE.Vector3();
             caps.forEach(c => {
+                if (c.g !== group) { flush(); group = c.g; }
                 ab.subVectors(c.b, c.a);
                 const L2 = Math.max(ab.lengthSq(), 1e-6);
                 const r = Math.max(c.ra, c.rb) + pad;
@@ -1570,29 +1588,31 @@
                             const d = Math.sqrt(dx * dx + dy * dy + dz * dz) - (c.ra + (c.rb - c.ra) * t);
                             if (d > pad) continue;
                             const q = at(i, j, l);
-                            if (d < field[q]) thick[q] = c.ra + (c.rb - c.ra) * t;
-                            field[q] = smin(field[q], d);
+                            if (d < one[q]) {
+                                if (one[q] === 9) touched.push(q);
+                                one[q] = d;
+                                oneThick[q] = Math.min(255, (c.ra + (c.rb - c.ra) * t) * 100);
+                            }
                         }
                     }
                 }
             });
+            flush();
             // 树皮: 只在表面附近加纵向拉长的噪声 (竖着的沟纹)
             const cfg = TRUNK_CONFIG;
             for (let l = 0; l < nz; l++) for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
                 const q = at(i, j, l);
                 if (Math.abs(field[q]) > 0.3) continue;
                 const x = lo.x + i * voxel, y = lo.y + j * voxel, z = lo.z + l * voxel;
-                const k = Math.min(1, Math.max(0.15, (thick[q] - 0.15) / 0.7));   // 细枝几乎光滑, 树干沟纹最深
-                // 不要一眼看得出的规律: 先把采样点扭一扭 (domain warp), 沟纹就会弯、会断、会并;
-                // 再叠几层不同尺度的噪声; 粗糙度本身也一块块不同 (有的地方光、有的地方深)
-                const wx = x + simplex.noise3D(x * 0.45 + 11, y * 0.3, z * 0.45) * 0.9;
-                const wy = y + simplex.noise3D(x * 0.45, y * 0.3 + 23, z * 0.45) * 1.6;
-                const wz = z + simplex.noise3D(x * 0.45, y * 0.3, z * 0.45 + 37) * 0.9;
-                const groove = 1 - Math.abs(simplex.noise3D(wx * 2.6, wy * 0.8, wz * 2.6));       // 起伏不一的纵沟 (ridged)
-                const fine = simplex.noise3D(wx * 6.5, wy * 3.2, wz * 6.5);                      // 细碎的树皮
-                const lump = simplex.noise3D(x * 0.7 + 5, y * 0.5, z * 0.7 - 5);                 // 大的鼓包和凹陷
-                const rough = 0.55 + 0.45 * simplex.noise3D(x * 0.35 - 9, y * 0.22, z * 0.35 + 9); // 一块光一块糙
-                field[q] += ((groove - 0.6) * 0.07 * rough + fine * 0.018 + lump * 0.035) * k;
+                const k = Math.min(1, Math.max(0.15, (thick[q] / 100 - 0.15) / 0.7));   // 细枝几乎光滑, 树干沟纹最深
+                // 和叶子的圆球一个画风: 不做细碎树皮, 也不顺着树干拉长 (拉长了就成一道道、一圈圈);
+                // 各个方向一样随机的大小两层斑块, 采样点再扭一扭, 看不出规律
+                const wx = x + simplex.noise3D(x * 0.5 + 11, y * 0.5, z * 0.5) * 0.7;
+                const wy = y + simplex.noise3D(x * 0.5, y * 0.5 + 23, z * 0.5) * 0.7;
+                const wz = z + simplex.noise3D(x * 0.5, y * 0.5, z * 0.5 + 37) * 0.7;
+                const big = simplex.noise3D(wx * 1.3, wy * 1.3, wz * 1.3);
+                const small = simplex.noise3D(wx * 3.4 + 7, wy * 3.4, wz * 3.4 - 7);
+                field[q] += (big * 0.035 + small * 0.012) * k;
             }
             // Marching Cubes (查表来自 three r128 的 MarchingCubes.js)
             const ET = THREE.edgeTable, TT = THREE.triTable;
@@ -1649,7 +1669,7 @@
 
         function createRealisticTrunk() {
             const caps = buildSkeleton();
-            const geo = woodMesh(caps, IS_TOUCH ? 0.11 : 0.075, 0.45);
+            const geo = woodMesh(caps, IS_TOUCH ? 0.1 : 0.06, 0.4);
             const wood = new THREE.Mesh(geo, sharedBarkMaterial);
             wood.castShadow = true;
             // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
