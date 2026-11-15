@@ -1502,9 +1502,10 @@
             }, 48, 'trunk');   // 切得够细, 相邻两段的粗细差几乎为零, 不会留下一圈圈的接痕
 
             // 五根主枝, 从树干上段里面起步
-            const limbHeights = [7.0, 7.4, 7.8, 8.2, 7.6, 8.6];
-            // 方位: 前五根按黄金角螺旋, 第六根补在右边 (默认机位在 +z, 右边是 +x 偏前), 那一侧原来空
-            const limbAz = [0, 1, 2, 3].map((n) => 0.6 + n * 2.39996).concat([0.15, 0.6 + 4 * 2.39996]);
+            const limbHeights = [7.0, 7.4, 7.8, 8.2, 7.6, 6.5, 8.6];
+            // 方位: 前四根按黄金角螺旋; 右边 (默认机位在 +z, 右边是 +x) 那一侧原来空, 补两根:
+            // 一根偏前, 一根更低、往右后方平着伸出去; 最后一根居中向上
+            const limbAz = [0, 1, 2, 3].map((n) => 0.6 + n * 2.39996).concat([0.15, -0.45, 0.6 + 4 * 2.39996]);
             limbHeights.forEach((h, li) => {
                 const u0 = h / TRUNK_H;
                 const az = limbAz[li] + rr(-0.2, 0.2);
@@ -1512,7 +1513,8 @@
                 const start = trunkCurve.getPointAt(u0);
                 const central = li === limbHeights.length - 1;
                 const reach = central ? rr(1.0, 1.8) : CROWN.rx * rr(0.55, 0.68);
-                const target = new THREE.Vector3(out.x * reach, (central ? 16.2 : 13.4 + li * 0.35) + rr(-0.3, 0.5), out.z * reach);
+                const low = li === 5;   // 右边那根低的: 伸得更远、更平
+                const target = new THREE.Vector3(out.x * reach * (low ? 1.15 : 1), (central ? 16.2 : low ? 12.4 : 13.4 + li * 0.35) + rr(-0.3, 0.5), out.z * reach * (low ? 1.15 : 1));
                 const length = target.distanceTo(start) * 1.05;
                 const dir0 = out.clone().multiplyScalar(central ? 0.08 : 0.35).add(up);
                 const pts = growPath(start, dir0, length, central ? 0 : -0.75, 0.04);
@@ -1711,17 +1713,20 @@
             return wood;
         }
 
+        // 叶子用自己的随机数, 改树枝时叶子的位置不跟着变
+        const leafRand = (() => { let a = 777; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; })();
+        const lr = (a, b) => a + (b - a) * leafRand();
         function createFoliage(parent) {
             const leafCount = 1000;
             const leafPositions = [];
             // 树冠: 一大圈饱满的圆冠 (和原来一样), 罩在新的枝条上
             for (let i = 0; i < leafCount; i++) {
-                const theta = treeRand() * Math.PI * 2;
-                const phi = treeRand() * Math.PI * 0.6;
-                const r = 4 + treeRand() * 6;
+                const theta = leafRand() * Math.PI * 2;
+                const phi = leafRand() * Math.PI * 0.6;
+                const r = 4 + leafRand() * 6;
                 leafPositions.push({
                     x: r * Math.sin(phi) * Math.cos(theta),
-                    y: 12 + r * Math.cos(phi) * 0.7 + treeRand() * 3,
+                    y: 12 + r * Math.cos(phi) * 0.7 + leafRand() * 3,
                     z: r * Math.sin(phi) * Math.sin(theta)
                 });
             }
@@ -1743,17 +1748,17 @@
             const tint = new THREE.Color();
             leafPositions.forEach((pos, i) => {
                 const leaf = new THREE.Object3D();
-                const radius = 0.25 + treeRand() * 0.2;
+                const radius = 0.25 + leafRand() * 0.2;
                 leaf.scale.setScalar(radius);
                 leaf.position.set(pos.x, pos.y, pos.z);
                 leaf.userData.radius = radius;
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
-                leaf.userData.phase = treeRand() * Math.PI * 2;
+                leaf.userData.phase = leafRand() * Math.PI * 2;
                 leaves.push(leaf);
                 // 深浅略有不同: 乘在季节颜色上, 换季照样生效
-                const b = rr(0.9, 1.06);
-                tint.setRGB(b * rr(0.96, 1.02), b, b * rr(0.9, 1.0));
+                const b = lr(0.9, 1.06);
+                tint.setRGB(b * lr(0.96, 1.02), b, b * lr(0.9, 1.0));
                 leafInstanced.setColorAt(i, tint);
             });
             if (leafInstanced.instanceColor) leafInstanced.instanceColor.needsUpdate = true;
@@ -2394,7 +2399,7 @@
             // Animals (clickable projects)
             const animalConfigs = [
                 { type: 'butterfly', pos: { x: 5, y: 9, z: -1 } },
-                { type: 'rabbit', pos: { x: -4, y: 0.65, z: 3 } },  // 树干左前方的草地上 (0.5 太低; 0.8 会和影子脱开, 像悬空)
+                { type: 'rabbit', pos: { x: -5.5, y: 6.6, z: 5 } },  // 飞在天上的兔子: 树干左前方半空中, 踩着空气蹦跶
                 { type: 'fox', pos: { x: 6, y: 0, z: -4 } }   // 脚掌贴地 (y=0 是草地)
             ];
 
@@ -2701,6 +2706,9 @@
                     tailR.castShadow = true;
                     
                     group.add(bodyR, headR, noseR, eyeR, eyeR2, ear1R, ear2R, innerEar1, innerEar2, tailR);
+                    // 跳的时候耳朵往后甩, 鼻子会动: 留引用给动画用
+                    group.userData.ears = [ear1R, ear2R, innerEar1, innerEar2].map(e => ({ m: e, z: e.rotation.z }));
+                    group.userData.nose = noseR;
                     break;
 
                 case 'fox': {
@@ -2758,13 +2766,7 @@
                         h.position.set(-0.1, 0.2, s * 0.25);
                         return h;
                     });
-                    const hindPaws = [1, -1].map(s => {
-                        const p = mesh(new THREE.SphereGeometry(0.075, 18, 12), furMat);
-                        paint(p.geometry, DARK, (x) => smooth(-0.02, 0.06, x));
-                        p.scale.set(1.6, 0.6, 0.95);
-                        p.position.set(0.14, 0.025, s * 0.31);
-                        return p;
-                    });
+                    // 后脚掌不露出来: 地上只看到两只前爪 (原来前后加起来四只脚贴地, 显得脚太多)
 
                     // 前腿：微锥形，下半截渐变成深色"袜子"
                     const frontLegs = [1, -1].map(s => {
@@ -2919,7 +2921,7 @@
 
                     const torso = new THREE.Group();   // 呼吸时整体轻微起伏
                     torso.add(bodyF, chestF, head, ...frontLegs);
-                    group.add(blob, torso, ...hips, ...hindPaws, tail);
+                    group.add(blob, torso, ...hips, tail);
 
                     // ---- 待机动画：呼吸、看向镜头 + 东张西望、歪头、眨眼、抖耳、摇尾 ----
                     const camLocal = new THREE.Vector3();
@@ -4700,7 +4702,7 @@
                 // 根据动物类型设置不同的Y高度
                 let targetY = 0.5; // 默认地面高度
                 if (animalType === 'squirrel') targetY = 0.5;
-                else if (animalType === 'rabbit') targetY = 0.65;
+                else if (animalType === 'rabbit') targetY = 6.6;
                 else if (animalType === 'deer') targetY = 1.5;
                 else if (animalType === 'bird') targetY = intersectPoint.y + 2; // 鸟在空中
                 else if (animalType === 'butterfly') targetY = intersectPoint.y + 3;
@@ -6371,10 +6373,49 @@
                         // 松鼠尾巴摆动
                         animal.position.y += Math.sin(windTime * 4 + i) * 0.008;
                     } else if (type === 'rabbit') {
-                        // 兔子轻微跳动 — 必须以落地高度为基准重新赋值。
-                        // 之前是 position.y += |sin(...)|, 每帧都加一个非负数, 兔子会一路飘上天。
-                        const restY = animal.userData.restY !== undefined ? animal.userData.restY : 0.65;
-                        animal.position.y = restY + Math.abs(Math.sin(windTime * 3 + i)) * 0.22;
+                        // 兔子: 像真兔子一样一跳一停 — 停的时候呼吸、偶尔抖耳朵、嗅鼻子; 起跳前先蹲一下,
+                        // 空中身体拉长、耳朵往后甩、先抬头后低头, 落地压扁再弹回; 有时连跳两下。
+                        // 高度一律以落地高度为基准重新赋值 (+= 会越跳越高, 飘上天)。
+                        const ud = animal.userData;
+                        if (animal === draggedAnimal) { ud.homeX = undefined; return; }   // 被拖动时停; 放下后在新位置继续飘
+                        const restY = ud.restY !== undefined ? ud.restY : 6.6;
+                        const now = performance.now() / 1000;
+                        if (!ud.baseScale) { ud.baseScale = animal.scale.clone(); ud.baseRotZ = animal.rotation.z; ud.hopAt = now + 1.2; ud.hopH = 0.8; }
+                        const AIR = 0.5, CROUCH = 0.16, LAND = 0.18;
+                        const t = now - ud.hopAt;
+                        let y = 0, sx = 1, sy = 1, pitch = 0, earBack = 0;
+                        if (t < -CROUCH) {
+                            sy = 1 + Math.sin(now * 2.6 + i) * 0.015;                       // 呼吸
+                            earBack = Math.max(0, Math.sin(now * 0.9 + i * 3)) ** 12 * 0.35; // 偶尔抖一下耳朵
+                        } else if (t < 0) {
+                            const k = Math.sin((t + CROUCH) / CROUCH * Math.PI / 2);        // 蹲下蓄力
+                            sy = 1 - 0.16 * k; sx = 1 + 0.08 * k; pitch = -0.08 * k;
+                        } else if (t < AIR) {
+                            const p = t / AIR, arc = Math.sin(Math.PI * p);
+                            y = 4 * ud.hopH * p * (1 - p);                                  // 抛物线
+                            sy = 1 + 0.14 * arc; sx = 1 - 0.07 * arc;                        // 空中拉长
+                            pitch = 0.35 * (0.5 - p);                                       // 先抬头, 落地前低头
+                            earBack = 0.55 * arc;
+                        } else if (t < AIR + LAND) {
+                            const k = 1 - (t - AIR) / LAND;
+                            const b = Math.sin(k * Math.PI / 2);
+                            sy = 1 - 0.18 * b; sx = 1 + 0.09 * b; pitch = -0.1 * b;         // 落地压扁
+                            earBack = 0.25 * b;
+                        } else {
+                            const again = Math.random() < 0.35;                             // 有时连跳
+                            ud.hopAt = now + (again ? 0.12 : 0.9 + Math.random() * 2.4);
+                            ud.hopH = again ? 0.5 + Math.random() * 0.25 : 0.7 + Math.random() * 0.45;
+                        }
+                        // 在天上: 停的时候也轻轻浮着, 位置绕一个小圈慢慢飘 (蹦跶的落点不在同一个地方)
+                        if (ud.homeX === undefined) { ud.homeX = animal.position.x; ud.homeZ = animal.position.z; }
+                        const float = Math.sin(now * 1.3 + i) * 0.12;
+                        animal.position.x = ud.homeX + Math.sin(now * 0.35) * 0.7;
+                        animal.position.z = ud.homeZ + Math.cos(now * 0.27) * 0.5;
+                        animal.position.y = restY + float + y;
+                        animal.scale.set(ud.baseScale.x * sx, ud.baseScale.y * sy, ud.baseScale.z * sx);
+                        animal.rotation.z = ud.baseRotZ + pitch;
+                        if (ud.ears) ud.ears.forEach(e => { e.m.rotation.z = e.z + earBack; });
+                        if (ud.nose) ud.nose.position.y = 0.2 + Math.max(0, Math.sin(now * 9)) * 0.012 * (t < -CROUCH ? 1 : 0);
                     } else if (type === 'fox') {
                         // 呼吸 / 看镜头 / 眨眼 / 抖耳 / 摇尾 都在 createAnimal 里的 update()
                         if (animal.userData.update) {
