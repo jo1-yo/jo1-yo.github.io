@@ -3764,12 +3764,12 @@
                 }
                 stoneGeo.computeVertexNormals();
             }
-            const stoneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.75, metalness: 0, transparent: true });
+            const stoneMat = new THREE.MeshStandardMaterial({ color: 0x4a3b2a, roughness: 0.9, metalness: 0, transparent: true });   // 和树干一个色系的褐色
             const stones = [];
             const stoneRand = (() => { let a = 4242; return () => { a = (a * 16807) % 2147483647; return a / 2147483647; }; })();
             const sr = (lo, hi) => lo + (hi - lo) * stoneRand();
             const len = riverCurve.getLength();
-            for (let k = 0; k < 200; k++) {                                // 岸边的鹅卵石, 聚在水线附近
+            for (let k = 0; k < 35; k++) {                                 // 岸边零星几颗鹅卵石, 在水线附近
                 const t = stoneRand(), p = riverCurve.getPointAt(t), tan = riverCurve.getTangentAt(t);
                 const nrm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
                 const side = stoneRand() < 0.5 ? -1 : 1;
@@ -3779,8 +3779,8 @@
                 const s = sr(0.07, 0.2);
                 stones.push({ x, z, y: 0.01, sx: s * sr(1.0, 1.6), sy: s * sr(0.35, 0.6), sz: s, ry: sr(0, Math.PI), c: sr(0, 1) });
             }
-            for (let k = 0; k < 9; k++) {                                  // 水里的大石头, 露出一截
-                const t = 0.18 + k * 0.08 + sr(-0.02, 0.02), p = riverCurve.getPointAt(t), tan = riverCurve.getTangentAt(t);
+            for (let k = 0; k < 4; k++) {                                  // 水里两三块大石头, 露出一截
+                const t = 0.2 + k * 0.16 + sr(-0.03, 0.03), p = riverCurve.getPointAt(t), tan = riverCurve.getTangentAt(t);
                 const nrm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
                 const off = sr(-0.6, 0.6) * waterHalf(t);
                 const x = p.x + nrm.x * off, z = p.z + nrm.z * off;
@@ -3794,9 +3794,10 @@
                 q.setFromEuler(new THREE.Euler(0, st.ry, 0));
                 m4.compose(new THREE.Vector3(st.x, st.y, st.z), q, new THREE.Vector3(st.sx, st.sy, st.sz));
                 stoneMesh.setMatrixAt(k, m4);
-                col.setHSL(0.08 + st.c * 0.05, 0.08 + st.c * 0.1, 0.26 + st.c * 0.16);   // 灰、米、浅褐 (场景灯亮, 压暗)
+                col.setScalar(0.85 + st.c * 0.3);                                        // 深浅略有不同 (乘在褐色上)
                 stoneMesh.setColorAt(k, col);
             });
+            if (stoneMesh.instanceColor) stoneMesh.instanceColor.needsUpdate = true;
             stoneMesh.castShadow = true;
             stoneMesh.receiveShadow = true;
             stoneMesh.userData.type = 'river';
