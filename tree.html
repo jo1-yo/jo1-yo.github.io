@@ -1515,10 +1515,25 @@
             const builder = { pos: [], idx: [] };
             trunkCurve = tubeInto(builder, pts, (u, th) => {
                 const y = u * TRUNK_H;
-                // 根部外扩成五道板根, 1.5 米以上就收回圆干
-                const flare = 0.85 * Math.exp(-y / 0.75) * (1 + 0.38 * Math.cos(5 * th + 0.7));
+                // 根颈: 贴地处只微微外扩, 和下面的表面根连成一片
+                const flare = 0.5 * Math.exp(-Math.max(0, y) / 0.55) * (1 + 0.16 * Math.cos(6 * th + 0.4));
                 return trunkRadius(u) + flare;
             }, { segments: IS_TOUCH ? 56 : 80, radial: IS_TOUCH ? 18 : 24 });
+
+            // 表面根: 六条从根颈伸出, 贴着地面往外爬, 越远越细, 慢慢没入土里
+            for (let k = 0; k < 6; k++) {
+                const a = k / 6 * Math.PI * 2 + Math.PI / 2 + Math.PI / 6 + rr(-0.15, 0.15);   // 没有一条正对默认机位 (+z), 不然看着像根桩
+                const len = rr(2.8, 3.8);
+                const bend = rr(-0.35, 0.35);
+                const rootPts = [0, 0.5, 1.0, 1.55, 2.1].map((f, n) => {
+                    const d = f / 2.1 * len;
+                    const aa = a + bend * (d / len);
+                    const yy = [0.45, 0.1, -0.07, -0.15, -0.28][n];
+                    return new THREE.Vector3(Math.cos(aa) * (0.25 + d), yy, Math.sin(aa) * (0.25 + d));
+                });
+                const r0 = rr(0.28, 0.36);
+                tubeInto(builder, rootPts, (u) => r0 * Math.pow(1 - u, 1.2) + 0.02, { radial: 10, segments: 14 });
+            }
             const trunk = meshFromBuilder(builder);
             trunk.castShadow = true;
             // Keep the trunk casting a ground shadow, but avoid harsh leaf/branch shadow blotches on bark.
@@ -1632,23 +1647,17 @@
         function createFoliage(parent) {
             const leafCount = 1000;
             const leafPositions = [];
-            // 叶子按枝梢的权重分配: 主梢、主枝梢簇大, 细枝梢簇小
-            const total = branchTips.reduce((s, t) => s + t.w, 0);
-            branchTips.forEach((tip, ti) => {
-                const n = ti === branchTips.length - 1
-                    ? leafCount - leafPositions.length
-                    : Math.round(leafCount * tip.w / total);
-                const R = 1.35 + tip.w * 0.6;   // 叶簇半径
-                for (let k = 0; k < n && leafPositions.length < leafCount; k++) {
-                    // 簇内: 靠中心密、外缘疏, 稍往上、往外长
-                    const v = new THREE.Vector3(rr(-1, 1), rr(-0.7, 1), rr(-1, 1));
-                    if (v.lengthSq() > 1) v.setLength(rr(0, 1));
-                    const d = Math.pow(treeRand(), 0.6);
-                    const out = new THREE.Vector3(tip.p.x, 0, tip.p.z).normalize().multiplyScalar(0.35);
-                    const pos = tip.p.clone().addScaledVector(v.normalize(), d * R).add(out).add(new THREE.Vector3(0, 0.25, 0));
-                    leafPositions.push({ x: pos.x, y: pos.y, z: pos.z, edge: d });
-                }
-            });
+            // 树冠: 一大圈饱满的圆冠 (和原来一样), 罩在新的枝条上
+            for (let i = 0; i < leafCount; i++) {
+                const theta = treeRand() * Math.PI * 2;
+                const phi = treeRand() * Math.PI * 0.6;
+                const r = 4 + treeRand() * 6;
+                leafPositions.push({
+                    x: r * Math.sin(phi) * Math.cos(theta),
+                    y: 12 + r * Math.cos(phi) * 0.7 + treeRand() * 3,
+                    z: r * Math.sin(phi) * Math.sin(theta)
+                });
+            }
 
             // 1000 片叶子合成一个 InstancedMesh: 原来每片一个 mesh+材质,
             // 每帧 ~2000 次 draw call (含阴影 pass), 手机上是卡顿主因; 现在 1 次。
@@ -1667,18 +1676,16 @@
             const tint = new THREE.Color();
             leafPositions.forEach((pos, i) => {
                 const leaf = new THREE.Object3D();
-                // 簇心的叶球大、外缘的小; 略扁, 方向随意 — 像一团团叶子而不是泡泡
-                const radius = 0.24 + (1 - pos.edge) * 0.24 + treeRand() * 0.12;
-                leaf.scale.set(radius, radius * rr(0.78, 0.92), radius);
-                leaf.rotation.set(rr(-0.4, 0.4), rr(0, Math.PI), rr(-0.4, 0.4));
+                const radius = 0.25 + treeRand() * 0.2;
+                leaf.scale.setScalar(radius);
                 leaf.position.set(pos.x, pos.y, pos.z);
                 leaf.userData.radius = radius;
                 leaf.userData.originalY = pos.y;
                 leaf.userData.originalX = pos.x;
                 leaf.userData.phase = treeRand() * Math.PI * 2;
                 leaves.push(leaf);
-                // 深浅不一: 乘在季节颜色上, 换季照样生效
-                const b = rr(0.82, 1.1);
+                // 深浅略有不同: 乘在季节颜色上, 换季照样生效
+                const b = rr(0.9, 1.06);
                 tint.setRGB(b * rr(0.96, 1.02), b, b * rr(0.9, 1.0));
                 leafInstanced.setColorAt(i, tint);
             });
