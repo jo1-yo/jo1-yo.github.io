@@ -5682,6 +5682,8 @@
 
             setupPixelCanvas();
             buildOneDSite();
+            // Talk to Me 弹窗: 以前在 buildOneDSite 里接线, 那个函数停用后树上的按钮就没反应了
+            wireMessageModal();
             // logo(头像)点击: 树场景 → 直接进作品页(手机端跳过整段宇宙之旅);
             // 作品页 → 直接硬切回最初的树 (无倒带/特效)。
             const home = document.getElementById('fpHome');
