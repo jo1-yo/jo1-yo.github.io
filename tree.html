@@ -724,7 +724,10 @@
         /* resize 关掉: 原生拖拽角在圆角上画出第二条边, 看着像重影 */
         #msgForm textarea { resize: none; min-height: 124px; }
         #msgForm input:hover, #msgForm textarea:hover { border-color: rgba(60,60,67,0.18); }
-        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.42); border-color: rgba(60,60,67,0.30); box-shadow: none; }
+        /* 聚焦不加深边框 (灰边看着像框变黑): 改成玻璃被点亮 —— 白色亮边 + 极淡白光晕 */
+        #msgForm input:focus, #msgForm textarea:focus { outline: none; background: rgba(255,255,255,0.46); border-color: rgba(255,255,255,0.95); box-shadow: 0 0 0 3px rgba(255,255,255,0.35); }
+        /* Chrome 自动填充会把底色换成浅蓝/浅黄: 用内阴影盖回玻璃底 */
+        #msgForm input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px rgba(244,246,242,1) inset; -webkit-text-fill-color: #1d1d1f; }
         #msgForm .msg-invalid, #msgForm .msg-invalid:focus { border-color: rgba(200,72,52,0.50); }
         #msgForm input::placeholder, #msgForm textarea::placeholder { color: #8e8e93; }
         #msgForm .msg-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
@@ -2670,14 +2673,27 @@
                     );
                     noseR.position.set(0.9, 0.2, 0);
                     
-                    // 眼睛
-                    const eyeR = new THREE.Mesh(
-                        new THREE.SphereGeometry(0.06, 8, 6),
-                        new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.2 })
-                    );
-                    eyeR.position.set(0.75, 0.4, 0.2);
-                    const eyeR2 = eyeR.clone();
-                    eyeR2.position.z = -0.2;
+                    // 眼睛: 漫画眼 —— 贴在头表面的一大颗竖椭圆黑亮眼珠 + 两点白色高光
+                    // (原来是埋在头里的暗红小球, 只露出两个红点, 看着吓人)
+                    const irisMatR = new THREE.MeshStandardMaterial({ color: 0x1b1512, roughness: 0.12, metalness: 0.1 });
+                    const glintMatR = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const makeEyeR = (zs) => {
+                        const g = new THREE.Group();
+                        const iris = new THREE.Mesh(new THREE.SphereGeometry(0.075, 20, 14), irisMatR);
+                        iris.scale.set(1, 1.3, 0.4);                    // 竖椭圆, 薄薄贴在脸上
+                        const g1 = new THREE.Mesh(new THREE.SphereGeometry(0.026, 12, 8), glintMatR);
+                        g1.position.set(0.024 * zs, 0.042, 0.03);       // 大高光: 上外侧
+                        const g2 = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 6), glintMatR);
+                        g2.position.set(-0.022 * zs, -0.04, 0.028);     // 小高光: 下内侧
+                        g.add(iris, g1, g2);
+                        // 放到头 (中心 0.55,0.25,0 半径 0.38) 的表面上, 本地 +z 朝外
+                        const dir = new THREE.Vector3(0.62, 0.28, 0.6 * zs).normalize();
+                        g.position.set(0.55, 0.25, 0).addScaledVector(dir, 0.365);
+                        g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+                        return g;
+                    };
+                    const eyeR = makeEyeR(1);
+                    const eyeR2 = makeEyeR(-1);
                     
                     // 耳朵: 一整只, 从根部的白慢慢过渡到耳尖的粉 (不再另外插一根粉色内耳)
                     const earGeoR = new THREE.CylinderGeometry(0.06, 0.1, 0.6, 16, 10);
@@ -5722,6 +5738,76 @@
             if (site) requestAnimationFrame(() => { site.style.transition = ''; });
         }
 
+        // ── 地面贴着星球弯下去 (防穿模) ─────────────────────────────────
+        // 宇宙之旅里平地圆盘 (半径 50) 和巨大星球同时出现: 圆盘是平的, 星球是弯的,
+        // 圆盘边缘就翘出星球的地平线, 形成一条浅色"第二地平线", 河流也悬在里面。
+        // 这里在顶点着色器里把地面/草/花/河按当前星球曲率往下压 (北极 = 世界原点),
+        // 曲率 0 = 原样的平地。只在 GPU 上弯, 不改几何。
+        const curveK = { value: 0 };     // 曲率 k = 1 / 星球当前半径
+        const CURVE_GLSL = `
+            uniform float uCurveK;
+            float curveDrop(vec2 p) {
+                if (uCurveK <= 0.0) return 0.0;
+                return (1.0 - sqrt(max(1.0 - uCurveK * uCurveK * dot(p, p), 0.0))) / uCurveK;
+            }
+        `;
+        function bendToPlanet(mat) {
+            if (!mat || !mat.isMaterial || mat.userData.bent) return;
+            mat.userData.bent = true;
+            const prev = mat.onBeforeCompile;
+            const hasPrev = prev && prev !== THREE.Material.prototype.onBeforeCompile;
+            mat.onBeforeCompile = function (sh, r) {
+                if (hasPrev) prev.call(this, sh, r);
+                sh.uniforms.uCurveK = curveK;
+                if (mat.isShaderMaterial) {
+                    // 河水: 自己的顶点着色器, 直接在世界坐标里压
+                    sh.vertexShader = sh.vertexShader
+                        .replace('void main() {', CURVE_GLSL + '\nvoid main() {')
+                        .replace('gl_Position = projectionMatrix * viewMatrix * worldPos;',
+                                 'worldPos.y -= curveDrop(worldPos.xz);\n gl_Position = projectionMatrix * viewMatrix * worldPos;');
+                } else {
+                    // 标准材质: 在本地坐标里减去 "世界 -Y 方向的下沉" (旋转+等比缩放的逆 = Mᵀ / s²)
+                    sh.vertexShader = CURVE_GLSL + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+                    {
+                        mat4 cm = modelMatrix;
+                        #ifdef USE_INSTANCING
+                        cm = modelMatrix * instanceMatrix;
+                        #endif
+                        vec3 wp = (cm * vec4(transformed, 1.0)).xyz;
+                        mat3 M = mat3(cm);
+                        vec3 d = vec3(0.0, -curveDrop(wp.xz), 0.0);
+                        transformed += vec3(dot(M[0], d), dot(M[1], d), dot(M[2], d)) / dot(M[0], M[0]);
+                    }`);
+                }
+            };
+            // 不同材质的 onBeforeCompile 源码一样, 不加这个 three 会把它们缓存成同一个程序
+            mat.customProgramCacheKey = () => 'bend|' + (hasPrev ? prev.toString() : mat.type);
+            // 弯下去的地面和星球表面几乎重合: 往前推一点, 不和星球打架 (z-fighting)
+            if (!mat.isShaderMaterial) { mat.polygonOffset = true; mat.polygonOffsetFactor = -1; mat.polygonOffsetUnits = -2; }
+            mat.needsUpdate = true;
+        }
+        function bendSurfaces() {
+            const each = (o) => { if (o) o.traverse(c => { if (c.material) [].concat(c.material).forEach(bendToPlanet); }); };
+            if (typeof originalGroundMaterial !== 'undefined') { bendToPlanet(originalGroundMaterial); bendToPlanet(snowGroundMaterial); }
+            if (typeof groundMesh !== 'undefined') each(groundMesh);
+            if (typeof grassMeshes !== 'undefined') grassMeshes.forEach(each);
+            if (typeof flowers !== 'undefined') flowers.forEach(each);
+            if (typeof riverMesh !== 'undefined') each(riverMesh);
+            if (typeof riverBanks !== 'undefined') riverBanks.forEach(each);
+        }
+        // 树干在地面以下还有一截: 地面/星球变透明时会透出来 → 只画地面以上 (平面跟着树一起缩放)
+        const trunkClip = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        function updateTrunkClip() {
+            if (!tree || !trunkMesh) return;
+            if (!trunkMesh.material.clippingPlanes) {
+                renderer.localClippingEnabled = true;
+                trunkMesh.material.clippingPlanes = [trunkClip];
+                trunkMesh.material.needsUpdate = true;
+            }
+            tree.updateMatrixWorld();
+            trunkClip.set(new THREE.Vector3(0, 1, 0), 0.02).applyMatrix4(tree.matrixWorld);   // 留 0.02, 根部不露缝
+        }
+
         function setSurfaceOpacity(o) {
             const vis = o > 0.01;
             const ap = (m) => { if (m) { m.transparent = true; m.opacity = o; } };
@@ -5976,6 +6062,11 @@
 
             // 地面淡出 (0.26→0.40); 大星球已铺在下方(草地色无缝) → 无灰平地中间态
             setSurfaceOpacity(1 - smooth(seg(j, 0.26, 0.40)));
+            // 地面/草/花/河在星球出现前 (0.20→0.28) 慢慢弯成星球的弧度, 之后跟着星球一起卷;
+            // 这样平地边缘不会翘出星球地平线 (浅色第二地平线 + 悬空河流)
+            if (j > 0.05 && j < 0.45) bendSurfaces();
+            curveK.value = planetMesh ? smooth(seg(j, 0.20, 0.28)) / (PLANET_R * lerpN(20, 1, morph)) : 0;
+            updateTrunkClip();
             // 河流系统(只秋季): 与树用同一比例缩放, 并随地面一起淡出(不再独立缩成0) → 自然
             // → 地面/河流淡完(j≈0.40)远早于进入太空, 仍不会有绿色河带 bug
             {
