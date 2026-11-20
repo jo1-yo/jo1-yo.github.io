@@ -894,36 +894,42 @@
         #creed.ring.dragging .cr-stage { cursor: grabbing; }
         .cr-ring { position: absolute; left: 50%; top: 54%; width: 0; height: 0; transform-style: preserve-3d;
             transition: transform .95s cubic-bezier(.2,.8,.2,1); }
-        .cr-card { position: absolute; width: var(--cw); height: calc(var(--cw) * 1.456); left: calc(var(--cw) / -2); top: calc(var(--cw) * -.728);
+        .cr-card { position: absolute; width: var(--cw); height: calc(var(--cw) * 1.4); left: calc(var(--cw) / -2); top: calc(var(--cw) * -.7);
             font-size: calc(var(--cw) / 300 * 16px); transform-style: preserve-3d; cursor: pointer; -webkit-tap-highlight-color: transparent;
             transition: transform .95s cubic-bezier(.2,.8,.2,1); }
-        #creed.dragging .cr-ring, #creed.spinning .cr-ring { transition: none; }
-        .cr-face { position: absolute; inset: 0; border-radius: .6em; overflow: hidden; color: #1d1d1f;
+        #creed.dragging .cr-ring { transition: none; }
+        .cr-face { position: absolute; inset: 0; border-radius: .8em; overflow: hidden; background: #fff; color: #1d1d1f;
             -webkit-backface-visibility: hidden; backface-visibility: hidden;
-            box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 14px 32px -12px rgba(0,0,0,.24);
+            box-shadow: 0 0 0 .5px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.05), 0 14px 34px -10px rgba(0,0,0,.16);
             transition: opacity .5s ease; }
         #creed.focus .cr-card:not(.on) .cr-face { opacity: .16; }   /* 聚焦时其余的牌退成淡影 */
 
-        /* 牌面: 真实扑克牌的图 (images/cards/, 公有领域 Vector Playing Cards, 由 SVG 栅格成 640px WebP) */
-        .cr-back img { display: block; width: 100%; height: 100%; object-fit: fill; pointer-events: none; -webkit-user-drag: none; }
+        /* 牌面: 真实扑克牌 —— 衬线角标 + 花色, 中间是点数排布 / A 的大黑桃 / J Q K 的字母框 */
+        .cr-serif { font-family: 'Bodoni 72', Didot, 'Bodoni MT', 'Times New Roman', Georgia, serif; }
+        .cr-idx { position: absolute; display: flex; flex-direction: column; align-items: center; width: 2em; line-height: 1; }
+        .cr-idx b { font-size: 1.75em; font-weight: 400; letter-spacing: -.07em; }
+        .cr-idx svg { width: .95em; height: .95em; margin-top: .22em; }
+        .cr-idx.tl { top: .95em; left: .55em; }
+        .cr-idx.br { bottom: .95em; right: .55em; transform: rotate(180deg); }
+        .cr-pips { position: absolute; top: 17%; bottom: 17%; left: 27%; right: 27%; }
+        .cr-pips svg { position: absolute; width: 2.25em; height: 2.25em; margin: -1.125em 0 0 -1.125em; }
+        .cr-pips svg.flip { transform: rotate(180deg); }
+        .cr-ace { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+        .cr-ace svg { width: 6.4em; height: 6.4em; }
+        .cr-court { position: absolute; top: 12.5%; bottom: 12.5%; left: 19%; right: 19%; border: .5px solid rgba(0,0,0,.5); border-radius: .25em;
+            display: flex; align-items: center; justify-content: center; }
+        .cr-court b { font-size: 8.4em; font-weight: 400; line-height: 1; margin-top: -.06em; }
+        .cr-court svg { position: absolute; width: 1.5em; height: 1.5em; }
+        .cr-court svg.a { top: .6em; left: .6em; }
+        .cr-court svg.b { bottom: .6em; right: .6em; transform: rotate(180deg); }
 
         /* 翻过来: 信条。没聚焦时内容隐藏 —— carousel 远端背对你的牌就是干净的白牌背 */
-        .cr-front { transform: rotateY(180deg); background: #fff; border: 1px solid rgba(0,0,0,.6);
-            display: flex; flex-direction: column; padding: 1.5em 1.5em 1.1em; overflow-y: auto; scrollbar-width: none; }
+        .cr-front { transform: rotateY(180deg); display: flex; flex-direction: column; padding: 1.5em 1.5em 1.1em; overflow-y: auto; scrollbar-width: none; }
         .cr-front::-webkit-scrollbar { display: none; }
         .cr-front > * { opacity: 0; transition: opacity .25s ease; }
-        /* 牌背: 经典扑克牌背 —— 白边 + 红底细菱格。carousel 远端背对你的牌露出的就是它; 聚焦翻面时淡出, 露出信条 */
-        .cr-front::before { content: ''; position: absolute; inset: .55em; border-radius: .3em; pointer-events: none;
-            background:
-                repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 1px, transparent 1px 6px),
-                repeating-linear-gradient(-45deg, rgba(255,255,255,.55) 0 1px, transparent 1px 6px),
-                #b8202a;
-            box-shadow: inset 0 0 0 .35em #b8202a, inset 0 0 0 .45em rgba(255,255,255,.8);
-            transition: opacity .3s ease .12s; }
-        .cr-card.on .cr-front::before { opacity: 0; transition: opacity .4s ease .2s; }
         .cr-card.on .cr-front > * { opacity: 1; transition: opacity .45s ease .3s; }
-        .cr-i { font-family: Georgia, 'Times New Roman', serif; font-size: 1.15em; line-height: 1; color: #111; }
-        .cr-i.red { color: #d40000; }
+        .cr-i { display: flex; align-items: center; gap: .3em; font-size: 1.05em; line-height: 1; }
+        .cr-i svg { width: .72em; height: .72em; }
         .cr-t { margin-top: 1.1em; font-size: 1.2em; font-weight: 600; line-height: 1.36; letter-spacing: -.01em; }
         #creed[lang="zh"] .cr-t { letter-spacing: .01em; }
         .cr-body p { margin-top: .7em; font-size: .94em; line-height: 1.62; color: #6e6e73; }
@@ -5085,12 +5091,14 @@
 
         // 牌堆 (pile) → carousel (ring) → 聚焦翻面 (focus) → 再点回 carousel。
         // 状态在一次打开内保留 (切语言不重置); 每次重新打开从牌堆开始, 牌堆角度重新随机。
-        // 每条信条对应一张真牌 (图在 images/cards/)
-        const CREED_CARDS = ['AS', 'KH', 'QS', 'JC', '10D', 'KS', 'QH', 'JD', 'AH'];
-        const CREED_SUIT = { S: '♠', H: '♥', D: '♦', C: '♣' };
-        // 空闲时预加载牌面, 第一次打开就不会有空白牌
-        (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() =>
-            CREED_CARDS.forEach(c => { const im = new Image(); im.decoding = 'async'; im.src = 'images/cards/' + c + '.webp'; }));
+        const CREED_RANKS = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6'];
+        const CREED_SPADE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6C12 1.6 2.8 9 2.8 14.3c0 2.8 2.1 4.9 4.7 4.900 1.7 0 3.100-.9 3.900-2.200-.2 2.300-1 4-2.600 5.400h6.400c-1.600-1.400-2.400-3.100-2.600-5.400.8 1.300 2.200 2.200 3.900 2.200 2.600 0 4.700-2.100 4.700-4.900C21.200 9 12 1.600 12 1.600z"/></svg>';
+        const CREED_PIPS = (() => {
+            const side = ys => ys.flatMap(y => [[0, y], [100, y]]);
+            const three = side([0, 50, 100]), four = side([0, 33.3, 66.7, 100]);
+            return { '6': three, '7': [...three, [50, 25]], '8': [...three, [50, 25], [50, 75]],
+                     '9': [...four, [50, 50]], '10': [...four, [50, 16.7], [50, 83.3]] };
+        })();
         const CREED_UI = {
             en: { pile: 'Tap the deck', ring: 'Drag to spin · tap a card', focus: 'Tap again to put it back' },
             zh: { pile: '点击牌堆', ring: '拖动旋转 · 点击卡牌', focus: '再点一下放回' }
@@ -5160,26 +5168,28 @@
             const n = d.items.length;
             if (creedRand.length !== n) rollCreedRand(n);
             d.items.forEach((it, i) => {
-                const code = CREED_CARDS[i % CREED_CARDS.length];
-                const rank = code.slice(0, -1), suit = code.slice(-1), red = suit === 'H' || suit === 'D';
+                const rank = CREED_RANKS[i % CREED_RANKS.length];
+                const idx = `<b class="cr-serif">${rank}</b>${CREED_SPADE}`;
                 const card = document.createElement('div');
                 card.className = 'cr-card';
                 card.tabIndex = 0;
                 card.setAttribute('role', 'button');
-                card.setAttribute('aria-label', rank + CREED_SUIT[suit] + ' ' + it.t);
+                card.setAttribute('aria-label', rank + '♠ ' + it.t);
 
-                // 牌面: 真牌
+                // 牌面
                 const face = document.createElement('div');
                 face.className = 'cr-face cr-back';
-                const img = document.createElement('img');
-                img.src = 'images/cards/' + code + '.webp'; img.alt = ''; img.decoding = 'async'; img.draggable = false;
-                face.appendChild(img);
+                let art;
+                if (rank === 'A') art = `<div class="cr-ace">${CREED_SPADE}</div>`;
+                else if (CREED_PIPS[rank]) art = '<div class="cr-pips">' + CREED_PIPS[rank].map(([x, y]) =>
+                    CREED_SPADE.replace('<svg ', `<svg style="left:${x}%;top:${y}%" ${y > 50 ? 'class="flip" ' : ''}`)).join('') + '</div>';
+                else art = `<div class="cr-court">${CREED_SPADE.replace('<svg ', '<svg class="a" ')}<b class="cr-serif">${rank}</b>${CREED_SPADE.replace('<svg ', '<svg class="b" ')}</div>`;
+                face.innerHTML = `<span class="cr-idx tl">${idx}</span>${art}<span class="cr-idx br">${idx}</span>`;
 
                 // 翻过来: 信条
                 const front = document.createElement('div');
                 front.className = 'cr-face cr-front';
-                front.innerHTML = '<div class="cr-i' + (red ? ' red' : '') + '"></div><div class="cr-t"></div>';
-                front.querySelector('.cr-i').textContent = rank + CREED_SUIT[suit];
+                front.innerHTML = `<div class="cr-i"><span class="cr-serif">${rank}</span>${CREED_SPADE}</div><div class="cr-t"></div>`;
                 front.querySelector('.cr-t').textContent = it.t;
                 const body = document.createElement('div');
                 body.className = 'cr-body';
@@ -5210,34 +5220,8 @@
             placeCreed(false);
         }
 
-        // carousel 自己慢慢转: 独立的 rAF, 每帧只改圆环一个 transform; 拖动 / 聚焦时停, 之后接着转
-        let creedSpinRaf = 0, creedSpinTimer = 0;
-        function creedSpinStop() {
-            clearTimeout(creedSpinTimer); cancelAnimationFrame(creedSpinRaf);
-            document.getElementById('creed').classList.remove('spinning');
-        }
-        function creedSpinStart(delay) {
-            creedSpinStop();
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            const root = document.getElementById('creed'), ring = document.getElementById('crList');
-            creedSpinTimer = setTimeout(() => {   // 等展开 / 放回的过渡走完再接管
-                if (creedMode !== 'ring') return;
-                root.classList.add('spinning');
-                let last = performance.now();
-                const tick = t => {
-                    if (creedMode !== 'ring' || !root.classList.contains('open')) { creedSpinStop(); return; }
-                    creedAngle -= Math.min(50, t - last) * 0.007;   // ≈ 7°/秒, 一圈约 50 秒
-                    last = t;
-                    ring.style.transform = creedRingTransform();
-                    creedSpinRaf = requestAnimationFrame(tick);
-                };
-                creedSpinRaf = requestAnimationFrame(tick);
-            }, delay);
-        }
-
-        function creedToRing() { creedMode = 'ring'; creedFocus = -1; placeCreed(true, true); creedSpinStart(1400); }
+        function creedToRing() { creedMode = 'ring'; creedFocus = -1; placeCreed(true, true); }
         function creedFocusCard(i) {
-            creedSpinStop();
             // 圆环走最短的方向把这张牌转到正前方
             const base = -creedSlot(i);
             creedAngle = base + Math.round((creedAngle - base) / 360) * 360;
@@ -5249,13 +5233,10 @@
             if (c) c.querySelector('.cr-front').scrollTop = 0;
             creedMode = 'ring'; creedFocus = -1;
             placeCreed(true);
-            creedSpinStart(1000);
         }
-        function creedSpin(steps) {   // 键盘 ← →: 转到相邻的一张
-            creedSpinStop();
+        function creedSpin(steps) {   // 键盘 ← → / 拖动结束的吸附
             creedAngle = Math.round(creedAngle / creedGeo.step + steps) * creedGeo.step;
             document.getElementById('crList').style.transform = creedRingTransform();
-            creedSpinStart(1100);
         }
 
         let creedDragged = false;
@@ -5288,7 +5269,6 @@
             const ring = document.getElementById('crList');
             stage.addEventListener('pointerdown', e => {
                 if (creedMode !== 'ring' || (e.pointerType === 'mouse' && e.button !== 0)) return;
-                creedSpinStop();
                 down = true; moved = false; x0 = lastX = e.clientX; a0 = creedAngle; lastT = performance.now(); v = 0;
             });
             window.addEventListener('pointermove', e => {
@@ -5306,12 +5286,11 @@
             const end = () => {
                 if (!down) return;
                 down = false;
-                if (!moved) { creedSpinStart(600); return; }   // 只是点了一下: 若点中了牌, 聚焦会把这次重启取消
+                if (!moved) return;
                 creedDragged = true; setTimeout(() => { creedDragged = false; }, 60);
                 root.classList.remove('dragging');
-                creedAngle += Math.max(-80, Math.min(80, v * 90));   // 松手带一点惯性滑出去, 然后接着自转
-                ring.style.transform = creedRingTransform();
-                creedSpinStart(950);
+                creedAngle += Math.max(-80, Math.min(80, v * 90));   // 惯性
+                creedSpin(0);
             };
             window.addEventListener('pointerup', end);
             window.addEventListener('pointercancel', end);
@@ -5344,14 +5323,12 @@
                     cancelAnimationFrame(rt); rt = requestAnimationFrame(() => placeCreed(false));
                 });
             }
-            creedSpinStop();
             creedMode = 'pile'; creedFocus = -1; creedAngle = 0; creedRand = [];
             root.classList.add('open');
             renderCreed();
         }
 
         function closeCreed() {
-            creedSpinStop();
             document.getElementById('creed').classList.remove('open');
         }
 
