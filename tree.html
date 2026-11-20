@@ -862,70 +862,94 @@
             #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
         }
 
-        /* Jane's Creed (蝴蝶点开): 与极简作品页同一套视觉 —— 深炭黑 + 暖米白 + 克制金、
-           系统无衬线、细发丝分隔线。条目常显, 出处(Reference)点开才出现。 */
+        /* Jane's Creed (蝴蝶点开): 一副白色扑克牌 (♠ A K Q J 10…6), 纯黑白灰。
+           叠着的一摞 → 点一下展开成立体 carousel (可拖动旋转) → 点任意一张: 它转到正中、自己翻面露出信条 → 再点一下放回 carousel。
+           全程只动 transform / opacity (GPU 合成)。结构: .cr-stage (perspective) > .cr-ring (preserve-3d) > .cr-card (preserve-3d) > 两个面 */
         #creed {
-            position: fixed; inset: 0; z-index: 3400;
-            background: radial-gradient(118% 78% at 26% -6%, #1d1b13 0%, #15140f 50%, #110f09 100%);
-            color: #e7e1d3; opacity: 0; visibility: hidden;
-            transition: opacity .6s ease, visibility .6s ease;
-            overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-            -webkit-font-smoothing: antialiased; scrollbar-width: none;
+            position: fixed; inset: 0; z-index: 3400; overflow: hidden;
+            background: #f3f3f3; color: #1d1d1f; opacity: 0; visibility: hidden;
+            transition: opacity .45s ease, visibility .45s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Inter, Roboto, Helvetica, Arial, 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            -webkit-font-smoothing: antialiased; -webkit-user-select: none; user-select: none;
+            --cw: min(300px, 76vw, calc((100vh - 200px) / 1.4));
         }
-        #creed::-webkit-scrollbar { display: none; }
         #creed.open { opacity: 1; visibility: visible; }
-        .cr-bar { position: sticky; top: 0; z-index: 1; display: flex; justify-content: flex-end; align-items: center; gap: 22px; padding: 22px 26px;
-            background: linear-gradient(#141310 62%, rgba(20,19,16,0)); }   /* 滚动时正文从栏下穿过, 不和按钮叠在一起 */
-        .cr-lang { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(231,225,211,.06); }
-        .cr-lang button { background: none; border: 0; cursor: pointer; font: inherit; font-size: .72rem; letter-spacing: .08em; color: #8c8676; padding: 6px 12px; border-radius: 999px; transition: color .2s, background .2s; -webkit-tap-highlight-color: transparent; }
-        .cr-lang button[aria-pressed="true"] { color: #f4efe3; background: rgba(231,225,211,.1); }
-        .cr-close { background: none; border: 0; cursor: pointer; color: #8c8676; font-size: 1.6rem; line-height: 1; padding: 4px 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
-        .cr-close:hover, .cr-lang button:hover { color: #e7c87e; }
-        /* 鼠标点击不出浏览器的蓝色焦点框; 键盘 Tab 时才显示一圈低调的金色框 */
-        #creed button:focus { outline: none; }
-        #creed button:focus-visible { outline: 1px solid rgba(198,166,98,.6); outline-offset: 4px; border-radius: 6px; }
-        .cr-wrap { max-width: 720px; margin: 0 auto; padding: 6vh 48px 16vh; opacity: 0; transform: translateY(18px); transition: opacity .85s ease .1s, transform .85s cubic-bezier(.22,.61,.36,1) .1s; }
-        #creed.open .cr-wrap { opacity: 1; transform: none; }
-        .cr-title { font-size: clamp(1.7rem, 1.3rem + .8vw, 2.2rem); font-weight: 600; letter-spacing: -.01em; color: #f4efe3; }
-        .cr-list { margin-top: 46px; border-top: 1px solid rgba(231,225,211,.08); }
-        .cr-item { padding: 26px 2px 24px; border-bottom: 1px solid rgba(231,225,211,.06); }
-        .cr-head { display: flex; align-items: baseline; gap: 16px; }
-        .cr-i { font-size: .64rem; color: #57513f; font-variant-numeric: tabular-nums; min-width: 20px; letter-spacing: .08em; }
-        .cr-t { flex: 1; font-size: clamp(1.02rem, .84rem + .38vw, 1.3rem); font-weight: 500; line-height: 1.5; letter-spacing: .005em; color: #ddd5c5; }
-        .cr-body { margin-left: 36px; }
-        .cr-body p { margin-top: 10px; font-size: clamp(.95rem, .82rem + .28vw, 1.14rem); line-height: 1.75; color: #aaa394; }
-        .cr-body p.cr-strong { color: #e7e1d3; font-weight: 600; }
-        .cr-ref-btn { margin-top: 14px; background: none; border: 0; padding: 0; cursor: pointer; font: inherit; font-size: .64rem; letter-spacing: .22em; text-transform: uppercase; color: #6b6557; display: inline-flex; align-items: center; gap: 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
-        .cr-ref-btn:hover { color: #e7c87e; }
-        .cr-ref-chev { display: inline-block; font-size: .9rem; letter-spacing: 0; transition: transform .25s ease; }
-        .cr-item.ref-open .cr-ref-chev { transform: rotate(90deg); }
-        .cr-ref { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
-        .cr-item.ref-open .cr-ref { grid-template-rows: 1fr; }
+        .cr-bar { position: absolute; top: 0; right: 0; z-index: 5; display: flex; align-items: center; gap: 18px; padding: 20px 24px; }
+        .cr-lang { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.05); }
+        .cr-lang button { background: none; border: 0; cursor: pointer; font: inherit; font-size: .72rem; letter-spacing: .06em; color: #86868b; padding: 6px 12px; border-radius: 999px; transition: color .2s, background .2s, box-shadow .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-lang button[aria-pressed="true"] { color: #1d1d1f; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .cr-close { background: none; border: 0; cursor: pointer; color: #86868b; font-size: 1.55rem; font-weight: 300; line-height: 1; padding: 4px 6px; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-close:hover, .cr-lang button:hover { color: #1d1d1f; }
+        #creed button:focus, .cr-card:focus { outline: none; }
+        #creed button:focus-visible { outline: 1px solid rgba(0,0,0,.35); outline-offset: 4px; border-radius: 8px; }
+        .cr-head { position: absolute; top: 0; left: 0; right: 0; z-index: 4; padding-top: 58px; text-align: center; pointer-events: none; transition: opacity .5s ease; }
+        .cr-title { font-size: clamp(1.4rem, 1.15rem + .6vw, 1.8rem); font-weight: 600; letter-spacing: -.015em; color: #1d1d1f; }
+        #creed[lang="zh"] .cr-title { letter-spacing: .02em; }
+        .cr-hint { margin-top: 8px; font-size: .78rem; color: #a1a1a6; min-height: 1.2em; }
+        #creed.focus .cr-title { opacity: .0; transition: opacity .4s ease; }
+        .cr-title { transition: opacity .5s ease; }
+
+        .cr-stage { position: absolute; inset: 0; perspective: 1400px; perspective-origin: 50% 54%; touch-action: none; cursor: default; }
+        #creed.ring .cr-stage { cursor: grab; }
+        #creed.ring.dragging .cr-stage { cursor: grabbing; }
+        .cr-ring { position: absolute; left: 50%; top: 54%; width: 0; height: 0; transform-style: preserve-3d;
+            transition: transform .95s cubic-bezier(.2,.8,.2,1); }
+        .cr-card { position: absolute; width: var(--cw); height: calc(var(--cw) * 1.456); left: calc(var(--cw) / -2); top: calc(var(--cw) * -.728);
+            font-size: calc(var(--cw) / 300 * 16px); transform-style: preserve-3d; cursor: pointer; -webkit-tap-highlight-color: transparent;
+            transition: transform .95s cubic-bezier(.2,.8,.2,1); }
+        #creed.dragging .cr-ring, #creed.spinning .cr-ring { transition: none; }
+        .cr-face { position: absolute; inset: 0; border-radius: .6em; overflow: hidden; color: #1d1d1f;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 14px 32px -12px rgba(0,0,0,.24);
+            transition: opacity .5s ease; }
+        #creed.focus .cr-card:not(.on) .cr-face { opacity: .16; }   /* 聚焦时其余的牌退成淡影 */
+
+        /* 牌面: 真实扑克牌的图 (images/cards/, 公有领域 Vector Playing Cards, 由 SVG 栅格成 640px WebP) */
+        .cr-back img { display: block; width: 100%; height: 100%; object-fit: fill; pointer-events: none; -webkit-user-drag: none; }
+
+        /* 翻过来: 信条。没聚焦时内容隐藏 —— carousel 远端背对你的牌就是干净的白牌背 */
+        .cr-front { transform: rotateY(180deg); background: #fff; border: 1px solid rgba(0,0,0,.6);
+            display: flex; flex-direction: column; padding: 1.5em 1.5em 1.1em; overflow-y: auto; scrollbar-width: none; }
+        .cr-front::-webkit-scrollbar { display: none; }
+        .cr-front > * { opacity: 0; transition: opacity .25s ease; }
+        /* 牌背: 经典扑克牌背 —— 白边 + 红底细菱格。carousel 远端背对你的牌露出的就是它; 聚焦翻面时淡出, 露出信条 */
+        .cr-front::before { content: ''; position: absolute; inset: .55em; border-radius: .3em; pointer-events: none;
+            background:
+                repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 1px, transparent 1px 6px),
+                repeating-linear-gradient(-45deg, rgba(255,255,255,.55) 0 1px, transparent 1px 6px),
+                #b8202a;
+            box-shadow: inset 0 0 0 .35em #b8202a, inset 0 0 0 .45em rgba(255,255,255,.8);
+            transition: opacity .3s ease .12s; }
+        .cr-card.on .cr-front::before { opacity: 0; transition: opacity .4s ease .2s; }
+        .cr-card.on .cr-front > * { opacity: 1; transition: opacity .45s ease .3s; }
+        .cr-i { font-family: Georgia, 'Times New Roman', serif; font-size: 1.15em; line-height: 1; color: #111; }
+        .cr-i.red { color: #d40000; }
+        .cr-t { margin-top: 1.1em; font-size: 1.2em; font-weight: 600; line-height: 1.36; letter-spacing: -.01em; }
+        #creed[lang="zh"] .cr-t { letter-spacing: .01em; }
+        .cr-body p { margin-top: .7em; font-size: .94em; line-height: 1.62; color: #6e6e73; }
+        .cr-body p.cr-strong { color: #1d1d1f; font-weight: 600; }
+        .cr-body a { color: inherit; text-decoration: underline; text-decoration-color: rgba(0,0,0,.25); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color .2s, text-decoration-color .2s; }
+        .cr-body a:hover { color: #1d1d1f; text-decoration-color: #1d1d1f; }
+        /* 出处: 默认收起, 点一下才展开 */
+        .cr-refwrap { margin-top: auto; padding-top: .9em; }
+        .cr-ref-btn { background: none; border: 0; padding: .3em 0; cursor: pointer; font: inherit; font-size: .76em; letter-spacing: .04em; color: #a1a1a6;
+            display: inline-flex; align-items: center; gap: .4em; transition: color .2s; -webkit-tap-highlight-color: transparent; }
+        .cr-ref-btn:hover { color: #1d1d1f; }
+        .cr-ref-plus { display: inline-block; font-size: 1.25em; font-weight: 300; line-height: 1; transition: transform .3s ease; }
+        .cr-card.ref-open .cr-ref-plus { transform: rotate(45deg); }
+        .cr-ref { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .35s ease, opacity .3s ease; }
+        .cr-card.ref-open .cr-ref { grid-template-rows: 1fr; opacity: 1; }
         .cr-ref > div { overflow: hidden; }
-        .cr-q { margin-top: 12px; padding-left: 14px; border-left: 1px solid rgba(198,166,98,.45); font-size: clamp(.95rem, .82rem + .28vw, 1.14rem); line-height: 1.7; color: #e7e1d3; }
-        .cr-s { margin-top: 6px; padding-left: 14px; font-size: .8rem; color: #7d7665; }
-        /* 外链: 新标签页打开 (原页面留着, 关掉就回来)。正文里的词条是细下划线, 出处是一行 "书名 ↗" */
-        .cr-body a { color: inherit; text-decoration: underline; text-decoration-color: rgba(198,166,98,.55); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: color .2s, text-decoration-color .2s; }
-        .cr-body a:hover { color: #e7c87e; text-decoration-color: #e7c87e; }
-        .cr-s a { text-decoration: none; }
-        .cr-s a:hover .cr-s-t { text-decoration: underline; text-underline-offset: 3px; }
-        .cr-s-arrow { margin-left: 5px; font-size: .72rem; color: #8c7a4f; }
-        #creed[lang="zh"] .cr-t { letter-spacing: .02em; }
-        /* 宽屏: 和作品页 .fp-wrap 同一套两栏 —— 左栏标题 (滚动时停住), 右栏列表; 字号随屏宽 clamp 放大。
-           原来是单栏 max-width 680 + 7vw 内边距, 屏越宽内边距越大、正文反而越窄, 两边空一大片。 */
-        @media (min-width: 1000px) {
-            .cr-wrap { max-width: 1440px; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 9vw; padding: 8vh 10vw 16vh 4vw; }
-            .cr-title { position: sticky; top: 13vh; align-self: start; }
-            .cr-list { margin-top: 0; }
-        }
-        @media (max-width: 760px) {
-            .cr-bar { padding: 18px 18px; }
-            .cr-wrap { padding: 3vh 7vw 13vh; }
-            .cr-body { margin-left: 0; }
+        .cr-q { margin-top: .5em; font-size: .86em; line-height: 1.6; color: #1d1d1f; }
+        .cr-s { margin-top: .3em; font-size: .74em; color: #a1a1a6; }
+        .cr-s a { color: inherit; }
+
+        @media (max-width: 600px) {
+            .cr-bar { padding: 14px 14px; }
+            .cr-head { padding-top: 64px; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .cr-wrap { transition: opacity .4s ease; transform: none; }
+            .cr-card, .cr-ring { transition-duration: .01s !important; transition-delay: 0s !important; }
         }
     </style>
 </head>
@@ -993,10 +1017,11 @@
             </div>
             <button type="button" class="cr-close" id="crClose" aria-label="Close">&times;</button>
         </div>
-        <div class="cr-wrap">
+        <div class="cr-head">
             <h2 class="cr-title" id="crTitle"></h2>
-            <div class="cr-list" id="crList"></div>
+            <div class="cr-hint" id="crHint" aria-live="polite"></div>
         </div>
+        <div class="cr-stage" id="crStage"><div class="cr-ring" id="crList"></div></div>
     </div>
 
     <div id="msgModal" aria-hidden="true">
@@ -5058,6 +5083,71 @@
             el.appendChild(document.createTextNode(txt.slice(last)));
         }
 
+        // 牌堆 (pile) → carousel (ring) → 聚焦翻面 (focus) → 再点回 carousel。
+        // 状态在一次打开内保留 (切语言不重置); 每次重新打开从牌堆开始, 牌堆角度重新随机。
+        // 每条信条对应一张真牌 (图在 images/cards/)
+        const CREED_CARDS = ['AS', 'KH', 'QS', 'JC', '10D', 'KS', 'QH', 'JD', 'AH'];
+        const CREED_SUIT = { S: '♠', H: '♥', D: '♦', C: '♣' };
+        // 空闲时预加载牌面, 第一次打开就不会有空白牌
+        (window.requestIdleCallback || (f => setTimeout(f, 1500)))(() =>
+            CREED_CARDS.forEach(c => { const im = new Image(); im.decoding = 'async'; im.src = 'images/cards/' + c + '.webp'; }));
+        const CREED_UI = {
+            en: { pile: 'Tap the deck', ring: 'Drag to spin · tap a card', focus: 'Tap again to put it back' },
+            zh: { pile: '点击牌堆', ring: '拖动旋转 · 点击卡牌', focus: '再点一下放回' }
+        };
+        let creedMode = 'pile', creedFocus = -1, creedAngle = 0, creedRand = [], creedGeo = { R: 400, D: 540, step: 40 };
+
+        function rollCreedRand(n) {
+            const r = (a, b) => a + Math.random() * (b - a);
+            // 随手叠的一摞, 最上面那张 (A) 比较正
+            creedRand = Array.from({ length: n }, (_, i) => ({ dr: i === 0 ? r(-2.5, 2.5) : r(-11, 11), dx: r(-16, 16), dy: r(-12, 12) }));
+        }
+        function creedCards() { return [...document.querySelectorAll('#crList .cr-card')]; }
+        function creedSlot(i) { let a = i * creedGeo.step; if (a > 180) a -= 360; return a; }
+
+        // 三种状态用同一串 transform 函数 (rotateY translateZ translate rotateZ rotateY), 浏览器逐项插值 → 牌沿着圆环滑出去, 不走矩阵捷径
+        function creedCardTransform(i) {
+            const g = creedGeo;
+            if (creedMode === 'pile') {
+                const p = creedRand[i];
+                return `rotateY(0deg) translateZ(${-i * 1.5}px) translate(${p.dx}px, ${p.dy}px) rotateZ(${p.dr}deg) rotateY(0deg)`;
+            }
+            const a = creedSlot(i);
+            if (creedMode === 'focus' && i === creedFocus)
+                return `rotateY(${a}deg) translateZ(${g.R + g.D}px) translate(0px, 0px) rotateZ(0deg) rotateY(180deg)`;   // 推到镜头前 (原大) 并翻面
+            return `rotateY(${a}deg) translateZ(${g.R}px) translate(0px, 0px) rotateZ(0deg) rotateY(0deg)`;
+        }
+        function creedRingTransform() {
+            const g = creedGeo;
+            if (creedMode === 'pile') return 'translateZ(-240px) rotateX(0deg) rotateY(0deg)';
+            return `translateZ(${-(g.R + g.D)}px) rotateX(${creedMode === 'focus' ? 0 : -10}deg) rotateY(${creedAngle}deg)`;
+        }
+        // 把所有牌和圆环摆到当前状态。animate=false: 瞬间到位 (首次渲染 / 切语言 / 改窗口大小)
+        function placeCreed(animate, stagger) {
+            const root = document.getElementById('creed'), ring = document.getElementById('crList'), cards = creedCards();
+            if (!cards.length) return;
+            const W = cards[0].offsetWidth || 300, n = cards.length, P = 1400;
+            const s = window.innerWidth < 600 ? 0.56 : 0.6;   // carousel 里正前方那张牌的显示比例 (聚焦时回到 1)
+            creedGeo = { step: 360 / n, R: Math.round(W / 2 / Math.tan(Math.PI / n) + W * 0.14), D: Math.round(P * (1 / s - 1)) };
+            root.classList.toggle('pile', creedMode === 'pile');
+            root.classList.toggle('ring', creedMode === 'ring');
+            root.classList.toggle('focus', creedMode === 'focus');
+            document.getElementById('crHint').textContent = CREED_UI[creedLang][creedMode];
+            const all = [ring, ...cards];
+            if (!animate) all.forEach(el => { el.style.transition = 'none'; });
+            ring.style.transform = creedRingTransform();
+            cards.forEach((c, i) => {
+                const on = creedMode === 'focus' && i === creedFocus;
+                c.classList.toggle('on', on);
+                c.setAttribute('aria-pressed', String(on));
+                if (!on) c.classList.remove('ref-open');
+                c.style.transitionDelay = stagger ? (i * 0.035) + 's' : '';
+                c.style.transform = creedCardTransform(i);
+            });
+            if (!animate) { void root.offsetWidth; all.forEach(el => { el.style.transition = ''; }); }
+            if (stagger) setTimeout(() => cards.forEach(c => { c.style.transitionDelay = ''; }), 1400);
+        }
+
         function renderCreed() {
             const d = CREED[creedLang];
             const root = document.getElementById('creed');
@@ -5065,17 +5155,32 @@
             document.getElementById('crTitle').textContent = d.title;
             root.querySelectorAll('.cr-lang button').forEach(b =>
                 b.setAttribute('aria-pressed', String(b.dataset.lang === creedLang)));
-            const list = document.getElementById('crList');
-            list.innerHTML = '';
+            const ring = document.getElementById('crList');
+            ring.innerHTML = '';
+            const n = d.items.length;
+            if (creedRand.length !== n) rollCreedRand(n);
             d.items.forEach((it, i) => {
-                const item = document.createElement('div');
-                item.className = 'cr-item';
-                const head = document.createElement('div');
-                head.className = 'cr-head';
-                head.innerHTML = '<span class="cr-i"></span><span class="cr-t"></span>';
-                head.firstChild.textContent = String(i + 1).padStart(2, '0');
-                head.lastChild.textContent = it.t;
-                item.appendChild(head);
+                const code = CREED_CARDS[i % CREED_CARDS.length];
+                const rank = code.slice(0, -1), suit = code.slice(-1), red = suit === 'H' || suit === 'D';
+                const card = document.createElement('div');
+                card.className = 'cr-card';
+                card.tabIndex = 0;
+                card.setAttribute('role', 'button');
+                card.setAttribute('aria-label', rank + CREED_SUIT[suit] + ' ' + it.t);
+
+                // 牌面: 真牌
+                const face = document.createElement('div');
+                face.className = 'cr-face cr-back';
+                const img = document.createElement('img');
+                img.src = 'images/cards/' + code + '.webp'; img.alt = ''; img.decoding = 'async'; img.draggable = false;
+                face.appendChild(img);
+
+                // 翻过来: 信条
+                const front = document.createElement('div');
+                front.className = 'cr-face cr-front';
+                front.innerHTML = '<div class="cr-i' + (red ? ' red' : '') + '"></div><div class="cr-t"></div>';
+                front.querySelector('.cr-i').textContent = rank + CREED_SUIT[suit];
+                front.querySelector('.cr-t').textContent = it.t;
                 const body = document.createElement('div');
                 body.className = 'cr-body';
                 it.b.forEach(txt => {
@@ -5084,35 +5189,132 @@
                     appendRich(p, txt);
                     body.appendChild(p);
                 });
+                front.appendChild(body);
                 if (it.q) {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'cr-ref-btn';
-                    btn.setAttribute('aria-expanded', 'false');
-                    btn.innerHTML = '<span></span><span class="cr-ref-chev">›</span>';
-                    btn.firstChild.textContent = d.ref;
-                    btn.addEventListener('click', () => {
-                        const open = item.classList.toggle('ref-open');
-                        btn.setAttribute('aria-expanded', String(open));
-                    });
-                    const ref = document.createElement('div');
-                    ref.className = 'cr-ref';
-                    ref.innerHTML = '<div><div class="cr-q"></div><div class="cr-s"></div></div>';
-                    ref.querySelector('.cr-q').textContent = it.q;
-                    const src = ref.querySelector('.cr-s');
+                    const wrap = document.createElement('div');
+                    wrap.className = 'cr-refwrap';
+                    wrap.innerHTML = '<button type="button" class="cr-ref-btn" aria-expanded="false" tabindex="-1"><span></span><span class="cr-ref-plus" aria-hidden="true">+</span></button>' +
+                        '<div class="cr-ref"><div><div class="cr-q"></div><div class="cr-s"></div></div></div>';
+                    wrap.querySelector('.cr-ref-btn span').textContent = d.ref;
+                    wrap.querySelector('.cr-q').textContent = it.q;
+                    const src = wrap.querySelector('.cr-s');
                     src.textContent = d.dash;
-                    if (it.u) {
-                        const a = extLink(it.u);
-                        a.innerHTML = '<span class="cr-s-t"></span><span class="cr-s-arrow" aria-hidden="true">↗</span>';
-                        a.firstChild.textContent = it.s;
-                        src.appendChild(a);
-                    } else src.appendChild(document.createTextNode(it.s));
-                    body.appendChild(btn);
-                    body.appendChild(ref);
+                    if (it.u) { const a = extLink(it.u); a.textContent = it.s; src.appendChild(a); }
+                    else src.appendChild(document.createTextNode(it.s));
+                    front.appendChild(wrap);
                 }
-                item.appendChild(body);
-                list.appendChild(item);
+                card.appendChild(face);
+                card.appendChild(front);
+                ring.appendChild(card);
             });
+            placeCreed(false);
+        }
+
+        // carousel 自己慢慢转: 独立的 rAF, 每帧只改圆环一个 transform; 拖动 / 聚焦时停, 之后接着转
+        let creedSpinRaf = 0, creedSpinTimer = 0;
+        function creedSpinStop() {
+            clearTimeout(creedSpinTimer); cancelAnimationFrame(creedSpinRaf);
+            document.getElementById('creed').classList.remove('spinning');
+        }
+        function creedSpinStart(delay) {
+            creedSpinStop();
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const root = document.getElementById('creed'), ring = document.getElementById('crList');
+            creedSpinTimer = setTimeout(() => {   // 等展开 / 放回的过渡走完再接管
+                if (creedMode !== 'ring') return;
+                root.classList.add('spinning');
+                let last = performance.now();
+                const tick = t => {
+                    if (creedMode !== 'ring' || !root.classList.contains('open')) { creedSpinStop(); return; }
+                    creedAngle -= Math.min(50, t - last) * 0.007;   // ≈ 7°/秒, 一圈约 50 秒
+                    last = t;
+                    ring.style.transform = creedRingTransform();
+                    creedSpinRaf = requestAnimationFrame(tick);
+                };
+                creedSpinRaf = requestAnimationFrame(tick);
+            }, delay);
+        }
+
+        function creedToRing() { creedMode = 'ring'; creedFocus = -1; placeCreed(true, true); creedSpinStart(1400); }
+        function creedFocusCard(i) {
+            creedSpinStop();
+            // 圆环走最短的方向把这张牌转到正前方
+            const base = -creedSlot(i);
+            creedAngle = base + Math.round((creedAngle - base) / 360) * 360;
+            creedMode = 'focus'; creedFocus = i;
+            placeCreed(true);
+        }
+        function creedUnfocus() {
+            const c = creedCards()[creedFocus];
+            if (c) c.querySelector('.cr-front').scrollTop = 0;
+            creedMode = 'ring'; creedFocus = -1;
+            placeCreed(true);
+            creedSpinStart(1000);
+        }
+        function creedSpin(steps) {   // 键盘 ← →: 转到相邻的一张
+            creedSpinStop();
+            creedAngle = Math.round(creedAngle / creedGeo.step + steps) * creedGeo.step;
+            document.getElementById('crList').style.transform = creedRingTransform();
+            creedSpinStart(1100);
+        }
+
+        let creedDragged = false;
+        function onCreedClick(e) {
+            if (creedDragged) { creedDragged = false; return; }
+            if (e.target.closest('a')) return;   // 信条里的外链照常打开
+            const card = e.target.closest('.cr-card');
+            if (creedMode === 'pile') { if (card) creedToRing(); return; }
+            if (creedMode === 'ring') {
+                if (card) creedFocusCard(creedCards().indexOf(card));
+                return;
+            }
+            // focus: 出处按钮只展开/收起; 其余任何一点都把牌放回 carousel
+            const refBtn = e.target.closest('.cr-ref-btn');
+            if (refBtn && card && card.classList.contains('on')) {
+                const open = card.classList.toggle('ref-open');
+                refBtn.setAttribute('aria-expanded', String(open));
+                const front = card.querySelector('.cr-front');
+                if (open) setTimeout(() => front.scrollTo({ top: front.scrollHeight, behavior: 'smooth' }), 340);
+                else front.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            if (card && card.classList.contains('on') && e.target.closest('.cr-ref')) return;
+            creedUnfocus();
+        }
+
+        // carousel 拖动旋转: 跟手 (拖动时关掉 transition), 松手带一点惯性后吸附到最近的一张
+        function wireCreedDrag(root, stage) {
+            let down = false, moved = false, x0 = 0, a0 = 0, lastX = 0, lastT = 0, v = 0;
+            const ring = document.getElementById('crList');
+            stage.addEventListener('pointerdown', e => {
+                if (creedMode !== 'ring' || (e.pointerType === 'mouse' && e.button !== 0)) return;
+                creedSpinStop();
+                down = true; moved = false; x0 = lastX = e.clientX; a0 = creedAngle; lastT = performance.now(); v = 0;
+            });
+            window.addEventListener('pointermove', e => {
+                if (!down) return;
+                const dx = e.clientX - x0;
+                if (!moved && Math.abs(dx) < 6) return;
+                if (!moved) { moved = true; root.classList.add('dragging'); }
+                const now = performance.now(), dt = now - lastT;
+                if (dt > 0) v = 0.7 * ((e.clientX - lastX) / dt) + 0.3 * v;
+                lastX = e.clientX; lastT = now;
+                const k = Math.max(0.16, 110 / window.innerWidth);   // 拖过约一个屏宽 ≈ 转 110°
+                creedAngle = a0 + dx * k;
+                ring.style.transform = creedRingTransform();
+            }, { passive: true });
+            const end = () => {
+                if (!down) return;
+                down = false;
+                if (!moved) { creedSpinStart(600); return; }   // 只是点了一下: 若点中了牌, 聚焦会把这次重启取消
+                creedDragged = true; setTimeout(() => { creedDragged = false; }, 60);
+                root.classList.remove('dragging');
+                creedAngle += Math.max(-80, Math.min(80, v * 90));   // 松手带一点惯性滑出去, 然后接着自转
+                ring.style.transform = creedRingTransform();
+                creedSpinStart(950);
+            };
+            window.addEventListener('pointerup', end);
+            window.addEventListener('pointercancel', end);
         }
 
         function openCreed() {
@@ -5126,13 +5328,30 @@
                     try { localStorage.setItem('creedLang', creedLang); } catch (e) {}
                     renderCreed();
                 }));
+                const stage = document.getElementById('crStage');
+                stage.addEventListener('click', onCreedClick);
+                wireCreedDrag(root, stage);
+                root.addEventListener('keydown', e => {
+                    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('cr-card')) { e.preventDefault(); onCreedClick(e); }
+                });
+                document.addEventListener('keydown', e => {
+                    if (!root.classList.contains('open') || creedMode !== 'ring') return;
+                    if (e.key === 'ArrowLeft') creedSpin(1); else if (e.key === 'ArrowRight') creedSpin(-1);
+                });
+                let rt = 0;
+                window.addEventListener('resize', () => {
+                    if (!root.classList.contains('open')) return;
+                    cancelAnimationFrame(rt); rt = requestAnimationFrame(() => placeCreed(false));
+                });
             }
-            renderCreed();
-            root.scrollTop = 0;
+            creedSpinStop();
+            creedMode = 'pile'; creedFocus = -1; creedAngle = 0; creedRand = [];
             root.classList.add('open');
+            renderCreed();
         }
 
         function closeCreed() {
+            creedSpinStop();
             document.getElementById('creed').classList.remove('open');
         }
 
@@ -6475,8 +6694,9 @@
             // 手机端进入作品页后, 3D 场景被不透明面板完全盖住 → 暂停整套渲染/动画,
             // 把性能全留给作品页的原生滚动 (更丝滑) 并省电; 返回树时自动恢复。
             if (oneDActive && IS_TOUCH) { lastTime = currentTime; return; }
-            // Creed (蝴蝶) 也是不透明全屏页: 手机上照样停掉背后的 3D, 不然它滚动和点按都发涩
-            if (IS_TOUCH && creedEl && creedEl.classList.contains('open')) { lastTime = currentTime; return; }
+            // Creed (蝴蝶) 也是不透明全屏页: 停掉背后的 3D, 不然它滚动、发牌、翻牌都发涩
+            // 桌面也停: 牌在发/翻时 GPU 全给 CSS 动画, 不和背后被盖住的 3D 抢帧
+            if (creedEl && creedEl.classList.contains('open')) { lastTime = currentTime; return; }
 
             // 90/120Hz 安卓 / iPad 上 rAF 会跑到 120 帧: GPU 工作量翻倍、手机发热降频 → 掉帧;
             // 而且下面的动画都是"每帧加一点", 高刷屏上还会快一倍。触屏封顶 60 帧。
