@@ -7,6 +7,7 @@
     <script>
         // 刷新/后退回到作品页时, 第一帧就直接是作品页 (不先闪一下树): 记号在这条历史记录的 state 里 (见 setOneDActive)
         try { if ((history.state && history.state.work) || location.hash === '#work') document.documentElement.classList.add('boot-work'); } catch (e) {}
+        try { if (location.hash === '#creed') document.documentElement.classList.add('boot-creed'); } catch (e) {}
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Libre+Baskerville:ital@0;1&family=Inter:wght@200;300;400&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -862,7 +863,7 @@
             #fpHome { top: 22px; right: 22px; width: 62px; height: 62px; }
         }
 
-        /* Jane's Creed (蝴蝶点开): 一副白色扑克牌 (♠ A K Q J 10…6), 纯黑白灰。
+        /* Jane's Creed (蝴蝶点开): 一副白色扑克牌 (♠ A K Q J 10…5), 纯黑白灰。
            叠着的一摞 → 点一下展开成立体 carousel (可拖动旋转) → 点任意一张: 它转到正中、自己翻面露出信条 → 再点一下放回 carousel。
            全程只动 transform / opacity (GPU 合成)。结构: .cr-stage (perspective) > .cr-ring (preserve-3d) > .cr-card (preserve-3d) > 两个面 */
         #creed {
@@ -874,6 +875,7 @@
             --cw: min(300px, 76vw, calc((100vh - 200px) / 1.4));
         }
         #creed.open { opacity: 1; visibility: visible; }
+        html.boot-creed #creed { opacity: 1; visibility: visible; transition: none; }   /* 从主页的 Creed 直接进来: 不闪一下树 */
         .cr-bar { position: absolute; top: 0; right: 0; z-index: 5; display: flex; align-items: center; gap: 18px; padding: 20px 24px; }
         .cr-lang { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(0,0,0,.05); }
         .cr-lang button { background: none; border: 0; cursor: pointer; font: inherit; font-size: .72rem; letter-spacing: .06em; color: #86868b; padding: 6px 12px; border-radius: 999px; transition: color .2s, background .2s, box-shadow .2s; -webkit-tap-highlight-color: transparent; }
@@ -1360,7 +1362,7 @@
                 const ok = document.getElementById('pcOk');
                 if (pm && ok) {
                     // 刷新回到作品页时不再弹, 不然会盖在作品页上
-                    if (!document.documentElement.classList.contains('boot-work')) setTimeout(() => pm.classList.add('show'), 450);
+                    if (!document.documentElement.classList.contains('boot-work') && location.hash !== '#creed') setTimeout(() => pm.classList.add('show'), 450);
                     ok.addEventListener('click', () => {
                         pm.classList.remove('show');
                         setTimeout(showLogoHint, 2000);       // 关掉弹窗 2s 后弹出指向头像的气泡
@@ -5039,7 +5041,10 @@
                       q: '“Were the whole world to praise him, he would not be spurred on; were the whole world to condemn him, he would not be dismayed.”', s: 'Zhuangzi, Free and Easy Wandering' },
                     { t: 'Live in the Present.',
                       b: ['Feel the happiness that is here now. Depression is living in the past; anxiety is living in the future.'],
-                      q: '“Spring has its flowers, autumn its moon, summer its cool breeze, winter its snow. If no idle worry weighs on the mind, every season is a good season.”', s: 'Wumen Huikai, The Gateless Gate' }
+                      q: '“Spring has its flowers, autumn its moon, summer its cool breeze, winter its snow. If no idle worry weighs on the mind, every season is a good season.”', s: 'Wumen Huikai, The Gateless Gate' },
+                    { t: 'Embrace Failure.',
+                      b: ['You don’t have to win every battle. Liu Bang lost almost all of his to Xiang Yu, and won only the last one. Stay in the game.'],
+                      q: 'Xiang Yu, before his final defeat: “In eight years and more than seventy battles, I was never beaten.” He lost once, and it was over. Liu Bang lost again and again, won at Gaixia, and founded the Han dynasty.', s: 'Records of the Grand Historian' }
                 ]
             },
             zh: {
@@ -5065,7 +5070,9 @@
                     { t: '保持主体性', b: ['不在乎任何人的看法，只在乎我内心真正想要什么。'],
                       q: '举世而誉之而不加劝，举世而非之而不加沮。', s: '《庄子·逍遥游》' },
                     { t: '活在当下，感知幸福', b: ['抑郁是因为活在过去，焦虑是因为活在未来。'],
-                      q: '春有百花秋有月，夏有凉风冬有雪。若无闲事挂心头，便是人间好时节。', s: '无门慧开《无门关》' }
+                      q: '春有百花秋有月，夏有凉风冬有雪。若无闲事挂心头，便是人间好时节。', s: '无门慧开《无门关》' },
+                    { t: '拥抱失败', b: ['每次失败意味着我离成功又近了一步。刘邦和项羽打了四年，几乎每战都败，只赢了最后一战。只要还在场上，就还没输。'],
+                      q: '「吾起兵至今八岁矣，身七十余战，所当者破，所击者服，未尝败北。」项羽七十余战未尝一败，输一次就结束了；刘邦屡战屡败，垓下赢一次，就开创了汉朝。', s: '《史记·项羽本纪》' }
                 ]
             }
         };
@@ -5091,12 +5098,12 @@
 
         // 牌堆 (pile) → carousel (ring) → 聚焦翻面 (focus) → 再点回 carousel。
         // 状态在一次打开内保留 (切语言不重置); 每次重新打开从牌堆开始, 牌堆角度重新随机。
-        const CREED_RANKS = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6'];
+        const CREED_RANKS = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5'];
         const CREED_SPADE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 1.6C12 1.6 2.8 9 2.8 14.3c0 2.8 2.1 4.9 4.7 4.900 1.7 0 3.100-.9 3.900-2.200-.2 2.300-1 4-2.600 5.400h6.400c-1.600-1.400-2.400-3.100-2.600-5.400.8 1.300 2.200 2.200 3.900 2.200 2.600 0 4.700-2.100 4.700-4.900C21.200 9 12 1.600 12 1.600z"/></svg>';
         const CREED_PIPS = (() => {
             const side = ys => ys.flatMap(y => [[0, y], [100, y]]);
             const three = side([0, 50, 100]), four = side([0, 33.3, 66.7, 100]);
-            return { '6': three, '7': [...three, [50, 25]], '8': [...three, [50, 25], [50, 75]],
+            return { '5': [[0, 0], [100, 0], [50, 50], [0, 100], [100, 100]], '6': three, '7': [...three, [50, 25]], '8': [...three, [50, 25], [50, 75]],
                      '9': [...four, [50, 50]], '10': [...four, [50, 16.7], [50, 83.3]] };
         })();
         const CREED_UI = {
@@ -5329,7 +5336,17 @@
         }
 
         function closeCreed() {
+            // 从主页的 Creed 进来的 (tree.html#creed): 关掉就回主页, 牌桌留到跳转完成
+            if (location.hash === '#creed') {
+                try { sessionStorage.setItem('fromTree', '1'); } catch (e) {}
+                location.assign('/');
+                return;
+            }
             document.getElementById('creed').classList.remove('open');
+        }
+        if (location.hash === '#creed') {
+            openCreed();
+            requestAnimationFrame(() => requestAnimationFrame(() => document.documentElement.classList.remove('boot-creed')));
         }
 
         // ============================================
