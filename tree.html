@@ -5077,7 +5077,7 @@
             }
         };
         let creedLang = 'en';
-        try { if (localStorage.getItem('creedLang') === 'zh') creedLang = 'zh'; } catch (e) {}
+        // Always open in English; 中文 is a per-visit toggle (not remembered).
 
         function extLink(url) {
             const a = document.createElement('a');
@@ -5311,7 +5311,6 @@
                 root.querySelectorAll('.cr-lang button').forEach(b => b.addEventListener('click', () => {
                     if (b.dataset.lang === creedLang) return;
                     creedLang = b.dataset.lang;
-                    try { localStorage.setItem('creedLang', creedLang); } catch (e) {}
                     renderCreed();
                 }));
                 const stage = document.getElementById('crStage');
